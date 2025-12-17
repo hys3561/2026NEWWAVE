@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>뉴웨이브 청년 1부 사랑방</title>
+  <title>교회 사랑방 출석체크</title>
+
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
     body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:#f9fafb; min-height:100vh; }
-
     .hidden { display:none !important; }
 
     .header { background:#fff; border-bottom:1px solid #e5e7eb; padding:1.25rem 1rem; position:sticky; top:0; z-index:100; }
@@ -25,13 +25,16 @@
     .team-card { background:#fff; padding:1.5rem; border-radius:0.95rem; border:2px solid #e5e7eb; cursor:pointer; transition:all .2s; }
     .team-card:hover { border-color:#2563eb; box-shadow:0 10px 15px -3px rgba(0,0,0,.1); }
     .team-card-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; }
-    .team-number { width:2rem; height:2rem; background:#dbeafe; border-radius:0.9rem; display:flex; align-items:center; justify-content:center; color:#2563eb; font-weight:950; font-size:1.125rem; }
-    .team-card:hover .team-number { background:#2563eb; color:#fff; }
-    .member-count { background:#f3f4f6; padding:.25rem .75rem; border-radius:9999px; font-size:.875rem; color:#6b7280; font-weight:900; }
-    .team-name { font-size:1.25rem; font-weight:950; color:#111827; margin-bottom:.25rem; }
-    .team-leader { font-size:.875rem; color:#6b7280; font-weight:800; }
 
-    /* 공통 버튼 */
+    /* ✅ 요청: 숫자 크기 ↓ / 사랑방 이름 크기 ↑ (서로 바꿈) */
+    .team-number { width:3rem; height:3rem; background:#dbeafe; border-radius:0.9rem; display:flex; align-items:center; justify-content:center; color:#2563eb; font-weight:950; font-size:1.0rem; }
+    .team-card:hover .team-number { background:#2563eb; color:#fff; }
+
+    .member-count { background:#f3f4f6; padding:.25rem .75rem; border-radius:9999px; font-size:.875rem; color:#6b7280; font-weight:900; }
+
+    .team-name { font-size:1.5rem; font-weight:950; color:#111827; margin-bottom:.25rem; }
+    .team-leader { font-size:.9rem; color:#6b7280; font-weight:800; }
+
     .back-button { display:flex; align-items:center; gap:.5rem; color:#6b7280; background:none; border:none; cursor:pointer; font-size:1rem; padding:.5rem .25rem; font-weight:900; }
     .back-button:hover { color:#111827; }
 
@@ -43,7 +46,7 @@
       padding:.75rem 1rem;
       border:1px solid #d1d5db;
       border-radius:.9rem;
-      font-size:16px; /* 모바일 깨짐 방지(줌 방지) */
+      font-size:16px; /* 모바일 깨짐/줌 방지 */
       -webkit-appearance:none; appearance:none;
       background:#fff;
     }
@@ -55,7 +58,6 @@
     .progress-bar { background:#e5e7eb; border-radius:9999px; height:.5rem; overflow:hidden; }
     .progress-fill { background:#2563eb; height:100%; transition:width .3s; }
 
-    /* 검색 + 멤버 그리드 */
     .search-section { background:#fff; padding:.75rem 1rem; border-radius:.95rem; border:1px solid #e5e7eb; margin-bottom:1rem; }
     .search-input { width:100%; padding:.65rem .9rem; border:1px solid #d1d5db; border-radius:.9rem; font-size:16px; }
 
@@ -72,16 +74,14 @@
     .checkmark { display:none; color:#fff; font-weight:950; font-size:.95rem; }
     .member-item.checked .checkmark { display:block; }
 
-    /* 특이사항: 아래로 */
+    /* ✅ 요청: 메모가 아니라 "특이사항", 그리고 아래로 */
     .note-section { margin-top:.75rem; padding-top:.75rem; border-top:1px solid #e5e7eb; }
     .note-label { font-size:.8rem; font-weight:950; color:#6b7280; margin-bottom:.35rem; }
     .note-input { width:100%; padding:.55rem .65rem; border:1px solid #d1d5db; border-radius:.85rem; font-size:16px; }
 
-    /* 건의사항 */
     .suggestion-section { background:#fff; padding:1rem; border-radius:.95rem; border:1px solid #e5e7eb; margin-bottom:1rem; }
     .suggestion-textarea { width:100%; padding:.75rem; border:1px solid #d1d5db; border-radius:.9rem; font-size:16px; min-height:90px; }
 
-    /* 하단 저장(모바일 편의) */
     :root { --safe-bottom: env(safe-area-inset-bottom, 0px); }
     .sticky-actions { position:sticky; bottom:0; background:rgba(249,250,251,.95); border-top:1px solid #e5e7eb; padding:.75rem 0 calc(.75rem + var(--safe-bottom)) 0; backdrop-filter:blur(6px); }
     .save-button { width:100%; background:#2563eb; color:#fff; padding:.95rem; border-radius:.95rem; border:none; font-size:1.05rem; font-weight:950; cursor:pointer; }
@@ -112,7 +112,7 @@
     .suggestion-item { padding:1rem; border-bottom:1px solid #e5e7eb; }
     .suggestion-team { font-weight:950; color:#111827; }
 
-    /* 비밀번호 모달(커스텀) */
+    /* 비밀번호 모달 */
     .modal-overlay { position:fixed; inset:0; background:rgba(17,24,39,.55); display:flex; align-items:center; justify-content:center; padding:1rem; z-index:999; }
     .modal { width:100%; max-width:420px; background:#fff; border-radius:1rem; border:1px solid #e5e7eb; box-shadow:0 20px 25px -5px rgba(0,0,0,.15); overflow:hidden; }
     .modal-header { padding:1rem 1rem .75rem 1rem; border-bottom:1px solid #e5e7eb; }
@@ -136,6 +136,7 @@
       .admin-summary{ grid-template-columns:1fr; }
       .team-grid{ grid-template-columns:1fr; }
       .member-list{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
+      .team-name{ font-size:1.35rem; }
     }
   </style>
 </head>
@@ -145,8 +146,8 @@
   <div id="homePage">
     <div class="header">
       <div class="header-content">
-        <button class="admin-button" id="adminBtn">관리자</button>
-        <h1>2026 뉴웨이브 청년1부 사랑방 출석체크</h1>
+        <button type="button" class="admin-button" id="adminBtn">관리자</button>
+        <h1>사랑방 출석체크</h1>
         <p class="subtitle">사랑방을 선택해주세요</p>
       </div>
     </div>
@@ -159,7 +160,7 @@
   <div id="attendancePage" class="hidden">
     <div class="header">
       <div class="header-content">
-        <button class="back-button" id="teamBackBtn">← 돌아가기</button>
+        <button type="button" class="back-button" id="teamBackBtn">← 돌아가기</button>
         <h1 id="selectedTeamName"></h1>
         <p class="subtitle" id="selectedTeamLeader"></p>
       </div>
@@ -191,7 +192,7 @@
       </div>
 
       <div class="sticky-actions">
-        <button class="save-button" id="saveBtn">출석 정보 저장</button>
+        <button type="button" class="save-button" id="saveBtn">출석 정보 저장</button>
         <div id="messageBox" class="hidden"></div>
       </div>
     </div>
@@ -201,7 +202,7 @@
   <div id="adminDashboard" class="hidden">
     <div class="header">
       <div class="header-content">
-        <button class="back-button" id="adminBackBtn">← 돌아가기</button>
+        <button type="button" class="back-button" id="adminBackBtn">← 돌아가기</button>
         <h1>관리자 대시보드</h1>
         <p class="subtitle">날짜를 선택하면 전체 현황/특이사항/건의사항을 확인할 수 있습니다.</p>
       </div>
@@ -209,9 +210,9 @@
 
     <div class="container">
       <div class="dashboard-tabs">
-        <button class="tab-button active" data-tab="stats">출석 현황</button>
-        <button class="tab-button" data-tab="notes">특이사항</button>
-        <button class="tab-button" data-tab="suggestions">건의사항</button>
+        <button type="button" class="tab-button active" data-tab="stats">출석 현황</button>
+        <button type="button" class="tab-button" data-tab="notes">특이사항</button>
+        <button type="button" class="tab-button" data-tab="suggestions">건의사항</button>
       </div>
 
       <div id="adminStatsTab">
@@ -257,7 +258,7 @@
     </div>
   </div>
 
-  <!-- 비밀번호 모달 (처음부터 hidden) -->
+  <!-- 비밀번호 모달 -->
   <div id="passwordModal" class="modal-overlay hidden" role="dialog" aria-modal="true">
     <div class="modal">
       <div class="modal-header">
@@ -269,8 +270,8 @@
         <div id="modalError" class="modal-error hidden"></div>
       </div>
       <div class="modal-actions">
-        <button class="modal-btn ghost" id="modalCancelBtn">취소</button>
-        <button class="modal-btn primary" id="modalOkBtn">확인</button>
+        <button type="button" class="modal-btn ghost" id="modalCancelBtn">취소</button>
+        <button type="button" class="modal-btn primary" id="modalOkBtn">확인</button>
       </div>
     </div>
   </div>
@@ -279,11 +280,10 @@
     /************************************************************
      * ✅ Apps Script Web App URL
      ************************************************************/
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyo2x7pgXauqjyFpoYJBY70SvcuzujTXkYVpNzRpcE6aP04jPEM4UMyI5V8SDGf-Qbd8g/exec";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxC4ZzJh1wS4N6KvWEx9oMzvYxqm0_c2ZrMoqoipJsBNAvlHLsUqV4IhQnFvDSbbh8EtQ/exec";
 
     /************************************************************
-     * ✅ 비밀번호(HTML 저장 방식)
-     * - 원하시는 값으로 변경하세요.
+     * ✅ 비밀번호(HTML 저장)
      ************************************************************/
     const ADMIN_PASSWORD = "newwave2026";
     const TEAM_PASSWORDS = {
@@ -302,47 +302,41 @@
     };
 
     /************************************************************
-     * 사랑방 목록(필요시 멤버 실제 이름으로 교체)
+     * ✅ 사랑방 목록 (members를 직접 수정 가능)
      ************************************************************/
     const TEAMS = [
-      {id:1, name:"권준형 사랑방", leader:"방장: 권준형", members:Array.from({length:20}, (_,i)=>`방원${i+1}`)},
-      {id:2, name:"김나림 사랑방", leader:"방장: 김나림", members:Array.from({length:20}, (_,i)=>`방원${i+1}`)},
-      {id:3, name:"문유안 사랑방", leader:"방장: 문유안", members:Array.from({length:20}, (_,i)=>`방원${i+1}`)},
-      {id:4, name:"벡에스더 사랑방", leader:"방장: 벡에스더", members:Array.from({length:20}, (_,i)=>`방원${i+1}`)},
-      {id:5, name:"이예정 사랑방", leader:"방장: 이예정", members:Array.from({length:20}, (_,i)=>`방원${i+1}`)},
-      {id:6, name:"이지빈 사랑방", leader:"방장: 이지빈", members:Array.from({length:20}, (_,i)=>`방원${i+1}`)},
-      {id:7, name:"이하은 사랑방", leader:"방장: 이하은", members:Array.from({length:20}, (_,i)=>`방원${i+1}`)},
-      {id:8, name:"이희진 사랑방", leader:"방장: 이희진", members:Array.from({length:20}, (_,i)=>`방원${i+1}`)},
-      {id:9, name:"임사랑 사랑방", leader:"방장: 임사랑", members:Array.from({length:20}, (_,i)=>`방원${i+1}`)},
-      {id:10, name:"장하늘 사랑방", leader:"방장: 장하늘", members:Array.from({length:20}, (_,i)=>`방원${i+1}`)},
-      {id:11, name:"하재영 사랑방", leader:"방장: 하재영", members:Array.from({length:20}, (_,i)=>`방원${i+1}`)},
-      {id:12, name:"Wee팀", leader:"방장: Wee팀", members:Array.from({length:20}, (_,i)=>`방원${i+1}`)}
+      { id: 1, name: "권준형 사랑방", leader: "방장: 권준형", members: ["방원1","방원2","방원3"] },
+      { id: 2, name: "김나림 사랑방", leader: "방장: 김나림", members: ["방원1","방원2","방원3"] },
+      { id: 3, name: "문유안 사랑방", leader: "방장: 문유안", members: ["방원1","방원2","방원3"] },
+      { id: 4, name: "벡에스더 사랑방", leader: "방장: 벡에스더", members: ["방원1","방원2","방원3"] },
+      { id: 5, name: "이예정 사랑방", leader: "방장: 이예정", members: ["방원1","방원2","방원3"] },
+      { id: 6, name: "이지빈 사랑방", leader: "방장: 이지빈", members: ["방원1","방원2","방원3"] },
+      { id: 7, name: "이하은 사랑방", leader: "방장: 이하은", members: ["방원1","방원2","방원3"] },
+      { id: 8, name: "이희진 사랑방", leader: "방장: 이희진", members: ["방원1","방원2","방원3"] },
+      { id: 9, name: "임사랑 사랑방", leader: "방장: 임사랑", members: ["방원1","방원2","방원3"] },
+      { id: 10, name: "장하늘 사랑방", leader: "방장: 장하늘", members: ["방원1","방원2","방원3"] },
+      { id: 11, name: "하재영 사랑방", leader: "방장: 하재영", members: ["방원1","방원2","방원3"] },
+      { id: 12, name: "Wee팀", leader: "방장: Wee팀", members: ["방원1","방원2","방원3"] }
     ];
 
     /************************************************************
      * 상태
      ************************************************************/
     let selectedTeam = null;
-    let attendance = {};   // {name: boolean}
-    let memberNotes = {};  // {name: string}
+    let attendance = {};
+    let memberNotes = {};
     let adminAuthed = false;
 
     /************************************************************
-     * 날짜 기본값
+     * 페이지 전환(강제)
      ************************************************************/
-    const today = new Date().toISOString().split("T")[0];
-    const dateInput = document.getElementById("dateInput");
-    const adminDateInput = document.getElementById("adminDateInput");
-    const adminNotesDateInput = document.getElementById("adminNotesDateInput");
-    const adminSugDateInput = document.getElementById("adminSugDateInput");
-    dateInput.value = today;
-    adminDateInput.value = today;
-    adminNotesDateInput.value = today;
-    adminSugDateInput.value = today;
+    function showPage(pageId){
+      document.getElementById("homePage").classList.add("hidden");
+      document.getElementById("attendancePage").classList.add("hidden");
+      document.getElementById("adminDashboard").classList.add("hidden");
+      document.getElementById(pageId).classList.remove("hidden");
+    }
 
-    /************************************************************
-     * 유틸
-     ************************************************************/
     function escapeHtml(str){
       return String(str)
         .replaceAll("&","&amp;")
@@ -351,7 +345,6 @@
         .replaceAll('"',"&quot;")
         .replaceAll("'","&#039;");
     }
-    function cssEsc(v){ return (window.CSS && CSS.escape) ? CSS.escape(v) : String(v).replace(/["\\]/g,'\\$&'); }
 
     function showMsg(type, text){
       const box = document.getElementById("messageBox");
@@ -361,20 +354,8 @@
       setTimeout(()=> box.classList.add("hidden"), 2500);
     }
 
-    function hideAll(){
-      document.getElementById("homePage").classList.add("hidden");
-      document.getElementById("attendancePage").classList.add("hidden");
-      document.getElementById("adminDashboard").classList.add("hidden");
-    }
-    function goHome(){
-      closePasswordModal();
-      hideAll();
-      document.getElementById("homePage").classList.remove("hidden");
-      selectedTeam = null;
-    }
-
     /************************************************************
-     * JSONP (GET)
+     * JSONP(GET)
      ************************************************************/
     function jsonp(url, params){
       return new Promise((resolve, reject)=>{
@@ -410,7 +391,7 @@
     }
 
     /************************************************************
-     * 비밀번호 모달(절대 자동으로 열지 않음)
+     * ✅ 비밀번호 모달 (핵심 수정: team 객체 대신 teamId 저장)
      ************************************************************/
     const modal = document.getElementById("passwordModal");
     const modalTitle = document.getElementById("modalTitle");
@@ -418,10 +399,10 @@
     const modalPassword = document.getElementById("modalPassword");
     const modalError = document.getElementById("modalError");
 
-    let modalState = { mode:null, team:null }; // mode: "team" | "admin"
+    let modalState = { mode:null, teamId:null }; // mode: "team" | "admin"
 
-    function openPasswordModal({mode, team, title, subtitle}){
-      modalState = { mode, team: team || null };
+    function openPasswordModal({mode, teamId, title, subtitle}){
+      modalState = { mode, teamId: teamId ?? null };
       modalTitle.textContent = title || "비밀번호 입력";
       modalSubtitle.textContent = subtitle || "";
       modalPassword.value = "";
@@ -430,16 +411,18 @@
       modal.classList.remove("hidden");
       setTimeout(()=> modalPassword.focus(), 0);
     }
+
     function closePasswordModal(){
       modal.classList.add("hidden");
-      modalState = { mode:null, team:null };
+      modalState = { mode:null, teamId:null };
     }
+
     function setModalError(msg){
       modalError.textContent = msg;
       modalError.classList.remove("hidden");
     }
 
-    async function submitPassword(){
+    function submitPassword(){
       const pw = modalPassword.value || "";
 
       if (modalState.mode === "admin") {
@@ -450,13 +433,17 @@
         return;
       }
 
-      if (modalState.mode === "team" && modalState.team) {
-        const teamId = String(modalState.team.id);
+      if (modalState.mode === "team") {
+        const teamId = String(modalState.teamId || "");
         const expected = TEAM_PASSWORDS[teamId] ?? "";
         if (!expected) { setModalError("이 사랑방은 비밀번호가 설정되어 있지 않습니다."); return; }
         if (pw !== expected) { setModalError("비밀번호가 틀렸습니다."); return; }
+
+        const team = TEAMS.find(t => String(t.id) === teamId);
+        if (!team) { setModalError("사랑방 정보를 찾을 수 없습니다."); return; }
+
         closePasswordModal();
-        selectTeam(modalState.team);
+        selectTeam(team);              // ✅ 여기서 출석 화면으로 강제 이동
         return;
       }
     }
@@ -464,17 +451,18 @@
     document.getElementById("modalCancelBtn").addEventListener("click", closePasswordModal);
     document.getElementById("modalOkBtn").addEventListener("click", submitPassword);
     modalPassword.addEventListener("keydown", (e)=>{
-      if (e.key === "Enter") submitPassword();
+      if (e.key === "Enter") { e.preventDefault(); submitPassword(); }
       if (e.key === "Escape") closePasswordModal();
     });
     modal.addEventListener("click", (e)=>{ if (e.target.id === "passwordModal") closePasswordModal(); });
 
     /************************************************************
-     * 홈: 팀 카드 생성
+     * 홈: 팀 카드
      ************************************************************/
     function initTeamGrid(){
       const grid = document.getElementById("teamGrid");
       grid.innerHTML = "";
+
       TEAMS.forEach(team=>{
         const card = document.createElement("div");
         card.className = "team-card";
@@ -486,22 +474,28 @@
           <div class="team-name">${escapeHtml(team.name)}</div>
           <div class="team-leader">${escapeHtml(team.leader)}</div>
         `;
-        // ✅ 클릭했을 때만 비밀번호 모달 오픈
-        card.addEventListener("click", ()=>{
+
+        card.addEventListener("click", (e)=>{
+          e.preventDefault();
           openPasswordModal({
             mode:"team",
-            team,
+            teamId: team.id,
             title: team.name + " 비밀번호",
             subtitle: "해당 사랑방장만 출석/특이사항을 수정할 수 있습니다."
           });
         });
+
         grid.appendChild(card);
       });
     }
 
     /************************************************************
-     * 출석 페이지 구성
+     * 출석 페이지
      ************************************************************/
+    const today = new Date().toISOString().split("T")[0];
+    const dateInput = document.getElementById("dateInput");
+    dateInput.value = today;
+
     function resetStateForTeam(team){
       attendance = {};
       memberNotes = {};
@@ -519,13 +513,13 @@
         item.dataset.name = name;
 
         item.innerHTML = `
-          <div class="member-header" data-name="${escapeHtml(name)}">
+          <div class="member-header">
             <span class="member-name">${escapeHtml(name)}</span>
             <div class="checkbox"><span class="checkmark">✓</span></div>
           </div>
           <div class="note-section">
             <div class="note-label">특이사항</div>
-            <input class="note-input" data-name="${escapeHtml(name)}" placeholder="특이사항 입력" />
+            <input class="note-input" placeholder="특이사항 입력" />
           </div>
         `;
         list.appendChild(item);
@@ -541,17 +535,6 @@
       document.getElementById("progressFill").style.width = (total>0 ? (present/total)*100 : 0) + "%";
     }
 
-    function paintStateToUI(team){
-      team.members.forEach(n=>{
-        const item = document.querySelector(`.member-item[data-name="${cssEsc(n)}"]`);
-        if (!item) return;
-        item.classList.toggle("checked", !!attendance[n]);
-        const input = item.querySelector(".note-input");
-        if (input) input.value = memberNotes[n] || "";
-      });
-      updateCount();
-    }
-
     function applyMemberFilter(q){
       q = (q || "").trim().toLowerCase();
       document.querySelectorAll("#memberList .member-item").forEach(item=>{
@@ -565,25 +548,26 @@
         const res = await apiGet("getTeamSubmission", { teamId:String(team.id), date });
         if (!res || !res.ok) { showMsg("error", "데이터 로드 실패"); return; }
 
-        if (!res.found) {
-          resetStateForTeam(team);
-          paintStateToUI(team);
-          return;
-        }
-
-        const sub = res.submission || {};
         resetStateForTeam(team);
 
-        const arr = Array.isArray(sub.attendance) ? sub.attendance : [];
-        arr.forEach(r=>{
-          if (!r || !r.name) return;
-          attendance[r.name] = !!r.present;
-          memberNotes[r.name] = String(r.note || "");
+        if (res.found && res.submission && Array.isArray(res.submission.attendance)) {
+          res.submission.attendance.forEach(r=>{
+            if (!r || !r.name) return;
+            attendance[r.name] = !!r.present;
+            memberNotes[r.name] = String(r.note || "");
+          });
+          document.getElementById("suggestionInput").value = String(res.submission.suggestion || "");
+        }
+
+        // UI 반영
+        document.querySelectorAll("#memberList .member-item").forEach(item=>{
+          const n = item.dataset.name;
+          item.classList.toggle("checked", !!attendance[n]);
+          const input = item.querySelector(".note-input");
+          if (input) input.value = memberNotes[n] || "";
         });
 
-        document.getElementById("suggestionInput").value = String(sub.suggestion || "");
-        paintStateToUI(team);
-
+        updateCount();
       } catch(e){
         showMsg("error", "서버 연결 실패");
       }
@@ -597,57 +581,49 @@
 
       buildMemberList(team);
       resetStateForTeam(team);
-      paintStateToUI(team);
 
-      hideAll();
-      document.getElementById("attendancePage").classList.remove("hidden");
+      showPage("attendancePage");       // ✅ 강제 이동(핵심)
 
       document.getElementById("memberSearch").value = "";
-      const date = dateInput.value || today;
+      applyMemberFilter("");
+
       showMsg("info", "데이터를 불러오는 중입니다...");
-      loadTeamDataFromServer(team, date).then(()=> applyMemberFilter(""));
+      loadTeamDataFromServer(team, dateInput.value || today);
     }
 
-    // 멤버 체크 토글
+    // 멤버 체크/특이사항
     document.getElementById("memberList").addEventListener("click", (e)=>{
       const header = e.target.closest(".member-header");
       if (!header || !selectedTeam) return;
-      // 특이사항 input 클릭은 토글 방지
-      if (e.target.classList.contains("note-input")) return;
 
-      const name = header.getAttribute("data-name");
-      // data-name이 escape된 값이므로 dataset 기반으로 찾기
       const item = header.closest(".member-item");
-      const realName = item ? item.dataset.name : name;
+      if (!item) return;
+      const name = item.dataset.name;
 
-      attendance[realName] = !attendance[realName];
-      if (item) item.classList.toggle("checked", !!attendance[realName]);
+      attendance[name] = !attendance[name];
+      item.classList.toggle("checked", !!attendance[name]);
       updateCount();
     });
 
-    // 특이사항 입력
     document.getElementById("memberList").addEventListener("input", (e)=>{
       if (!e.target.classList.contains("note-input")) return;
       const item = e.target.closest(".member-item");
       if (!item) return;
-      const realName = item.dataset.name;
-      memberNotes[realName] = e.target.value || "";
+      const name = item.dataset.name;
+      memberNotes[name] = e.target.value || "";
     });
 
-    // 검색
     document.getElementById("memberSearch").addEventListener("input", (e)=>{
       applyMemberFilter(e.target.value);
     });
 
-    // 날짜 변경 시 다시 로드
     dateInput.addEventListener("change", ()=>{
       if (!selectedTeam) return;
-      const date = dateInput.value || today;
       showMsg("info", "데이터를 불러오는 중입니다...");
-      loadTeamDataFromServer(selectedTeam, date);
+      loadTeamDataFromServer(selectedTeam, dateInput.value || today);
     });
 
-    // 저장(POST no-cors)
+    // 저장
     async function saveAttendance(){
       if (!selectedTeam) return;
 
@@ -673,29 +649,27 @@
           body: JSON.stringify(payload)
         });
         showMsg("success", "저장되었습니다!");
-        // 저장 후 다시 로드(최신 확인)
         loadTeamDataFromServer(selectedTeam, dateInput.value || today);
       } catch(e){
         showMsg("error", "저장 실패 (네트워크 확인)");
       }
     }
 
+    document.getElementById("saveBtn").addEventListener("click", saveAttendance);
+
     /************************************************************
      * 관리자
      ************************************************************/
+    const adminDateInput = document.getElementById("adminDateInput");
+    const adminNotesDateInput = document.getElementById("adminNotesDateInput");
+    const adminSugDateInput = document.getElementById("adminSugDateInput");
+    adminDateInput.value = today;
+    adminNotesDateInput.value = today;
+    adminSugDateInput.value = today;
+
     function showAdminDashboard(){
-      hideAll();
-      document.getElementById("adminDashboard").classList.remove("hidden");
+      showPage("adminDashboard");
       loadAdminAll();
-    }
-
-    async function loadAdminAll(){
-      if (!adminAuthed) return;
-
-      const activeTab = document.querySelector(".tab-button.active")?.dataset?.tab || "stats";
-      if (activeTab === "stats") await renderAdminStats(adminDateInput.value || today);
-      if (activeTab === "notes") await renderAdminNotes(adminNotesDateInput.value || today);
-      if (activeTab === "suggestions") await renderAdminSuggestions(adminSugDateInput.value || today);
     }
 
     async function fetchAdminByDate(date){
@@ -803,7 +777,14 @@
       document.getElementById("suggestionsList").innerHTML = html;
     }
 
-    // 관리자 탭 버튼
+    async function loadAdminAll(){
+      if (!adminAuthed) return;
+      const activeTab = document.querySelector(".tab-button.active")?.dataset?.tab || "stats";
+      if (activeTab === "stats") await renderAdminStats(adminDateInput.value || today);
+      if (activeTab === "notes") await renderAdminNotes(adminNotesDateInput.value || today);
+      if (activeTab === "suggestions") await renderAdminSuggestions(adminSugDateInput.value || today);
+    }
+
     document.querySelectorAll(".tab-button").forEach(btn=>{
       btn.addEventListener("click", ()=>{
         document.querySelectorAll(".tab-button").forEach(b=>b.classList.remove("active"));
@@ -826,7 +807,6 @@
      * 버튼 바인딩
      ************************************************************/
     document.getElementById("adminBtn").addEventListener("click", ()=>{
-      // ✅ 관리자 버튼 클릭 시에만 비밀번호 모달
       openPasswordModal({
         mode:"admin",
         title:"관리자 탭 비밀번호",
@@ -834,19 +814,24 @@
       });
     });
 
-    document.getElementById("teamBackBtn").addEventListener("click", goHome);
-    document.getElementById("adminBackBtn").addEventListener("click", ()=>{
-      adminAuthed = false;
-      goHome();
+    document.getElementById("teamBackBtn").addEventListener("click", ()=>{
+      closePasswordModal();
+      selectedTeam = null;
+      showPage("homePage");
     });
 
-    document.getElementById("saveBtn").addEventListener("click", saveAttendance);
+    document.getElementById("adminBackBtn").addEventListener("click", ()=>{
+      adminAuthed = false;
+      closePasswordModal();
+      showPage("homePage");
+    });
 
     /************************************************************
-     * ✅ 초기화(중요): 여기서 비밀번호 모달을 절대 열지 않음
+     * 초기화
+     * ✅ 절대 첫 화면에서 모달을 띄우지 않음
      ************************************************************/
     initTeamGrid();
-    goHome();
+    showPage("homePage");
   </script>
 </body>
 </html>
