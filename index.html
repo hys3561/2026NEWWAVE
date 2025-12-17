@@ -10,9 +10,9 @@
     body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:#f9fafb; min-height:100vh; }
     .hidden { display:none !important; }
 
-    .header { background:#fff; border-bottom:1px solid #e5e7eb; padding:1.15rem 1rem; position:sticky; top:0; z-index:100; }
+    .header { background:#fff; border-bottom:1px solid #e5e7eb; padding:1.25rem 1rem; position:sticky; top:0; z-index:100; }
     .header-content { max-width:1200px; margin:0 auto; position:relative; }
-    h1 { font-size:1.45rem; color:#111827; }
+    h1 { font-size:1.5rem; color:#111827; }
     .subtitle { color:#6b7280; font-size:0.9rem; font-weight:800; margin-top:0.35rem; }
 
     .admin-button { position:absolute; top:0; right:0; background:#6b7280; color:#fff; padding:0.5rem 1rem; border-radius:0.85rem; border:none; cursor:pointer; font-size:0.875rem; font-weight:900; }
@@ -26,11 +26,13 @@
     .team-card:hover { border-color:#2563eb; box-shadow:0 10px 15px -3px rgba(0,0,0,.1); }
     .team-card-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; }
 
-    /* ✅ 요청: 숫자(팀번호) 크게 보이지 않게, 사랑방 이름은 더 크게 */
-    .team-number { width:2.5rem; height:2.5rem; background:#dbeafe; border-radius:0.9rem; display:flex; align-items:center; justify-content:center; color:#2563eb; font-weight:950; font-size:1.0rem; }
+    /* ✅ 요청: 숫자 크기 ↓ */
+    .team-number { width:2.5rem; height:2.5rem; background:#dbeafe; border-radius:0.9rem; display:flex; align-items:center; justify-content:center; color:#2563eb; font-weight:950; font-size:1rem; }
     .team-card:hover .team-number { background:#2563eb; color:#fff; }
 
     .member-count { background:#f3f4f6; padding:.25rem .75rem; border-radius:9999px; font-size:.875rem; color:#6b7280; font-weight:900; }
+
+    /* ✅ 요청: 사랑방 이름 크기 ↑ */
     .team-name { font-size:1.65rem; font-weight:950; color:#111827; margin-bottom:.25rem; }
     .team-leader { font-size:.9rem; color:#6b7280; font-weight:800; }
 
@@ -45,7 +47,7 @@
       padding:.75rem 1rem;
       border:1px solid #d1d5db;
       border-radius:.9rem;
-      font-size:16px; /* 모바일 줌/깨짐 방지 */
+      font-size:16px; /* 모바일 깨짐/줌 방지 */
       -webkit-appearance:none; appearance:none;
       background:#fff;
     }
@@ -73,7 +75,7 @@
     .checkmark { display:none; color:#fff; font-weight:950; font-size:.95rem; }
     .member-item.checked .checkmark { display:block; }
 
-    /* 특이사항: 아래로 */
+    /* ✅ 특이사항: 아래로 */
     .note-section { margin-top:.75rem; padding-top:.75rem; border-top:1px solid #e5e7eb; }
     .note-label { font-size:.8rem; font-weight:950; color:#6b7280; margin-bottom:.35rem; }
     .note-input { width:100%; padding:.55rem .65rem; border:1px solid #d1d5db; border-radius:.85rem; font-size:16px; }
@@ -111,54 +113,6 @@
     .suggestion-item { padding:1rem; border-bottom:1px solid #e5e7eb; }
     .suggestion-team { font-weight:950; color:#111827; }
 
-    /* ✅ 관리자 출석현황: 행 아래 토글 상세 */
-    .team-row { cursor: pointer; }
-    .team-row:hover td { background: #f9fafb; }
-    
-    .detail-row td { padding: 0 !important; background: #f9fafb; }
-    .detail-panel { padding: 1rem; border-top: 1px solid #e5e7eb; }
-    
-    .detail-grid { display: grid; gap: .75rem; grid-template-columns: 1fr; }
-    @media (min-width: 768px){
-      .detail-grid { grid-template-columns: 1fr 1fr; }
-    }
-    
-    .detail-card {
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: .95rem;
-      padding: .9rem;
-    }
-    
-    .detail-title { font-weight: 950; color: #111827; margin-bottom: .5rem; }
-    .detail-sub { font-size: .9rem; font-weight: 900; color: #6b7280; margin-bottom: .4rem; }
-    
-    .chips { display:flex; flex-wrap:wrap; gap:.35rem; }
-    .chip {
-      padding: .25rem .55rem;
-      border-radius: 9999px;
-      font-size: .85rem;
-      font-weight: 900;
-      background: #eef2ff;
-      color: #1d4ed8;
-    }
-    .chip.absent { background:#fef2f2; color:#b91c1c; }
-    .chip.note   { background:#f0fdf4; color:#15803d; }
-    
-    .note-list { display:flex; flex-direction:column; gap:.35rem; }
-    .note-item {
-      border: 1px solid #e5e7eb;
-      background: #fff;
-      border-radius: .75rem;
-      padding: .6rem .7rem;
-      font-weight: 800;
-      color: #374151;
-      white-space: pre-wrap;
-    }
-    .note-name { font-weight: 950; color:#111827; }
-    .note-badge { font-size:.8rem; font-weight:950; color:#6b7280; margin-left:.4rem; }
-
-
     /* 비밀번호 모달 */
     .modal-overlay { position:fixed; inset:0; background:rgba(17,24,39,.55); display:flex; align-items:center; justify-content:center; padding:1rem; z-index:999; }
     .modal { width:100%; max-width:420px; background:#fff; border-radius:1rem; border:1px solid #e5e7eb; box-shadow:0 20px 25px -5px rgba(0,0,0,.15); overflow:hidden; }
@@ -174,6 +128,52 @@
     .modal-btn.primary:hover { background:#1d4ed8; }
     .modal-btn.ghost { background:#f3f4f6; color:#111827; }
     .modal-btn.ghost:hover { background:#e5e7eb; }
+
+    /* ✅ 관리자 출석현황: 행 아래 토글 상세 */
+    .team-row { cursor: pointer; }
+    .team-row:hover td { background: #f9fafb; }
+
+    .detail-row td { padding: 0 !important; background: #f9fafb; }
+    .detail-panel { padding: 1rem; border-top: 1px solid #e5e7eb; }
+
+    .detail-grid { display: grid; gap: .75rem; grid-template-columns: 1fr; }
+    @media (min-width: 768px){
+      .detail-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    .detail-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: .95rem;
+      padding: .9rem;
+    }
+
+    .detail-title { font-weight: 950; color: #111827; margin-bottom: .5rem; }
+    .detail-sub { font-size: .9rem; font-weight: 900; color: #6b7280; margin-bottom: .4rem; }
+
+    .chips { display:flex; flex-wrap:wrap; gap:.35rem; }
+    .chip {
+      padding: .25rem .55rem;
+      border-radius: 9999px;
+      font-size: .85rem;
+      font-weight: 900;
+      background: #eef2ff;
+      color: #1d4ed8;
+    }
+    .chip.absent { background:#fef2f2; color:#b91c1c; }
+
+    .note-list { display:flex; flex-direction:column; gap:.35rem; }
+    .note-item {
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      border-radius: .75rem;
+      padding: .6rem .7rem;
+      font-weight: 800;
+      color: #374151;
+      white-space: pre-wrap;
+    }
+    .note-name { font-weight: 950; color:#111827; }
+    .note-badge { font-size:.8rem; font-weight:950; color:#6b7280; margin-left:.4rem; }
 
     @media (max-width:640px){
       .header{ padding:1rem 1rem; }
@@ -251,7 +251,7 @@
       <div class="header-content">
         <button type="button" class="back-button" id="adminBackBtn">← 돌아가기</button>
         <h1>관리자 대시보드</h1>
-        <p class="subtitle">날짜를 선택하면 전체 현황/특이사항/건의사항/개인 출석률을 확인할 수 있습니다.</p>
+        <p class="subtitle">날짜를 선택하면 전체 현황/특이사항/건의사항을 확인할 수 있습니다.</p>
       </div>
     </div>
 
@@ -260,7 +260,6 @@
         <button type="button" class="tab-button active" data-tab="stats">출석 현황</button>
         <button type="button" class="tab-button" data-tab="notes">특이사항</button>
         <button type="button" class="tab-button" data-tab="suggestions">건의사항</button>
-        <button type="button" class="tab-button" data-tab="members">개인 출석률</button>
       </div>
 
       <div id="adminStatsTab">
@@ -286,28 +285,6 @@
 
         <div class="admin-summary-note" id="adminSummaryNote"></div>
         <div class="attendance-table" id="attendanceTable"></div>
-
-        <!-- ✅ 사랑방 행 클릭 시 상세 -->
-        <div id="adminTeamDetail" class="hidden" style="margin-top:1rem;">
-          <div class="admin-summary-note" id="adminTeamDetailTitle" style="margin-bottom:.75rem;"></div>
-
-          <div class="admin-summary">
-            <div class="admin-summary-card">
-              <div class="admin-summary-label">출석</div>
-              <div class="admin-summary-value" id="teamDetailPresent">0명</div>
-            </div>
-            <div class="admin-summary-card">
-              <div class="admin-summary-label">결석</div>
-              <div class="admin-summary-value" id="teamDetailAbsent">0명</div>
-            </div>
-            <div class="admin-summary-card">
-              <div class="admin-summary-label">출석률</div>
-              <div class="admin-summary-value" id="teamDetailRate">0%</div>
-            </div>
-          </div>
-
-          <div class="notes-table" id="teamDetailTable"></div>
-        </div>
       </div>
 
       <div id="adminNotesTab" class="hidden">
@@ -324,35 +301,6 @@
           <input type="date" class="date-input" id="adminSugDateInput" />
         </div>
         <div class="suggestion-list" id="suggestionsList"></div>
-      </div>
-
-      <div id="adminMembersTab" class="hidden">
-        <div class="date-section">
-          <div class="date-label">연도 선택 (예: 2026, 비우면 전체)</div>
-          <input type="number" class="date-input" id="adminMemberYear" min="2000" max="2100" placeholder="2026" />
-        </div>
-
-        <div class="date-section">
-          <div class="date-label">사람 선택</div>
-          <select class="date-input" id="adminMemberSelect"></select>
-        </div>
-
-        <div class="admin-summary">
-          <div class="admin-summary-card">
-            <div class="admin-summary-label">총 집계 횟수</div>
-            <div class="admin-summary-value" id="memberTotalSessions">0회</div>
-          </div>
-          <div class="admin-summary-card">
-            <div class="admin-summary-label">출석</div>
-            <div class="admin-summary-value" id="memberPresent">0회</div>
-          </div>
-          <div class="admin-summary-card">
-            <div class="admin-summary-label">출석률</div>
-            <div class="admin-summary-value" id="memberRate">0%</div>
-          </div>
-        </div>
-
-        <div class="notes-table" id="memberHistoryTable"></div>
       </div>
     </div>
   </div>
@@ -377,15 +325,12 @@
 
   <script>
     /************************************************************
-     * ✅ Apps Script Web App URL (/exec)
-     * - 반드시 본인 배포 URL로 교체
+     * ✅ Apps Script Web App URL (윤호님 제공 주소 적용)
      ************************************************************/
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby2fRqMo71H0bogW4kg00L3jgT5owZHYJI7BZVns-74fS9_tDY2l2jv3NDhxxf0YHa-jg/exec";
 
     /************************************************************
      * ✅ 비밀번호(HTML 저장)
-     * - 보안상 완전하지 않습니다(코드에서 볼 수 있음).
-     * - 윤호님 요청대로 프론트에서만 체크합니다.
      ************************************************************/
     const ADMIN_PASSWORD = "newwave2026";
     const TEAM_PASSWORDS = {
@@ -405,7 +350,6 @@
 
     /************************************************************
      * ✅ 사랑방 목록 (members를 직접 수정 가능)
-     * - 여기 members를 “실명 명단”으로 쭉 작성하시면 됩니다.
      ************************************************************/
     const TEAMS = [
       { id: 1, name: "권준형 사랑방", leader: "방장: 권준형", members: ["방원1","방원2","방원3","방원4"] },
@@ -494,7 +438,7 @@
     }
 
     /************************************************************
-     * 비밀번호 모달
+     * 비밀번호 모달 
      ************************************************************/
     const modal = document.getElementById("passwordModal");
     const modalTitle = document.getElementById("modalTitle");
@@ -546,7 +490,7 @@
         if (!team) { setModalError("사랑방 정보를 찾을 수 없습니다."); return; }
 
         closePasswordModal();
-        selectTeam(team); // ✅ 출석 화면으로 이동
+        selectTeam(team);
         return;
       }
     }
@@ -578,7 +522,6 @@
           <div class="team-leader">${escapeHtml(team.leader)}</div>
         `;
 
-        // ✅ 홈 진입 시가 아니라, "카드 클릭 시"만 비번 모달
         card.addEventListener("click", (e)=>{
           e.preventDefault();
           openPasswordModal({
@@ -654,7 +597,6 @@
 
         resetStateForTeam(team);
 
-        // ✅ 이전 저장 데이터가 있으면 그대로 복원
         if (res.found && res.submission && Array.isArray(res.submission.attendance)) {
           res.submission.attendance.forEach(r=>{
             if (!r || !r.name) return;
@@ -673,8 +615,9 @@
         });
 
         updateCount();
+        showMsg("success", "불러오기 완료");
       } catch(e){
-        showMsg("error", "서버 연결 실패 (Apps Script URL/배포 설정 확인)");
+        showMsg("error", "서버 연결 실패");
       }
     }
 
@@ -687,7 +630,7 @@
       buildMemberList(team);
       resetStateForTeam(team);
 
-      showPage("attendancePage"); // ✅ 강제 이동
+      showPage("attendancePage");
 
       document.getElementById("memberSearch").value = "";
       applyMemberFilter("");
@@ -722,7 +665,6 @@
       applyMemberFilter(e.target.value);
     });
 
-    // ✅ 날짜 변경 시에도 서버에서 저장본을 재로드
     dateInput.addEventListener("change", ()=>{
       if (!selectedTeam) return;
       showMsg("info", "데이터를 불러오는 중입니다...");
@@ -755,10 +697,9 @@
           body: JSON.stringify(payload)
         });
         showMsg("success", "저장되었습니다!");
-        // ✅ 저장 직후 재조회(최신 데이터 반영)
         loadTeamDataFromServer(selectedTeam, dateInput.value || today);
       } catch(e){
-        showMsg("error", "저장 실패 (네트워크/URL 확인)");
+        showMsg("error", "저장 실패 (네트워크 확인)");
       }
     }
 
@@ -785,228 +726,62 @@
       return res;
     }
 
-  // ✅ 관리자 상세 캐시 (date|teamId)
-  const adminDetailCache = {}; // key: `${date}|${teamId}` -> submission
-  
-  async function renderAdminStats(date){
-    const data = await fetchAdminByDate(date);
-  
-    // 팀 요약 (제출 여부/출석수/결석수/총원)
-    const map = {};
-    (data.teams || []).forEach(t => { map[String(t.teamId)] = t; });
-  
-    let totalPresent = 0;
-    let totalMembers = 0;
-    let submittedCount = 0;
-  
-    // ✅ 방장 컬럼 삭제: (사랑방 / 출석 / 결석 / 출석률 / 상태)
-    let rows = "";
-    TEAMS.forEach(team=>{
-      const sub = map[String(team.id)];
-  
-      if (sub) {
-        submittedCount++;
-        totalPresent += Number(sub.present || 0);
-        totalMembers += Number(sub.total || 0);
-        const rate = (Number(sub.total) > 0) ? (Number(sub.present)/Number(sub.total))*100 : 0;
-  
-        rows += `
-          <tr class="team-row" data-teamid="${team.id}" data-submitted="1">
-            <td style="font-weight:950;">${escapeHtml(team.name)}</td>
-            <td>${Number(sub.present||0)}</td>
-            <td>${Number(sub.absent||0)}</td>
-            <td>${rate.toFixed(1)}%</td>
-            <td style="font-weight:950;color:#15803d;">제출</td>
-          </tr>
-          <tr class="detail-row hidden" data-detailfor="${team.id}">
-            <td colspan="5">
-              <div class="detail-panel" id="detail-${team.id}">
-                <div style="font-weight:950;color:#6b7280;">행을 클릭하면 상세가 표시됩니다.</div>
-              </div>
-            </td>
-          </tr>
-        `;
-      } else {
-        rows += `
-          <tr class="team-row" data-teamid="${team.id}" data-submitted="0">
-            <td style="font-weight:950;">${escapeHtml(team.name)}</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td style="font-weight:950;color:#b91c1c;">미제출</td>
-          </tr>
-          <tr class="detail-row hidden" data-detailfor="${team.id}">
-            <td colspan="5">
-              <div class="detail-panel" id="detail-${team.id}">
-                <div style="font-weight:950;color:#6b7280;">미제출 사랑방입니다.</div>
-              </div>
-            </td>
-          </tr>
-        `;
-      }
-    });
-  
-    const totalAbsent = totalMembers - totalPresent;
-    const totalRate = totalMembers > 0 ? (totalPresent/totalMembers)*100 : 0;
-  
-    document.getElementById("adminTotalPresent").textContent = totalPresent + "명";
-    document.getElementById("adminTotalAbsent").textContent = totalAbsent + "명";
-    document.getElementById("adminTotalRate").textContent = totalRate.toFixed(1) + "%";
-    document.getElementById("adminSummaryNote").textContent =
-      `집계 기준: ${date} / 제출 ${submittedCount}개 사랑방 / 집계 인원 ${totalMembers}명 (미제출은 집계에서 제외)`;
-  
-    document.getElementById("attendanceTable").innerHTML = `
-      <table>
-        <thead>
-          <tr>
-            <th>사랑방</th>
-            <th>출석</th>
-            <th>결석</th>
-            <th>출석률</th>
-            <th>상태</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-    `;
-  
-    // ✅ 이벤트 바인딩(중복 방지 위해 매 렌더 시 한번만)
-    bindAdminRowToggle_();
-  }
-  
-  let adminRowToggleBound = false;
-  function bindAdminRowToggle_(){
-    if (adminRowToggleBound) return;
-    adminRowToggleBound = true;
-  
-    document.getElementById("attendanceTable").addEventListener("click", async (e)=>{
-      const row = e.target.closest("tr.team-row");
-      if (!row) return;
-  
-      const teamId = row.dataset.teamid;
-      const submitted = row.dataset.submitted === "1";
-      const date = adminDateInput.value || today;
-  
-      // 다른 열려있는 detail 닫기(원하시면 제거 가능)
-      document.querySelectorAll('tr.detail-row').forEach(dr=>{
-        if (dr.dataset.detailfor !== teamId) dr.classList.add("hidden");
-      });
-  
-      const detailRow = document.querySelector(`tr.detail-row[data-detailfor="${teamId}"]`);
-      if (!detailRow) return;
-  
-      // 토글
-      const willOpen = detailRow.classList.contains("hidden");
-      detailRow.classList.toggle("hidden", !willOpen);
-  
-      if (!willOpen) return; // 닫는 경우 종료
-  
-      const panel = document.getElementById(`detail-${teamId}`);
-      if (!panel) return;
-  
-      if (!submitted) {
-        panel.innerHTML = `<div style="font-weight:950;color:#6b7280;">미제출 사랑방입니다.</div>`;
-        return;
-      }
-  
-      // 캐시 먼저 확인
-      const cacheKey = `${date}|${teamId}`;
-      if (adminDetailCache[cacheKey]) {
-        renderTeamDetailPanel_(panel, adminDetailCache[cacheKey]);
-        return;
-      }
-  
-      panel.innerHTML = `<div style="font-weight:950;color:#6b7280;">상세 불러오는 중...</div>`;
-  
-      try {
-        const res = await apiGet("getTeamSubmission", { teamId: String(teamId), date });
-        if (!res || !res.ok || !res.found || !res.submission) {
-          panel.innerHTML = `<div style="font-weight:950;color:#b91c1c;">상세 데이터를 찾을 수 없습니다.</div>`;
-          return;
-        }
-        adminDetailCache[cacheKey] = res.submission;
-        renderTeamDetailPanel_(panel, res.submission);
-  
-      } catch(err) {
-        panel.innerHTML = `<div style="font-weight:950;color:#b91c1c;">상세 조회 실패(네트워크/스크립트 배포 확인)</div>`;
-      }
-    });
-  }
-  
-  function renderTeamDetailPanel_(panel, submission){
-    const att = Array.isArray(submission.attendance) ? submission.attendance : [];
-  
-    const presentNames = [];
-    const absentNames = [];
-    const notes = [];
-  
-    att.forEach(a=>{
-      const name = String(a?.name || "").trim();
-      if (!name) return;
-  
-      const isPresent = !!a.present;
-      const note = String(a?.note || "").trim();
-  
-      if (isPresent) presentNames.push(name);
-      else absentNames.push(name);
-  
-      if (note) notes.push({ name, note, present: isPresent });
-    });
-  
-    const total = att.length;
-    const present = presentNames.length;
-    const absent = total - present;
-    const rate = total > 0 ? (present/total)*100 : 0;
-  
-    const presentChips = presentNames.length
-      ? presentNames.map(n=>`<span class="chip">${escapeHtml(n)}</span>`).join("")
-      : `<span style="font-weight:950;color:#6b7280;">없음</span>`;
-  
-    const absentChips = absentNames.length
-      ? absentNames.map(n=>`<span class="chip absent">${escapeHtml(n)}</span>`).join("")
-      : `<span style="font-weight:950;color:#6b7280;">없음</span>`;
-  
-    const notesHtml = notes.length
-      ? `<div class="note-list">
-          ${notes.map(x=>`
-            <div class="note-item">
-              <span class="note-name">${escapeHtml(x.name)}</span>
-              <span class="note-badge">(${x.present ? "출석" : "결석"})</span><br/>
-              ${escapeHtml(x.note)}
-            </div>
-          `).join("")}
-        </div>`
-      : `<div style="font-weight:950;color:#6b7280;">특이사항이 없습니다.</div>`;
-  
-    panel.innerHTML = `
-      <div class="detail-grid">
-        <div class="detail-card">
-          <div class="detail-title">요약</div>
-          <div class="detail-sub">출석률</div>
-          <div style="font-size:1.35rem;font-weight:950;color:#2563eb;">${rate.toFixed(1)}%</div>
-          <div style="margin-top:.4rem;font-weight:900;color:#6b7280;">
-            출석 ${present}명 · 결석 ${absent}명 · 총 ${total}명
-          </div>
-        </div>
-  
-        <div class="detail-card">
-          <div class="detail-title">출석자</div>
-          <div class="chips">${presentChips}</div>
-        </div>
-  
-        <div class="detail-card">
-          <div class="detail-title">결석자</div>
-          <div class="chips">${absentChips}</div>
-        </div>
-  
-        <div class="detail-card">
-          <div class="detail-title">특이사항</div>
-          ${notesHtml}
-        </div>
-      </div>
-    `;
-  }
+    // ✅ 상세 캐시 (date|teamId)
+    const adminDetailCache = {};
 
+    async function renderAdminStats(date){
+      const data = await fetchAdminByDate(date);
+
+      const map = {};
+      (data.teams || []).forEach(t => { map[String(t.teamId)] = t; });
+
+      let totalPresent = 0;
+      let totalMembers = 0;
+      let submittedCount = 0;
+
+      let rows = "";
+      TEAMS.forEach(team=>{
+        const sub = map[String(team.id)];
+
+        if (sub) {
+          submittedCount++;
+          totalPresent += Number(sub.present || 0);
+          totalMembers += Number(sub.total || 0);
+          const rate = (Number(sub.total) > 0) ? (Number(sub.present)/Number(sub.total))*100 : 0;
+
+          rows += `
+            <tr class="team-row" data-teamid="${team.id}" data-submitted="1">
+              <td style="font-weight:950;">${escapeHtml(team.name)}</td>
+              <td>${Number(sub.present||0)}</td>
+              <td>${Number(sub.absent||0)}</td>
+              <td>${rate.toFixed(1)}%</td>
+              <td style="font-weight:950;color:#15803d;">제출</td>
+            </tr>
+            <tr class="detail-row hidden" data-detailfor="${team.id}">
+              <td colspan="5">
+                <div class="detail-panel" id="detail-${team.id}">
+                  <div style="font-weight:950;color:#6b7280;">행을 클릭하면 상세가 표시됩니다.</div>
+                </div>
+              </td>
+            </tr>
+          `;
+        } else {
+          rows += `
+            <tr class="team-row" data-teamid="${team.id}" data-submitted="0">
+              <td style="font-weight:950;">${escapeHtml(team.name)}</td>
+              <td>-</td><td>-</td><td>-</td>
+              <td style="font-weight:950;color:#b91c1c;">미제출</td>
+            </tr>
+            <tr class="detail-row hidden" data-detailfor="${team.id}">
+              <td colspan="5">
+                <div class="detail-panel" id="detail-${team.id}">
+                  <div style="font-weight:950;color:#6b7280;">미제출 사랑방입니다.</div>
+                </div>
+              </td>
+            </tr>
+          `;
+        }
+      });
 
       const totalAbsent = totalMembers - totalPresent;
       const totalRate = totalMembers > 0 ? (totalPresent/totalMembers)*100 : 0;
@@ -1020,100 +795,148 @@
       document.getElementById("attendanceTable").innerHTML = `
         <table>
           <thead>
-            <tr><th>사랑방</th><th>출석</th><th>결석</th><th>출석률</th><th>상태</th></tr>
+            <tr>
+              <th>사랑방</th>
+              <th>출석</th>
+              <th>결석</th>
+              <th>출석률</th>
+              <th>상태</th>
+            </tr>
           </thead>
           <tbody>${rows}</tbody>
         </table>
       `;
-
-      bindAdminTeamRowClicks_(date);
-      document.getElementById("adminTeamDetail").classList.add("hidden");
     }
 
-    function bindAdminTeamRowClicks_(date){
-      document.querySelectorAll(".admin-team-row").forEach(tr=>{
-        tr.addEventListener("click", async ()=>{
-          const teamId = tr.dataset.teamid;
-          await showAdminTeamDetail_(teamId, date);
-        });
+    function renderTeamDetailPanel_(panel, submission){
+      const att = Array.isArray(submission.attendance) ? submission.attendance : [];
+
+      const presentNames = [];
+      const absentNames = [];
+      const notes = [];
+
+      att.forEach(a=>{
+        const name = String(a?.name || "").trim();
+        if (!name) return;
+
+        const isPresent = !!a.present;
+        const note = String(a?.note || "").trim();
+
+        if (isPresent) presentNames.push(name);
+        else absentNames.push(name);
+
+        if (note) notes.push({ name, note, present: isPresent });
       });
+
+      const total = att.length;
+      const present = presentNames.length;
+      const absent = total - present;
+      const rate = total > 0 ? (present/total)*100 : 0;
+
+      const presentChips = presentNames.length
+        ? presentNames.map(n=>`<span class="chip">${escapeHtml(n)}</span>`).join("")
+        : `<span style="font-weight:950;color:#6b7280;">없음</span>`;
+
+      const absentChips = absentNames.length
+        ? absentNames.map(n=>`<span class="chip absent">${escapeHtml(n)}</span>`).join("")
+        : `<span style="font-weight:950;color:#6b7280;">없음</span>`;
+
+      const notesHtml = notes.length
+        ? `<div class="note-list">
+            ${notes.map(x=>`
+              <div class="note-item">
+                <span class="note-name">${escapeHtml(x.name)}</span>
+                <span class="note-badge">(${x.present ? "출석" : "결석"})</span><br/>
+                ${escapeHtml(x.note)}
+              </div>
+            `).join("")}
+          </div>`
+        : `<div style="font-weight:950;color:#6b7280;">특이사항이 없습니다.</div>`;
+
+      panel.innerHTML = `
+        <div class="detail-grid">
+          <div class="detail-card">
+            <div class="detail-title">요약</div>
+            <div class="detail-sub">출석률</div>
+            <div style="font-size:1.35rem;font-weight:950;color:#2563eb;">${rate.toFixed(1)}%</div>
+            <div style="margin-top:.4rem;font-weight:900;color:#6b7280;">
+              출석 ${present}명 · 결석 ${absent}명 · 총 ${total}명
+            </div>
+          </div>
+
+          <div class="detail-card">
+            <div class="detail-title">출석자</div>
+            <div class="chips">${presentChips}</div>
+          </div>
+
+          <div class="detail-card">
+            <div class="detail-title">결석자</div>
+            <div class="chips">${absentChips}</div>
+          </div>
+
+          <div class="detail-card">
+            <div class="detail-title">특이사항</div>
+            ${notesHtml}
+          </div>
+        </div>
+      `;
     }
 
-    async function showAdminTeamDetail_(teamId, date){
-      const panel = document.getElementById("adminTeamDetail");
-      const title = document.getElementById("adminTeamDetailTitle");
-      const presentEl = document.getElementById("teamDetailPresent");
-      const absentEl = document.getElementById("teamDetailAbsent");
-      const rateEl = document.getElementById("teamDetailRate");
-      const tableEl = document.getElementById("teamDetailTable");
+    // ✅ 출석현황 테이블 클릭(행 아래 토글)
+    function bindAdminRowToggle_(){
+      const wrap = document.getElementById("attendanceTable");
+      if (wrap.dataset.bound === "1") return;
+      wrap.dataset.bound = "1";
 
-      try {
-        const res = await apiGet("getTeamSubmission", { teamId:String(teamId), date });
-        const team = TEAMS.find(t => String(t.id) === String(teamId));
-        const teamName = team ? team.name : ("Team " + teamId);
+      wrap.addEventListener("click", async (e)=>{
+        const row = e.target.closest("tr.team-row");
+        if (!row) return;
 
-        if (!res || !res.ok || !res.found) {
-          title.textContent = `${teamName} (${date}) : 제출된 데이터가 없습니다.`;
-          presentEl.textContent = "0명";
-          absentEl.textContent = "0명";
-          rateEl.textContent = "0%";
-          tableEl.innerHTML = `
-            <table><tbody>
-              <tr><td style="text-align:center;color:#6b7280;font-weight:950;">저장된 출석 데이터가 없습니다.</td></tr>
-            </tbody></table>
-          `;
-          panel.classList.remove("hidden");
+        const teamId = row.dataset.teamid;
+        const submitted = row.dataset.submitted === "1";
+        const date = adminDateInput.value || today;
+
+        // 다른 열려있는 detail 닫기(원하면 제거 가능)
+        document.querySelectorAll('tr.detail-row').forEach(dr=>{
+          if (dr.dataset.detailfor !== teamId) dr.classList.add("hidden");
+        });
+
+        const detailRow = document.querySelector(`tr.detail-row[data-detailfor="${teamId}"]`);
+        if (!detailRow) return;
+
+        const willOpen = detailRow.classList.contains("hidden");
+        detailRow.classList.toggle("hidden", !willOpen);
+        if (!willOpen) return;
+
+        const panel = document.getElementById(`detail-${teamId}`);
+        if (!panel) return;
+
+        if (!submitted) {
+          panel.innerHTML = `<div style="font-weight:950;color:#6b7280;">미제출 사랑방입니다.</div>`;
           return;
         }
 
-        const sub = res.submission;
-        const att = Array.isArray(sub.attendance) ? sub.attendance : [];
-        const presentList = att.filter(a=>a && a.present===true).map(a=>a.name);
-        const absentList  = att.filter(a=>a && a.present!==true).map(a=>a.name);
+        const cacheKey = `${date}|${teamId}`;
+        if (adminDetailCache[cacheKey]) {
+          renderTeamDetailPanel_(panel, adminDetailCache[cacheKey]);
+          return;
+        }
 
-        const total = att.length;
-        const present = presentList.length;
-        const absent = total - present;
-        const rate = total>0 ? (present/total)*100 : 0;
+        panel.innerHTML = `<div style="font-weight:950;color:#6b7280;">상세 불러오는 중...</div>`;
 
-        title.textContent = `${teamName} (${date}) / ${escapeHtml(sub.leader || "")}`;
-        presentEl.textContent = present + "명";
-        absentEl.textContent = absent + "명";
-        rateEl.textContent = rate.toFixed(1) + "%";
+        try {
+          const res = await apiGet("getTeamSubmission", { teamId: String(teamId), date });
+          if (!res || !res.ok || !res.found || !res.submission) {
+            panel.innerHTML = `<div style="font-weight:950;color:#b91c1c;">상세 데이터를 찾을 수 없습니다.</div>`;
+            return;
+          }
+          adminDetailCache[cacheKey] = res.submission;
+          renderTeamDetailPanel_(panel, res.submission);
 
-        const presentHtml = presentList.length
-          ? presentList.map(n=>`<div style="padding:.25rem 0;font-weight:900;">✅ ${escapeHtml(n)}</div>`).join("")
-          : `<div style="color:#6b7280;font-weight:900;">없음</div>`;
-
-        const absentHtml  = absentList.length
-          ? absentList.map(n=>`<div style="padding:.25rem 0;font-weight:900;">❌ ${escapeHtml(n)}</div>`).join("")
-          : `<div style="color:#6b7280;font-weight:900;">없음</div>`;
-
-        const notes = att.filter(a=>a && String(a.note||"").trim() !== "");
-        const notesHtml = notes.length
-          ? notes.map(a=>`<div style="padding:.25rem 0;"><span style="font-weight:950;">${escapeHtml(a.name)}</span> — <span style="white-space:pre-wrap;">${escapeHtml(a.note)}</span></div>`).join("")
-          : `<div style="color:#6b7280;font-weight:900;">특이사항 없음</div>`;
-
-        tableEl.innerHTML = `
-          <table>
-            <thead><tr><th>출석</th><th>결석</th><th>특이사항</th></tr></thead>
-            <tbody>
-              <tr>
-                <td style="width:30%;">${presentHtml}</td>
-                <td style="width:30%;">${absentHtml}</td>
-                <td style="width:40%;">${notesHtml}</td>
-              </tr>
-            </tbody>
-          </table>
-        `;
-
-        panel.classList.remove("hidden");
-        panel.scrollIntoView({ behavior:"smooth", block:"start" });
-
-      } catch(e){
-        title.textContent = `상세 조회 실패: ${String(e)}`;
-        panel.classList.remove("hidden");
-      }
+        } catch(err) {
+          panel.innerHTML = `<div style="font-weight:950;color:#b91c1c;">상세 조회 실패(네트워크/배포 확인)</div>`;
+        }
+      });
     }
 
     async function renderAdminNotes(date){
@@ -1147,7 +970,7 @@
 
       const html = list.length ? list.map(s=>`
         <div class="suggestion-item">
-          <div class="suggestion-team">${escapeHtml(s.teamName||"")} (${escapeHtml(s.leader||"")})</div>
+          <div class="suggestion-team">${escapeHtml(s.teamName||"")}</div>
           <div style="margin-top:.5rem;color:#374151;white-space:pre-wrap;font-weight:800;">${escapeHtml(s.suggestion||"")}</div>
         </div>
       `).join("") : `<div style="text-align:center;color:#6b7280;padding:2rem;font-weight:950;">건의사항이 없습니다.</div>`;
@@ -1155,70 +978,16 @@
       document.getElementById("suggestionsList").innerHTML = html;
     }
 
-    /************************************************************
-     * 개인 출석률
-     ************************************************************/
-    function getUniqueMembers_(){
-      const set = new Set();
-      TEAMS.forEach(t => (t.members||[]).forEach(m => set.add(m)));
-      return Array.from(set).sort((a,b)=>a.localeCompare(b,'ko'));
-    }
-
-    function initMemberSelect_(){
-      const sel = document.getElementById("adminMemberSelect");
-      if (!sel) return;
-      const members = getUniqueMembers_();
-      sel.innerHTML = members.map(m=>`<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join("");
-    }
-
-    async function renderMemberStats_(){
-      const yearEl = document.getElementById("adminMemberYear");
-      const sel = document.getElementById("adminMemberSelect");
-      const year = String(yearEl.value || "").trim();
-      const member = String(sel.value || "").trim();
-      if (!member) return;
-
-      const res = await apiGet("getMemberHistory", { member, year });
-      if (!res || !res.ok) {
-        document.getElementById("memberHistoryTable").innerHTML =
-          `<table><tbody><tr><td style="text-align:center;color:#b91c1c;font-weight:950;">조회 실패</td></tr></tbody></table>`;
-        return;
-      }
-
-      document.getElementById("memberTotalSessions").textContent = (res.totalSessions||0) + "회";
-      document.getElementById("memberPresent").textContent = (res.present||0) + "회";
-      document.getElementById("memberRate").textContent = (Number(res.rate||0)).toFixed(1) + "%";
-
-      const history = Array.isArray(res.history) ? res.history.slice().reverse() : []; // 최신이 위
-      const rows = history.map(h=>`
-        <tr>
-          <td>${escapeHtml(h.date||"")}</td>
-          <td>${escapeHtml(h.teamName||"")}</td>
-          <td style="font-weight:950;color:${h.present ? "#15803d":"#b91c1c"};">${h.present ? "출석":"결석"}</td>
-          <td style="white-space:pre-wrap;">${escapeHtml(h.note||"")}</td>
-        </tr>
-      `).join("");
-
-      document.getElementById("memberHistoryTable").innerHTML = `
-        <table>
-          <thead><tr><th>날짜</th><th>사랑방</th><th>상태</th><th>특이사항</th></tr></thead>
-          <tbody>
-            ${rows || `<tr><td colspan="4" style="text-align:center;color:#6b7280;font-weight:950;">기록이 없습니다.</td></tr>`}
-          </tbody>
-        </table>
-      `;
-    }
-
-    /************************************************************
-     * 관리자 탭 로드
-     ************************************************************/
     async function loadAdminAll(){
       if (!adminAuthed) return;
+
       const activeTab = document.querySelector(".tab-button.active")?.dataset?.tab || "stats";
-      if (activeTab === "stats") await renderAdminStats(adminDateInput.value || today);
+      if (activeTab === "stats") {
+        await renderAdminStats(adminDateInput.value || today);
+        bindAdminRowToggle_(); // ✅ 테이블 렌더 후 바인딩
+      }
       if (activeTab === "notes") await renderAdminNotes(adminNotesDateInput.value || today);
       if (activeTab === "suggestions") await renderAdminSuggestions(adminSugDateInput.value || today);
-      if (activeTab === "members") await renderMemberStats_();
     }
 
     document.querySelectorAll(".tab-button").forEach(btn=>{
@@ -1230,13 +999,12 @@
         document.getElementById("adminStatsTab").classList.toggle("hidden", tab !== "stats");
         document.getElementById("adminNotesTab").classList.toggle("hidden", tab !== "notes");
         document.getElementById("adminSuggestionsTab").classList.toggle("hidden", tab !== "suggestions");
-        document.getElementById("adminMembersTab").classList.toggle("hidden", tab !== "members");
 
         loadAdminAll();
       });
     });
 
-    adminDateInput.addEventListener("change", ()=> adminAuthed && renderAdminStats(adminDateInput.value || today));
+    adminDateInput.addEventListener("change", ()=> adminAuthed && loadAdminAll());
     adminNotesDateInput.addEventListener("change", ()=> adminAuthed && renderAdminNotes(adminNotesDateInput.value || today));
     adminSugDateInput.addEventListener("change", ()=> adminAuthed && renderAdminSuggestions(adminSugDateInput.value || today));
 
@@ -1268,11 +1036,6 @@
      ************************************************************/
     initTeamGrid();
     showPage("homePage");
-
-    // 개인 출석률 초기화
-    initMemberSelect_();
-    document.getElementById("adminMemberSelect").addEventListener("change", ()=> adminAuthed && renderMemberStats_());
-    document.getElementById("adminMemberYear").addEventListener("change", ()=> adminAuthed && renderMemberStats_());
   </script>
 </body>
 </html>
