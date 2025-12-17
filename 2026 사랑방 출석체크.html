@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>교회 사랑방 출석체크</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #f9fafb;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 1.5rem 1rem;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-icon {
+            width: 2rem;
+            height: 2rem;
+            color: #2563eb;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            color: #111827;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .team-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #e5e7eb;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .team-card:hover {
+            border-color: #2563eb;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .team-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .team-number {
+            width: 3rem;
+            height: 3rem;
+            background: #dbeafe;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2563eb;
+            font-weight: bold;
+            font-size: 1.25rem;
+            transition: all 0.2s;
+        }
+
+        .team-card:hover .team-number {
+            background: #2563eb;
+            color: white;
+        }
+
+        .member-count {
+            background: #f3f4f6;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .team-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 0.25rem;
+        }
+
+        .team-leader {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .back-button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #6b7280;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+        }
+
+        .back-button:hover {
+            color: #111827;
+        }
+
+        .date-section {
+            background: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 1.5rem;
+        }
+
+        .date-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .date-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .date-input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+        }
+
+        .summary-box {
+            background: #eff6ff;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #bfdbfe;
+            margin-bottom: 1.5rem;
+        }
+
+        .summary-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-label {
+            color: #374151;
+            font-weight: 500;
+        }
+
+        .summary-count {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2563eb;
+        }
+
+        .progress-bar {
+            background: #e5e7eb;
+            border-radius: 9999px;
+            height: 0.5rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: #2563eb;
+            height: 100%;
+            transition: width 0.3s;
+        }
+
+        .member-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .member-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 2px solid #e5e7eb;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .member-item:hover {
+            border-color: #d1d5db;
+        }
+
+        .member-item.checked {
+            background: #eff6ff;
+            border-color: #2563eb;
+        }
+
+        .member-name {
+            font-size: 1.125rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .member-item.checked .member-name {
+            color: #1e3a8a;
+        }
+
+        .checkbox {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 9999px;
+            border: 2px solid #d1d5db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .member-item.checked .checkbox {
+            background: #2563eb;
+            border-color: #2563eb;
+        }
+
+        .checkmark {
+            display: none;
+            color: white;
+            font-weight: bold;
+            font-size: 1.25rem;
+        }
+
+        .member-item.checked .checkmark {
+            display: block;
+        }
+
+        .save-button {
+            width: 100%;
+            background: #2563eb;
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-bottom: 1rem;
+        }
+
+        .save-button:hover {
+            background: #1d4ed8;
+        }
+
+        .save-button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .message {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .message.success {
+            background: #f0fdf4;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+
+        .message.error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .instructions {
+            background: #f3f4f6;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 1.5rem;
+        }
+
+        .instructions p {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .instructions ol {
+            margin-left: 1rem;
+        }
+
+        .instructions li {
+            margin-bottom: 0.25rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 640px) {
+            .team-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="homePage">
+        <div class="header">
+            <div class="header-content">
+                <div class="header-title">
+                    <svg class="header-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                    <h1>사랑방 출석체크</h1>
+                </div>
+                <p class="subtitle">사랑방을 선택해주세요</p>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="team-grid" id="teamGrid"></div>
+        </div>
+    </div>
+
+    <div id="attendancePage" class="hidden">
+        <div class="header">
+            <div class="header-content">
+                <button class="back-button" onclick="goHome()">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                    돌아가기
+                </button>
+                <h1 class="team-name" id="selectedTeamName"></h1>
+                <p class="team-leader" id="selectedTeamLeader"></p>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="date-section">
+                <div class="date-label">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    날짜 선택
+                </div>
+                <input type="date" class="date-input" id="dateInput">
+            </div>
+
+            <div class="summary-box">
+                <div class="summary-content">
+                    <span class="summary-label">출석 현황</span>
+                    <span class="summary-count" id="attendanceCount">0 / 0</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="member-list" id="memberList"></div>
+
+            <button class="save-button" id="saveButton" onclick="saveAttendance()">
+                출석 정보 저장
+            </button>
+
+            <div id="messageBox" class="hidden"></div>
+
+            <div class="instructions">
+                <p>📝 사용 방법:</p>
+                <ol>
+                    <li>날짜를 선택하세요</li>
+                    <li>출석한 조원을 클릭하여 체크하세요</li>
+                    <li>'출석 정보 저장' 버튼을 눌러 저장하세요</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxC4ZzJh1wS4N6KvWEx9oMzvYxqm0_c2ZrMoqoipJsBNAvlHLsUqV4IhQnFvDSbbh8EtQ/exec';
+
+        var TEAMS = [
+            { id: 1, name: '사랑방 1', leader: '김조장', members: ['김철수', '이영희', '박민수', '최수지', '정대현'] },
+            { id: 2, name: '사랑방 2', leader: '이조장', members: ['강민호', '윤서연', '임지훈', '한소영', '오준석'] },
+            { id: 3, name: '사랑방 3', leader: '박조장', members: ['송미래', '배성훈', '권나영', '홍재웅', '신유진'] },
+            { id: 4, name: '사랑방 4', leader: '최조장', members: ['조혜림', '안태욱', '서지우', '문보라', '황동혁'] },
+            { id: 5, name: '사랑방 5', leader: '정조장', members: ['노수현', '양준형', '채민지', '구은비', '탁진우'] },
+            { id: 6, name: '사랑방 6', leader: '강조장', members: ['유하늘', '지성민', '변소희', '표재현', '장미경'] },
+            { id: 7, name: '사랑방 7', leader: '윤조장', members: ['나영수', '전세빈', '하준영', '방지영', '차민석'] },
+            { id: 8, name: '사랑방 8', leader: '임조장', members: ['도현아', '복진희', '석준호', '주은채', '변우진'] },
+            { id: 9, name: '사랑방 9', leader: '한조장', members: ['추민정', '원태양', '빈사랑', '감하은', '공지훈'] },
+            { id: 10, name: '사랑방 10', leader: '오조장', members: ['방수빈', '염준서', '석민아', '소유나', '모현수'] },
+            { id: 11, name: '사랑방 11', leader: '송조장', members: ['갈은지', '진서준', '류지현', '한별이', '설민규'] },
+            { id: 12, name: '사랑방 12', leader: '배조장', members: ['국시우', '팽다은', '명준혁', '피소율', '단유림'] }
+        ];
+
+        var selectedTeam = null;
+        var attendance = {};
+
+        var today = new Date().toISOString().split('T')[0];
+        document.getElementById('dateInput').value = today;
+
+        function initTeamGrid() {
+            var grid = document.getElementById('teamGrid');
+            grid.innerHTML = '';
+            
+            TEAMS.forEach(function(team) {
+                var card = document.createElement('div');
+                card.className = 'team-card';
+                card.onclick = function() { selectTeam(team); };
+                
+                card.innerHTML = '<div class="team-card-header"><div class="team-number">' + team.id + '</div><div class="member-count">' + team.members.length + '명</div></div><div class="team-name">' + team.name + '</div><div class="team-leader">조장: ' + team.leader + '</div>';
+                
+                grid.appendChild(card);
+            });
+        }
+
+        function selectTeam(team) {
+            selectedTeam = team;
+            attendance = {};
+            
+            document.getElementById('selectedTeamName').textContent = team.name;
+            document.getElementById('selectedTeamLeader').textContent = '조장: ' + team.leader;
+            
+            var memberList = document.getElementById('memberList');
+            memberList.innerHTML = '';
+            
+            team.members.forEach(function(member) {
+                var item = document.createElement('div');
+                item.className = 'member-item';
+                item.onclick = function() { toggleAttendance(member); };
+                item.dataset.member = member;
+                
+                item.innerHTML = '<span class="member-name">' + member + '</span><div class="checkbox"><span class="checkmark">✓</span></div>';
+                
+                memberList.appendChild(item);
+            });
+            
+            updateAttendanceCount();
+            
+            document.getElementById('homePage').classList.add('hidden');
+            document.getElementById('attendancePage').classList.remove('hidden');
+        }
+
+        function toggleAttendance(member) {
+            attendance[member] = !attendance[member];
+            
+            var item = document.querySelector('[data-member="' + member + '"]');
+            if (attendance[member]) {
+                item.classList.add('checked');
+            } else {
+                item.classList.remove('checked');
+            }
+            
+            updateAttendanceCount();
+        }
+
+        function updateAttendanceCount() {
+            var count = Object.values(attendance).filter(Boolean).length;
+            var total = selectedTeam.members.length;
+            var percentage = total > 0 ? (count / total) * 100 : 0;
+            
+            document.getElementById('attendanceCount').textContent = count + ' / ' + total;
+            document.getElementById('progressFill').style.width = percentage + '%';
+        }
+
+        function saveAttendance() {
+            var saveButton = document.getElementById('saveButton');
+            var messageBox = document.getElementById('messageBox');
+            
+            saveButton.disabled = true;
+            saveButton.textContent = '저장 중...';
+            messageBox.classList.add('hidden');
+            
+            var attendanceList = selectedTeam.members.map(function(member) {
+                return {
+                    name: member,
+                    present: attendance[member] || false
+                };
+            });
+            
+            var attendanceData = {
+                team: selectedTeam.name,
+                leader: selectedTeam.leader,
+                date: document.getElementById('dateInput').value,
+                attendance: attendanceList,
+                timestamp: new Date().toISOString()
+            };
+            
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(attendanceData)
+            }).then(function() {
+                messageBox.className = 'message success';
+                messageBox.textContent = '출석 정보가 저장되었습니다! ✓';
+                messageBox.classList.remove('hidden');
+                
+                setTimeout(function() {
+                    messageBox.classList.add('hidden');
+                }, 3000);
+            }).catch(function(error) {
+                console.error('저장 오류:', error);
+                messageBox.className = 'message error';
+                messageBox.textContent = '저장 중 오류가 발생했습니다.';
+                messageBox.classList.remove('hidden');
+            }).finally(function() {
+                saveButton.disabled = false;
+                saveButton.textContent = '출석 정보 저장';
+            });
+        }
+
+        function goHome() {
+            document.getElementById('attendancePage').classList.add('hidden');
+            document.getElementById('homePage').classList.remove('hidden');
+        }
+
+        initTeamGrid();
+    </script>
+</body>
+</html>
