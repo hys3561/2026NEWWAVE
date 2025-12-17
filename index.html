@@ -1,820 +1,200 @@
-diff --git a/index.html b/index.html
-index 32285d90a45cdbaf681f06897fa8c2ec577b3573..a5676693de94c1cf89ff30c54d15789a8c604b80 100644
---- a/index.html
-+++ b/index.html
-@@ -1,99 +1,78 @@
- <!DOCTYPE html>
- <html lang="ko">
- <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>교회 사랑방 출석체크</title>
-     <style>
-         * {
-             margin: 0;
-             padding: 0;
-             box-sizing: border-box;
-         }
- 
-         body {
-             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-             background-color: #f9fafb;
-             min-height: 100vh;
-         }
- 
-         .header {
-             background: white;
-             border-bottom: 1px solid #e5e7eb;
-             padding: 1.5rem 1rem;
--            position: sticky;
--            top: 0;
--            z-index: 100;
-         }
- 
-         .header-content {
-             max-width: 1200px;
-             margin: 0 auto;
-         }
- 
-         .header-title {
-             display: flex;
-             align-items: center;
-             gap: 0.75rem;
-             margin-bottom: 0.5rem;
-         }
- 
-         .header-icon {
-             width: 2rem;
-             height: 2rem;
-             color: #2563eb;
-         }
- 
-         h1 {
-             font-size: 1.5rem;
-             color: #111827;
-         }
- 
-         .subtitle {
-             color: #6b7280;
-             font-size: 0.875rem;
-         }
- 
--        .admin-button {
--            position: absolute;
--            top: 1.5rem;
--            right: 1rem;
--            background: #6b7280;
--            color: white;
--            padding: 0.5rem 1rem;
--            border-radius: 0.5rem;
--            border: none;
--            cursor: pointer;
--            font-size: 0.875rem;
--            font-weight: 500;
--        }
--
--        .admin-button:hover {
--            background: #4b5563;
--        }
--
-         .container {
-             max-width: 1200px;
-             margin: 0 auto;
-             padding: 2rem 1rem;
-         }
- 
-         .team-grid {
-             display: grid;
-             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-             gap: 1rem;
-         }
- 
-         .team-card {
-             background: white;
-             padding: 1.5rem;
-             border-radius: 0.5rem;
-             border: 2px solid #e5e7eb;
-             cursor: pointer;
-             transition: all 0.2s;
-         }
- 
-         .team-card:hover {
-             border-color: #2563eb;
-             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-         }
-@@ -222,157 +201,103 @@
-         .progress-bar {
-             background: #e5e7eb;
-             border-radius: 9999px;
-             height: 0.5rem;
-             overflow: hidden;
-         }
- 
-         .progress-fill {
-             background: #2563eb;
-             height: 100%;
-             transition: width 0.3s;
-         }
- 
-         .member-list {
-             display: flex;
-             flex-direction: column;
-             gap: 0.75rem;
-             margin-bottom: 1.5rem;
-         }
- 
-         .member-item {
-             background: white;
-             padding: 1rem;
-             border-radius: 0.5rem;
-             border: 2px solid #e5e7eb;
-+            cursor: pointer;
-             transition: all 0.2s;
-+            display: flex;
-+            justify-content: space-between;
-+            align-items: center;
-+        }
-+
-+        .member-item:hover {
-+            border-color: #d1d5db;
-         }
- 
-         .member-item.checked {
-             background: #eff6ff;
-             border-color: #2563eb;
-         }
- 
--        .member-header {
--            display: flex;
--            justify-content: space-between;
--            align-items: center;
--            cursor: pointer;
--        }
--
-         .member-name {
-             font-size: 1.125rem;
-             font-weight: 500;
-             color: #374151;
-         }
- 
-         .member-item.checked .member-name {
-             color: #1e3a8a;
-         }
- 
-         .checkbox {
-             width: 2rem;
-             height: 2rem;
-             border-radius: 9999px;
-             border: 2px solid #d1d5db;
-             display: flex;
-             align-items: center;
-             justify-content: center;
-             transition: all 0.2s;
-         }
- 
-         .member-item.checked .checkbox {
-             background: #2563eb;
-             border-color: #2563eb;
-         }
- 
-         .checkmark {
-             display: none;
-             color: white;
-             font-weight: bold;
-             font-size: 1.25rem;
-         }
- 
-         .member-item.checked .checkmark {
-             display: block;
-         }
- 
--        .note-section {
--            margin-top: 0.75rem;
--            padding-top: 0.75rem;
--            border-top: 1px solid #e5e7eb;
--        }
--
--        .note-label {
--            font-size: 0.875rem;
--            color: #6b7280;
--            margin-bottom: 0.5rem;
--        }
--
--        .note-input {
--            width: 100%;
--            padding: 0.5rem;
--            border: 1px solid #d1d5db;
--            border-radius: 0.375rem;
--            font-size: 0.875rem;
--        }
--
--        .note-input:focus {
--            outline: none;
--            border-color: #2563eb;
--        }
--
--        .suggestion-section {
--            background: white;
--            padding: 1rem;
--            border-radius: 0.5rem;
--            border: 1px solid #e5e7eb;
--            margin-bottom: 1.5rem;
--        }
--
--        .suggestion-label {
--            font-size: 0.875rem;
--            font-weight: 500;
--            color: #374151;
--            margin-bottom: 0.5rem;
--        }
--
--        .suggestion-textarea {
--            width: 100%;
--            padding: 0.75rem;
--            border: 1px solid #d1d5db;
--            border-radius: 0.5rem;
--            font-size: 0.875rem;
--            min-height: 80px;
--            resize: vertical;
--        }
--
--        .suggestion-textarea:focus {
--            outline: none;
--            border-color: #2563eb;
--        }
--
-         .save-button {
-             width: 100%;
-             background: #2563eb;
-             color: white;
-             padding: 1rem;
-             border-radius: 0.5rem;
-             border: none;
-             font-size: 1.125rem;
-             font-weight: 600;
-             cursor: pointer;
-             transition: background 0.2s;
-             margin-bottom: 1rem;
-         }
- 
-         .save-button:hover {
-             background: #1d4ed8;
-         }
- 
-         .save-button:disabled {
-             background: #9ca3af;
-             cursor: not-allowed;
-         }
- 
-         .message {
-             padding: 1rem;
-@@ -398,399 +323,263 @@
-             background: #f3f4f6;
-             padding: 1rem;
-             border-radius: 0.5rem;
-             font-size: 0.875rem;
-             color: #6b7280;
-             margin-top: 1.5rem;
-         }
- 
-         .instructions p {
-             font-weight: 500;
-             margin-bottom: 0.5rem;
-         }
- 
-         .instructions ol {
-             margin-left: 1rem;
-         }
- 
-         .instructions li {
-             margin-bottom: 0.25rem;
-         }
- 
-         .hidden {
-             display: none;
-         }
- 
--        /* Admin Login */
--        .admin-login {
--            max-width: 400px;
--            margin: 4rem auto;
--            background: white;
--            padding: 2rem;
--            border-radius: 0.5rem;
--            border: 1px solid #e5e7eb;
--        }
--
--        .admin-login h2 {
--            text-align: center;
--            margin-bottom: 1.5rem;
--            color: #111827;
--        }
--
--        .login-input {
--            width: 100%;
--            padding: 0.75rem;
--            border: 1px solid #d1d5db;
--            border-radius: 0.5rem;
--            font-size: 1rem;
--            margin-bottom: 1rem;
--        }
--
--        .login-button {
--            width: 100%;
--            background: #2563eb;
--            color: white;
--            padding: 0.75rem;
--            border-radius: 0.5rem;
--            border: none;
--            font-size: 1rem;
--            font-weight: 600;
--            cursor: pointer;
--        }
--
--        .login-button:hover {
--            background: #1d4ed8;
--        }
--
--        .error-message {
--            color: #dc2626;
--            font-size: 0.875rem;
--            margin-bottom: 1rem;
--            text-align: center;
--        }
--
--        /* Admin Dashboard */
--        .dashboard-tabs {
--            display: flex;
--            gap: 1rem;
--            margin-bottom: 2rem;
--            border-bottom: 2px solid #e5e7eb;
--        }
--
--        .tab-button {
--            padding: 0.75rem 1.5rem;
--            background: none;
--            border: none;
--            cursor: pointer;
--            font-size: 1rem;
--            color: #6b7280;
--            border-bottom: 2px solid transparent;
--            margin-bottom: -2px;
--        }
--
--        .tab-button.active {
--            color: #2563eb;
--            border-bottom-color: #2563eb;
--            font-weight: 600;
--        }
--
--        .stats-grid {
--            display: grid;
--            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
--            gap: 1rem;
--            margin-bottom: 2rem;
--        }
--
--        .stat-card {
--            background: white;
--            padding: 1.5rem;
--            border-radius: 0.5rem;
--            border: 1px solid #e5e7eb;
--        }
--
--        .stat-label {
--            font-size: 0.875rem;
--            color: #6b7280;
--            margin-bottom: 0.5rem;
--        }
--
--        .stat-value {
--            font-size: 2rem;
--            font-weight: bold;
--            color: #111827;
--        }
--
--        .attendance-table {
--            background: white;
--            border-radius: 0.5rem;
--            border: 1px solid #e5e7eb;
--            overflow: hidden;
--        }
--
--        .attendance-table table {
--            width: 100%;
--            border-collapse: collapse;
--        }
--
--        .attendance-table th {
--            background: #f9fafb;
--            padding: 0.75rem;
--            text-align: left;
--            font-size: 0.875rem;
--            font-weight: 600;
--            color: #374151;
--            border-bottom: 1px solid #e5e7eb;
--        }
--
--        .attendance-table td {
--            padding: 0.75rem;
--            border-bottom: 1px solid #e5e7eb;
--            font-size: 0.875rem;
--        }
--
--        .attendance-rate {
--            display: inline-block;
--            padding: 0.25rem 0.75rem;
--            border-radius: 9999px;
--            font-weight: 500;
--        }
--
--        .rate-high {
--            background: #d1fae5;
--            color: #065f46;
--        }
--
--        .rate-medium {
--            background: #fef3c7;
--            color: #92400e;
--        }
--
--        .rate-low {
--            background: #fee2e2;
--            color: #991b1b;
--        }
--
--        .suggestion-list {
--            background: white;
--            border-radius: 0.5rem;
--            border: 1px solid #e5e7eb;
--            padding: 1rem;
--        }
--
--        .suggestion-item {
--            padding: 1rem;
--            border-bottom: 1px solid #e5e7eb;
--        }
--
--        .suggestion-item:last-child {
--            border-bottom: none;
--        }
--
--        .suggestion-header {
--            display: flex;
--            justify-content: space-between;
--            margin-bottom: 0.5rem;
--        }
--
--        .suggestion-team {
--            font-weight: 600;
--            color: #111827;
--        }
--
--        .suggestion-date {
--            font-size: 0.875rem;
--            color: #6b7280;
--        }
--
--        .suggestion-content {
--            color: #374151;
--            font-size: 0.875rem;
--        }
--
-         @media (max-width: 640px) {
-             .team-grid {
-                 grid-template-columns: 1fr;
-             }
--            
--            .dashboard-tabs {
--                overflow-x: auto;
--            }
--            
--            .attendance-table {
--                overflow-x: auto;
--            }
-         }
-     </style>
- </head>
- <body>
--    <!-- 홈 화면 -->
-     <div id="homePage">
-         <div class="header">
-             <div class="header-content">
--                <button class="admin-button" onclick="showAdminLogin()">관리자</button>
-                 <div class="header-title">
-                     <svg class="header-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                     </svg>
-                     <h1>사랑방 출석체크</h1>
-                 </div>
-                 <p class="subtitle">사랑방을 선택해주세요</p>
-             </div>
-         </div>
- 
-         <div class="container">
-             <div class="team-grid" id="teamGrid"></div>
-         </div>
-     </div>
- 
--    <!-- 출석 체크 화면 -->
-     <div id="attendancePage" class="hidden">
-         <div class="header">
-             <div class="header-content">
-                 <button class="back-button" onclick="goHome()">
-                     <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                     </svg>
-                     돌아가기
-                 </button>
-                 <h1 class="team-name" id="selectedTeamName"></h1>
-                 <p class="team-leader" id="selectedTeamLeader"></p>
-             </div>
-         </div>
- 
-         <div class="container">
-             <div class="date-section">
-                 <div class="date-label">
-                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                     </svg>
-                     날짜 선택
-                 </div>
-                 <input type="date" class="date-input" id="dateInput">
-             </div>
- 
-             <div class="summary-box">
-                 <div class="summary-content">
-                     <span class="summary-label">출석 현황</span>
-                     <span class="summary-count" id="attendanceCount">0 / 0</span>
-                 </div>
-                 <div class="progress-bar">
-                     <div class="progress-fill" id="progressFill" style="width: 0%"></div>
-                 </div>
-             </div>
- 
-             <div class="member-list" id="memberList"></div>
- 
--            <div class="suggestion-section">
--                <div class="suggestion-label">건의사항 (선택사항)</div>
--                <textarea class="suggestion-textarea" id="suggestionInput" placeholder="건의사항이 있으시면 작성해주세요..."></textarea>
--            </div>
--
-             <button class="save-button" id="saveButton" onclick="saveAttendance()">
-                 출석 정보 저장
-             </button>
- 
-             <div id="messageBox" class="hidden"></div>
- 
-             <div class="instructions">
-                 <p>📝 사용 방법:</p>
-                 <ol>
-                     <li>날짜를 선택하세요</li>
--                    <li>출석한 방원을 클릭하여 체크하세요</li>
--                    <li>필요시 방원별 특이사항을 입력하세요</li>
--                    <li>건의사항이 있으면 작성하세요</li>
-+                    <li>출석한 조원을 클릭하여 체크하세요</li>
-                     <li>'출석 정보 저장' 버튼을 눌러 저장하세요</li>
-                 </ol>
-             </div>
-         </div>
-     </div>
- 
--    <!-- 관리자 로그인 -->
--    <div id="adminLoginPage" class="hidden">
--        <div class="header">
--            <div class="header-content">
--                <button class="back-button" onclick="goHome()">
--                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
--                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
--                    </svg>
--                    돌아가기
--                </button>
--            </div>
--        </div>
--        <div class="admin-login">
--            <h2>관리자 로그인</h2>
--            <div id="loginError" class="error-message hidden"></div>
--            <input type="password" class="login-input" id="adminPassword" placeholder="비밀번호 입력">
--            <button class="login-button" onclick="adminLogin()">로그인</button>
--        </div>
--    </div>
-+    <script>
-+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxC4ZzJh1wS4N6KvWEx9oMzvYxqm0_c2ZrMoqoipJsBNAvlHLsUqV4IhQnFvDSbbh8EtQ/exec';
-+
-+        const DEFAULT_MEMBERS = Array.from({ length: 12 }, (_, i) => `방원${i + 1}`);
-+        const TEAMS = [
-+            { id: 1, name: '권준형 사랑방', leader: '권준형', members: [...DEFAULT_MEMBERS] },
-+            { id: 2, name: '김나림 사랑방', leader: '김나림', members: [...DEFAULT_MEMBERS] },
-+            { id: 3, name: '문유안 사랑방', leader: '문유안', members: [...DEFAULT_MEMBERS] },
-+            { id: 4, name: '벡에스더 사랑방', leader: '벡에스더', members: [...DEFAULT_MEMBERS] },
-+            { id: 5, name: '이예정 사랑방', leader: '이예정', members: [...DEFAULT_MEMBERS] },
-+            { id: 6, name: '이지빈 사랑방', leader: '이지빈', members: [...DEFAULT_MEMBERS] },
-+            { id: 7, name: '이하은 사랑방', leader: '이하은', members: [...DEFAULT_MEMBERS] },
-+            { id: 8, name: '이희진 사랑방', leader: '이희진', members: [...DEFAULT_MEMBERS] },
-+            { id: 9, name: '임사랑 사랑방', leader: '임사랑', members: [...DEFAULT_MEMBERS] },
-+            { id: 10, name: '장하늘 사랑방', leader: '장하늘', members: [...DEFAULT_MEMBERS] },
-+            { id: 11, name: '하재영 사랑방', leader: '하재영', members: [...DEFAULT_MEMBERS] },
-+            { id: 12, name: 'Wee팀 사랑방', leader: '권하경, 최수인', members: [...DEFAULT_MEMBERS] }
-+        ];
- 
--    <!-- 관리자 대시보드 -->
--    <div id="adminDashboard" class="hidden">
--        <div class="header">
--            <div class="header-content">
--                <button class="back-button" onclick="goHome()">
--                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
--                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
--                    </svg>
--                    돌아가기
--                </button>
--                <h1>관리자 대시보드</h1>
--            </div>
--        </div>
-+        let selectedTeam = null;
-+        let attendance = {};
- 
--        <div class="container">
--            <div class="dashboard-tabs">
--                <button class="tab-button active" onclick="switchTab('stats')">출석 현황</button>
--                <button class="tab-button" onclick="switchTab('suggestions')">건의사항</button>
--            </div>
-+        const today = new Date().toISOString().split('T')[0];
-+        document.getElementById('dateInput').value = today;
- 
--            <div id="statsTab">
--                <div class="date-section">
--                    <div class="date-label">주차 선택</div>
--                    <input type="date" class="date-input" id="adminDateInput" onchange="loadAdminStats()">
--                </div>
-+        function initTeamGrid() {
-+            const grid = document.getElementById('teamGrid');
-+            grid.innerHTML = '';
- 
--                <div class="stats-grid" id="statsGrid"></div>
-+            TEAMS.forEach((team) => {
-+                const card = document.createElement('div');
-+                card.className = 'team-card';
-+                card.onclick = () => selectTeam(team);
- 
--                <div class="attendance-table" id="attendanceTable"></div>
--            </div>
-+                card.innerHTML = `
-+                    <div class="team-card-header">
-+                        <div class="team-number">${team.id}</div>
-+                        <div class="member-count">${team.members.length}명</div>
-+                    </div>
-+                    <div class="team-name">${team.name}</div>
-+                    <div class="team-leader">방장: ${team.leader}</div>
-+                `;
- 
--            <div id="suggestionsTab" class="hidden">
--                <div class="suggestion-list" id="suggestionsList"></div>
--            </div>
--        </div>
--    </div>
-+                grid.appendChild(card);
-+            });
-+        }
- 
--    <script>
--        var GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxC4ZzJh1wS4N6KvWEx9oMzvYxqm0_c2ZrMoqoipJsBNAvlHLsUqV4IhQnFvDSbbh8EtQ/exec';
--        var ADMIN_PASSWORD = 'newwave2026';
--
--        var TEAMS = [
--            { id: 1, name: '권준형', leader: '권준형', members: ['방원1', '방원2', '방원3', '방원4', '방원5', '방원6', '방원7', '방원8', '방원9', '방원10', '방원11', '방원12', '방원13', '방원14', '방원15', '방원16', '방원17', '방원18', '방원19', '방원20'] },
--            { id: 2, name: '김나림', leader: '김나림', members: ['방원1', '방원2', '방원3', '방원4', '방원5', '방원6', '방원7', '방원8', '방원9', '방원10', '방원11', '방원12', '방원13', '방원14', '방원15', '방원16', '방원17', '방원18', '방원19', '방원20'] },
--            { id: 3, name: '문유안', leader: '문유안', members: ['방원1', '방원2', '방원3', '방원4', '방원5', '방원6', '방원7', '방원8', '방원9', '방원10', '방원11', '방원12', '방원13', '방원14', '방원15', '방원16', '방원17', '방원18', '방원19', '방원20'] },
--            { id: 4, name: '벡에스더', leader: '벡에스더', members: ['방원1', '방원2', '방원3', '방원4', '방원5', '방원6', '방원7', '방원8', '방원9', '방원10', '방원11', '방원12', '방원13', '방원14', '방원15', '방원16', '방원17', '방원18', '방원19', '방원20'] },
--            { id: 5, name: '이예정', leader: '이예정', members: ['방원1', '방원2', '방원3', '방원4', '방원5', '방원6', '방원7', '방원8', '방원9', '방원10', '방원11', '방원12', '방원13', '방원14', '방원15', '방원16', '방원17', '방원18', '방원19', '방원20'] },
--            { id: 6, name: '이지빈', leader: '이지빈', members: ['방원1', '방원2', '방원3', '방원4', '방원5', '방원6', '방원7', '방원8', '방원9', '방원10', '방원11', '방원12', '방원13', '방원14', '방원15', '방원16', '방원17', '방원18', '방원19', '방원20'] },
--            { id: 7, name: '이하은', leader: '이하은', members: ['방원1', '방원2', '방원3', '방원4', '방원5', '방원6', '방원7', '방원8', '방원9', '방원10', '방원11', '방원12', '방원13', '방원14', '방원15', '방원16', '방원17', '방원18', '방원19', '방원20'] },
--            { id: 8, name: '이희진', leader: '이희진', members: ['방원1', '방원2', '방원3', '방원4', '방원5', '방원6', '방원7', '방원8', '방원9', '방원10', '방원11', '방원12', '방원13', '방원14', '방원15', '방원16', '방원17', '방원18', '방원19', '방원20'] },
--            { id: 9, name: '임사랑', leader: '임사랑', members: ['방원1', '방원2', '방원3', '방원4', '방원5', '방원6', '방원7', '방원8', '방원9', '방원10', '방원11', '방원12', '방원13', '방원14', '방원15', '방원16', '방원17', '방원18', '방원19', '방원20'] },
--            { id: 10, name: '장하늘', leader: '장하늘', members: ['방원1', '방원2', '방원3', '방원4', '방원5', '방원6', '방원7', '방원8', '방원9', '방원10', '방원11', '방원12', '방원13', '방원14', '방원15', '방원16', '방원17', '방원18', '방원19', '방원20'] },
--            { id: 11, name: '하재영', leader: '하재영', members: ['방원1', '방원2', '방원3', '방원4', '방원5', '방원6', '방원7', '방원8', '방원9', '방원10', '방원11', '방원12', '방원13', '방원14', '방원15', '방원16', '방원17', '방원18', '방원19', '방원20'] },
--            { id: 12, name: 'Wee팀', leader: '권하경, 최수인', 하경, 최수인:  membe, : ['방, ', '방, ', '방, ', '방, ', '방, ', '방, ', '방, ', '방, ', '방원, , '방원1, , '방원1, , '방원1, , '방원1, , '방원1, , '방원1, , '방원1, , '방원1, , '방원1, , '방원19 ,
--        ];
-+        function selectTeam(team) {
-+            selectedTeam = team;
-+            attendance = {};
- 
--        var selectedTeam = null;
--        var attendance = {};
--        var memberNotes = {};
-+            document.getElementById('selectedTeamName').textContent = team.name;
-+            document.getElementById('selectedTeamLeader').textContent = `방장: ${team.leader}`;
- 
--        var today = new Date().toISOString().split('T')[0];
--        document.getElementById('dateInput').value = today;
--        document.getElementById('adminDateInput').value = today;
-+            const memberList = document.getElementById('memberList');
-+            memberList.innerHTML = '';
- 
--        function initTeamGrid() {
--            var grid = document.getElementById('teamGrid');
--            grid.innerHTML = '';
--            
--            TEAMS.forEach(function(team) {
--                var
-+            team.members.forEach((member) => {
-+                const item = document.createElement('div');
-+                item.className = 'member-item';
-+                item.dataset.member = member;
-+                item.onclick = () => toggleAttendance(member);
-+
-+                item.innerHTML = `
-+                    <span class="member-name">${member}</span>
-+                    <div class="checkbox"><span class="checkmark">✓</span></div>
-+                `;
-+
-+                memberList.appendChild(item);
-+            });
-+
-+            updateAttendanceCount();
-+
-+            document.getElementById('homePage').classList.add('hidden');
-+            document.getElementById('attendancePage').classList.remove('hidden');
-+        }
-+
-+        function toggleAttendance(member) {
-+            attendance[member] = !attendance[member];
-+
-+            const item = document.querySelector(`[data-member="${member}"]`);
-+            if (attendance[member]) {
-+                item.classList.add('checked');
-+            } else {
-+                item.classList.remove('checked');
-+            }
-+
-+            updateAttendanceCount();
-+        }
-+
-+        function updateAttendanceCount() {
-+            const count = Object.values(attendance).filter(Boolean).length;
-+            const total = selectedTeam ? selectedTeam.members.length : 0;
-+            const percentage = total > 0 ? (count / total) * 100 : 0;
-+
-+            document.getElementById('attendanceCount').textContent = `${count} / ${total}`;
-+            document.getElementById('progressFill').style.width = `${percentage}%`;
-+        }
-+
-+        function saveAttendance() {
-+            const saveButton = document.getElementById('saveButton');
-+            const messageBox = document.getElementById('messageBox');
-+
-+            saveButton.disabled = true;
-+            saveButton.textContent = '저장 중...';
-+            messageBox.classList.add('hidden');
-+
-+            const attendanceList = selectedTeam.members.map((member) => ({
-+                name: member,
-+                present: attendance[member] || false
-+            }));
-+
-+            const attendanceData = {
-+                team: selectedTeam.name,
-+                leader: selectedTeam.leader,
-+                date: document.getElementById('dateInput').value,
-+                attendance: attendanceList,
-+                timestamp: new Date().toISOString()
-+            };
-+
-+            fetch(GOOGLE_SCRIPT_URL, {
-+                method: 'POST',
-+                mode: 'no-cors',
-+                headers: {
-+                    'Content-Type': 'application/json'
-+                },
-+                body: JSON.stringify(attendanceData)
-+            })
-+                .then(() => {
-+                    messageBox.className = 'message success';
-+                    messageBox.textContent = '출석 정보가 저장되었습니다! ✓';
-+                    messageBox.classList.remove('hidden');
-+
-+                    setTimeout(() => {
-+                        messageBox.classList.add('hidden');
-+                    }, 3000);
-+                })
-+                .catch((error) => {
-+                    console.error('저장 오류:', error);
-+                    messageBox.className = 'message error';
-+                    messageBox.textContent = '저장 중 오류가 발생했습니다.';
-+                    messageBox.classList.remove('hidden');
-+                })
-+                .finally(() => {
-+                    saveButton.disabled = false;
-+                    saveButton.textContent = '출석 정보 저장';
-+                });
-+        }
-+
-+        function goHome() {
-+            document.getElementById('attendancePage').classList.add('hidden');
-+            document.getElementById('homePage').classList.remove('hidden');
-+        }
-+
-+        initTeamGrid();
-+    </script>
-+</body>
-+</html>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>교회 사랑방 출석체크</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f9fafb; min-height: 100vh; }
+        .header { background: white; border-bottom: 1px solid #e5e7eb; padding: 1.5rem 1rem; position: sticky; top: 0; z-index: 100; }
+        .header-content { max-width: 1200px; margin: 0 auto; position: relative; }
+        .header-title { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
+        h1 { font-size: 1.5rem; color: #111827; }
+        .subtitle { color: #6b7280; font-size: 0.875rem; }
+        .admin-button { position: absolute; top: 0; right: 0; background: #6b7280; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; border: none; cursor: pointer; font-size: 0.875rem; }
+        .admin-button:hover { background: #4b5563; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
+        .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+        .team-card { background: white; padding: 1.5rem; border-radius: 0.5rem; border: 2px solid #e5e7eb; cursor: pointer; transition: all 0.2s; }
+        .team-card:hover { border-color: #2563eb; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .team-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+        .team-number { width: 3rem; height: 3rem; background: #dbeafe; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; color: #2563eb; font-weight: bold; font-size: 1.25rem; }
+        .team-card:hover .team-number { background: #2563eb; color: white; }
+        .member-count { background: #f3f4f6; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; color: #6b7280; }
+        .team-name { font-size: 1.125rem; font-weight: 600; color: #111827; margin-bottom: 0.25rem; }
+        .back-button { display: flex; align-items: center; gap: 0.5rem; color: #6b7280; background: none; border: none; cursor: pointer; font-size: 1rem; margin-bottom: 1rem; padding: 0.5rem; }
+        .back-button:hover { color: #111827; }
+        .date-section { background: white; padding: 1rem; border-radius: 0.5rem; border: 1px solid #e5e7eb; margin-bottom: 1.5rem; }
+        .date-label { font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 0.5rem; }
+        .date-input { width: 100%; padding: 0.75rem 1rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 1rem; }
+        .summary-box { background: #eff6ff; padding: 1rem; border-radius: 0.5rem; border: 1px solid #bfdbfe; margin-bottom: 1.5rem; }
+        .summary-content { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+        .summary-count { font-size: 1.5rem; font-weight: bold; color: #2563eb; }
+        .progress-bar { background: #e5e7eb; border-radius: 9999px; height: 0.5rem; overflow: hidden; }
+        .progress-fill { background: #2563eb; height: 100%; transition: width 0.3s; }
+        .member-list { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem; }
+        .member-item { background: white; padding: 1rem; border-radius: 0.5rem; border: 2px solid #e5e7eb; transition: all 0.2s; }
+        .member-item.checked { background: #eff6ff; border-color: #2563eb; }
+        .member-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .member-name { font-size: 1.125rem; font-weight: 500; color: #374151; }
+        .checkbox { width: 2rem; height: 2rem; border-radius: 9999px; border: 2px solid #d1d5db; display: flex; align-items: center; justify-content: center; }
+        .member-item.checked .checkbox { background: #2563eb; border-color: #2563eb; }
+        .checkmark { display: none; color: white; font-weight: bold; }
+        .member-item.checked .checkmark { display: block; }
+        .note-section { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #e5e7eb; }
+        .note-input { width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 0.875rem; }
+        .suggestion-section { background: white; padding: 1rem; border-radius: 0.5rem; border: 1px solid #e5e7eb; margin-bottom: 1.5rem; }
+        .suggestion-textarea { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 0.875rem; min-height: 80px; }
+        .save-button { width: 100%; background: #2563eb; color: white; padding: 1rem; border-radius: 0.5rem; border: none; font-size: 1.125rem; font-weight: 600; cursor: pointer; margin-bottom: 1rem; }
+        .save-button:hover { background: #1d4ed8; }
+        .message { padding: 1rem; border-radius: 0.5rem; text-align: center; font-weight: 500; margin-bottom: 1rem; }
+        .message.success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+        .admin-login { max-width: 400px; margin: 4rem auto; background: white; padding: 2rem; border-radius: 0.5rem; border: 1px solid #e5e7eb; }
+        .login-input { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 1rem; margin-bottom: 1rem; }
+        .login-button { width: 100%; background: #2563eb; color: white; padding: 0.75rem; border-radius: 0.5rem; border: none; cursor: pointer; }
+        .error-message { color: #dc2626; font-size: 0.875rem; margin-bottom: 1rem; text-align: center; }
+        .dashboard-tabs { display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 2px solid #e5e7eb; }
+        .tab-button { padding: 0.75rem 1.5rem; background: none; border: none; cursor: pointer; color: #6b7280; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+        .tab-button.active { color: #2563eb; border-bottom-color: #2563eb; font-weight: 600; }
+        .attendance-table { background: white; border-radius: 0.5rem; border: 1px solid #e5e7eb; overflow-x: auto; }
+        .attendance-table table { width: 100%; border-collapse: collapse; }
+        .attendance-table th { background: #f9fafb; padding: 0.75rem; text-align: left; font-size: 0.875rem; font-weight: 600; border-bottom: 1px solid #e5e7eb; }
+        .attendance-table td { padding: 0.75rem; border-bottom: 1px solid #e5e7eb; font-size: 0.875rem; }
+        .suggestion-list { background: white; border-radius: 0.5rem; border: 1px solid #e5e7eb; padding: 1rem; }
+        .suggestion-item { padding: 1rem; border-bottom: 1px solid #e5e7eb; }
+        .suggestion-team { font-weight: 600; color: #111827; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div id="homePage">
+        <div class="header">
+            <div class="header-content">
+                <button class="admin-button" onclick="showAdminLogin()">관리자</button>
+                <div class="header-title"><h1>사랑방 출석체크</h1></div>
+                <p class="subtitle">사랑방을 선택해주세요</p>
+            </div>
+        </div>
+        <div class="container"><div class="team-grid" id="teamGrid"></div></div>
+    </div>
 
+    <div id="attendancePage" class="hidden">
+        <div class="header">
+            <div class="header-content">
+                <button class="back-button" onclick="goHome()">← 돌아가기</button>
+                <h1 id="selectedTeamName"></h1>
+                <p class="subtitle" id="selectedTeamLeader"></p>
+            </div>
+        </div>
+        <div class="container">
+            <div class="date-section">
+                <div class="date-label">날짜 선택</div>
+                <input type="date" class="date-input" id="dateInput">
+            </div>
+            <div class="summary-box">
+                <div class="summary-content">
+                    <span>출석 현황</span>
+                    <span class="summary-count" id="attendanceCount">0 / 0</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            </div>
+            <div class="member-list" id="memberList"></div>
+            <div class="suggestion-section">
+                <div class="date-label">건의사항 (선택)</div>
+                <textarea class="suggestion-textarea" id="suggestionInput" placeholder="건의사항을 작성해주세요"></textarea>
+            </div>
+            <button class="save-button" onclick="saveAttendance()">출석 정보 저장</button>
+            <div id="messageBox" class="hidden"></div>
+        </div>
+    </div>
+
+    <div id="adminLoginPage" class="hidden">
+        <div class="header">
+            <div class="header-content">
+                <button class="back-button" onclick="goHome()">← 돌아가기</button>
+            </div>
+        </div>
+        <div class="admin-login">
+            <h1 style="text-align:center;margin-bottom:1.5rem;">관리자 로그인</h1>
+            <div id="loginError" class="error-message hidden"></div>
+            <input type="password" class="login-input" id="adminPassword" placeholder="비밀번호">
+            <button class="login-button" onclick="adminLogin()">로그인</button>
+        </div>
+    </div>
+
+    <div id="adminDashboard" class="hidden">
+        <div class="header">
+            <div class="header-content">
+                <button class="back-button" onclick="goHome()">← 돌아가기</button>
+                <h1>관리자 대시보드</h1>
+            </div>
+        </div>
+        <div class="container">
+            <div class="dashboard-tabs">
+                <button class="tab-button active" onclick="switchTab('stats')">출석 현황</button>
+                <button class="tab-button" onclick="switchTab('suggestions')">건의사항</button>
+            </div>
+            <div id="statsTab">
+                <div class="date-section">
+                    <div class="date-label">주차 선택</div>
+                    <input type="date" class="date-input" id="adminDateInput">
+                </div>
+                <div class="attendance-table" id="attendanceTable"></div>
+            </div>
+            <div id="suggestionsTab" class="hidden">
+                <div class="suggestion-list" id="suggestionsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var GOOGLE_SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+        var ADMIN_PASSWORD = 'newwave2026';
+        var TEAMS = [
+            {id:1,name:'권준형 사랑방',leader:'방장: 권준형',members:['방원1','방원2','방원3','방원4','방원5','방원6','방원7','방원8','방원9','방원10','방원11','방원12','방원13','방원14','방원15','방원16','방원17','방원18','방원19','방원20']},
+            {id:2,name:'김나림 사랑방',leader:'방장: 김나림',members:['방원1','방원2','방원3','방원4','방원5','방원6','방원7','방원8','방원9','방원10','방원11','방원12','방원13','방원14','방원15','방원16','방원17','방원18','방원19','방원20']},
+            {id:3,name:'문유안 사랑방',leader:'방장: 문유안',members:['방원1','방원2','방원3','방원4','방원5','방원6','방원7','방원8','방원9','방원10','방원11','방원12','방원13','방원14','방원15','방원16','방원17','방원18','방원19','방원20']},
+            {id:4,name:'벡에스더 사랑방',leader:'방장: 벡에스더',members:['방원1','방원2','방원3','방원4','방원5','방원6','방원7','방원8','방원9','방원10','방원11','방원12','방원13','방원14','방원15','방원16','방원17','방원18','방원19','방원20']},
+            {id:5,name:'이예정 사랑방',leader:'방장: 이예정',members:['방원1','방원2','방원3','방원4','방원5','방원6','방원7','방원8','방원9','방원10','방원11','방원12','방원13','방원14','방원15','방원16','방원17','방원18','방원19','방원20']},
+            {id:6,name:'이지빈 사랑방',leader:'방장: 이지빈',members:['방원1','방원2','방원3','방원4','방원5','방원6','방원7','방원8','방원9','방원10','방원11','방원12','방원13','방원14','방원15','방원16','방원17','방원18','방원19','방원20']},
+            {id:7,name:'이하은 사랑방',leader:'방장: 이하은',members:['방원1','방원2','방원3','방원4','방원5','방원6','방원7','방원8','방원9','방원10','방원11','방원12','방원13','방원14','방원15','방원16','방원17','방원18','방원19','방원20']},
+            {id:8,name:'이희진 사랑방',leader:'방장: 이희진',members:['방원1','방원2','방원3','방원4','방원5','방원6','방원7','방원8','방원9','방원10','방원11','방원12','방원13','방원14','방원15','방원16','방원17','방원18','방원19','방원20']},
+            {id:9,name:'임사랑 사랑방',leader:'방장: 임사랑',members:['방원1','방원2','방원3','방원4','방원5','방원6','방원7','방원8','방원9','방원10','방원11','방원12','방원13','방원14','방원15','방원16','방원17','방원18','방원19','방원20']},
+            {id:10,name:'장하늘 사랑방',leader:'방장: 장하늘',members:['방원1','방원2','방원3','방원4','방원5','방원6','방원7','방원8','방원9','방원10','방원11','방원12','방원13','방원14','방원15','방원16','방원17','방원18','방원19','방원20']},
+            {id:11,name:'하재영 사랑방',leader:'방장: 하재영',members:['방원1','방원2','방원3','방원4','방원5','방원6','방원7','방원8','방원9','방원10','방원11','방원12','방원13','방원14','방원15','방원16','방원17','방원18','방원19','방원20']},
+            {id:12,name:'Wee팀',leader:'방장: Wee팀',members:['방원1','방원2','방원3','방원4','방원5','방원6','방원7','방원8','방원9','방원10','방원11','방원12','방원13','방원14','방원15','방원16','방원17','방원18','방원19','방원20']}
+        ];
+        var selectedTeam=null,attendance={},memberNotes={};
+        var today=new Date().toISOString().split('T')[0];
+        document.getElementById('dateInput').value=today;
+        document.getElementById('adminDateInput').value=today;
+        
+        function initTeamGrid(){var g=document.getElementById('teamGrid');g.innerHTML='';TEAMS.forEach(function(t){var c=document.createElement('div');c.className='team-card';c.onclick=function(){selectTeam(t);};c.innerHTML='<div class="team-card-header"><div class="team-number">'+t.id+'</div><div class="member-count">'+t.members.length+'명</div></div><div class="team-name">'+t.name+'</div><p style="font-size:0.875rem;color:#6b7280;">'+t.leader+'</p>';g.appendChild(c);});}
+        
+        function selectTeam(t){selectedTeam=t;attendance={};memberNotes={};document.getElementById('selectedTeamName').textContent=t.name;document.getElementById('selectedTeamLeader').textContent=t.leader;var m=document.getElementById('memberList');m.innerHTML='';t.members.forEach(function(n){var i=document.createElement('div');i.className='member-item';i.innerHTML='<div class="member-header" onclick="toggleMember(\''+n+'\')"><span class="member-name">'+n+'</span><div class="checkbox"><span class="checkmark">✓</span></div></div><div class="note-section"><input type="text" class="note-input" placeholder="특이사항 입력" onchange="updateNote(\''+n+'\',this.value)"></div>';m.appendChild(i);});updateCount();hideAll();document.getElementById('attendancePage').classList.remove('hidden');}
+        
+        function toggleMember(n){attendance[n]=!attendance[n];var items=document.querySelectorAll('.member-item');for(var i=0;i<items.length;i++){var h=items[i].querySelector('.member-header');if(h&&h.textContent.indexOf(n)>=0){items[i].classList.toggle('checked',attendance[n]);}}updateCount();}
+        
+        function updateNote(n,v){memberNotes[n]=v;}
+        
+        function updateCount(){var c=0;for(var k in attendance){if(attendance[k])c++;}var t=selectedTeam.members.length;document.getElementById('attendanceCount').textContent=c+' / '+t;document.getElementById('progressFill').style.width=(t>0?(c/t)*100:0)+'%';}
+        
+        function saveAttendance(){var d={team:selectedTeam.name,leader:selectedTeam.leader,date:document.getElementById('dateInput').value,suggestion:document.getElementById('suggestionInput').value,attendance:selectedTeam.members.map(function(m){return{name:m,present:attendance[m]||false,note:memberNotes[m]||''};}),timestamp:new Date().toISOString()};fetch(GOOGLE_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)}).then(function(){var b=document.getElementById('messageBox');b.className='message success';b.textContent='저장되었습니다!';b.classList.remove('hidden');setTimeout(function(){b.classList.add('hidden');},3000);}).catch(function(){});}
+        
+        function showAdminLogin(){hideAll();document.getElementById('adminLoginPage').classList.remove('hidden');}
+        
+        function adminLogin(){var p=document.getElementById('adminPassword').value;if(p===ADMIN_PASSWORD){hideAll();document.getElementById('adminDashboard').classList.remove('hidden');loadAdminData();}else{document.getElementById('loginError').textContent='비밀번호가 틀렸습니다.';document.getElementById('loginError').classList.remove('hidden');}}
+        
+        function switchTab(t){var tabs=document.querySelectorAll('.tab-button');for(var i=0;i<tabs.length;i++){tabs[i].classList.remove('active');}if(t==='stats'){tabs[0].classList.add('active');document.getElementById('statsTab').classList.remove('hidden');document.getElementById('suggestionsTab').classList.add('hidden');}else{tabs[1].classList.add('active');document.getElementById('statsTab').classList.add('hidden');document.getElementById('suggestionsTab').classList.remove('hidden');}}
+        
+        function loadAdminData(){document.getElementById('attendanceTable').innerHTML='<table><thead><tr><th>사랑방</th><th>방장</th><th>출석</th><th>결석</th><th>출석률</th></tr></thead><tbody><tr><td colspan="5" style="text-align:center;color:#6b7280;">데이터 로드 중...</td></tr></tbody></table>';document.getElementById('suggestionsList').innerHTML='<div style="text-align:center;color:#6b7280;padding:2rem;">건의사항이 없습니다.</div>';}
+        
+        function goHome(){hideAll();document.getElementById('homePage').classList.remove('hidden');}
+        
+        function hideAll(){document.getElementById('homePage').classList.add('hidden');document.getElementById('attendancePage').classList.add('hidden');document.getElementById('adminLoginPage').classList.add('hidden');document.getElementById('adminDashboard').classList.add('hidden');}
+        
+        initTeamGrid();
+    </script>
+</body>
+</html>
