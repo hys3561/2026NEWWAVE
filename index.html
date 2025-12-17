@@ -3,79 +3,209 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>뉴웨이브 청1 사랑방 출석체크</title>
+  <title>교회 사랑방 출석체크</title>
+
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f9fafb; min-height: 100vh; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background-color: #f9fafb;
+      min-height: 100vh;
+    }
 
-    .header { background: white; border-bottom: 1px solid #e5e7eb; padding: 1.5rem 1rem; position: sticky; top: 0; z-index: 100; }
+    .header {
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 1.25rem 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
     .header-content { max-width: 1200px; margin: 0 auto; position: relative; }
     .header-title { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
     h1 { font-size: 1.5rem; color: #111827; }
     .subtitle { color: #6b7280; font-size: 0.875rem; }
 
-    .admin-button { position: absolute; top: 0; right: 0; background: #6b7280; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; border: none; cursor: pointer; font-size: 0.875rem; }
+    .admin-button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: #6b7280;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      border: none;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 800;
+    }
     .admin-button:hover { background: #4b5563; }
 
-    .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1rem; }
 
     /* 홈 팀 카드 */
     .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
-    .team-card { background: white; padding: 1.5rem; border-radius: 0.5rem; border: 2px solid #e5e7eb; cursor: pointer; transition: all 0.2s; }
+    .team-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+      border: 2px solid #e5e7eb;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
     .team-card:hover { border-color: #2563eb; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
     .team-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
-    .team-number { width: 3rem; height: 3rem; background: #dbeafe; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; color: #2563eb; font-weight: bold; font-size: 1.25rem; }
+    .team-number {
+      width: 3rem; height: 3rem;
+      background: #dbeafe;
+      border-radius: 0.75rem;
+      display: flex; align-items: center; justify-content: center;
+      color: #2563eb;
+      font-weight: 950;
+      font-size: 1.25rem;
+    }
     .team-card:hover .team-number { background: #2563eb; color: white; }
-    .member-count { background: #f3f4f6; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; color: #6b7280; }
-    .team-name { font-size: 1.125rem; font-weight: 600; color: #111827; margin-bottom: 0.25rem; }
+    .member-count {
+      background: #f3f4f6;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      color: #6b7280;
+      font-weight: 800;
+    }
+    .team-name { font-size: 1.125rem; font-weight: 900; color: #111827; margin-bottom: 0.25rem; }
 
-    .back-button { display: flex; align-items: center; gap: 0.5rem; color: #6b7280; background: none; border: none; cursor: pointer; font-size: 1rem; margin-bottom: 1rem; padding: 0.5rem; }
+    /* 상단 뒤로가기 */
+    .back-button {
+      display: flex; align-items: center; gap: 0.5rem;
+      color: #6b7280;
+      background: none; border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-bottom: 0.75rem;
+      padding: 0.5rem 0.25rem;
+      font-weight: 800;
+    }
     .back-button:hover { color: #111827; }
 
     /* 날짜/요약 */
-    .date-section { background: white; padding: 1rem; border-radius: 0.5rem; border: 1px solid #e5e7eb; margin-bottom: 1.25rem; }
-    .date-label { font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem; }
-    .date-input { width: 100%; padding: 0.75rem 1rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 16px; } /* iOS 확대 방지 */
+    .date-section {
+      background: white;
+      padding: 1rem;
+      border-radius: 0.75rem;
+      border: 1px solid #e5e7eb;
+      margin-bottom: 1rem;
+    }
+    .date-label { font-size: 0.875rem; font-weight: 900; color: #374151; margin-bottom: 0.5rem; }
+    .date-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.75rem;
+      font-size: 16px; /* iOS 확대 방지 */
+      -webkit-appearance: none;
+      appearance: none;
+      background: white;
+    }
 
-    .summary-box { background: #eff6ff; padding: 1rem; border-radius: 0.5rem; border: 1px solid #bfdbfe; margin-bottom: 1rem; }
+    .summary-box {
+      background: #eff6ff;
+      padding: 1rem;
+      border-radius: 0.75rem;
+      border: 1px solid #bfdbfe;
+      margin-bottom: 1rem;
+    }
     .summary-content { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
-    .summary-count { font-size: 1.5rem; font-weight: bold; color: #2563eb; }
+    .summary-count { font-size: 1.5rem; font-weight: 950; color: #2563eb; }
     .progress-bar { background: #e5e7eb; border-radius: 9999px; height: 0.5rem; overflow: hidden; }
     .progress-fill { background: #2563eb; height: 100%; transition: width 0.3s; }
 
     /* 검색 + 그리드 */
-    .search-section { background: white; padding: 0.75rem 1rem; border-radius: 0.5rem; border: 1px solid #e5e7eb; margin-bottom: 1rem; }
-    .search-input { width: 100%; padding: 0.65rem 0.9rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 16px; }
+    .search-section {
+      background: white;
+      padding: 0.75rem 1rem;
+      border-radius: 0.75rem;
+      border: 1px solid #e5e7eb;
+      margin-bottom: 1rem;
+    }
+    .search-input {
+      width: 100%;
+      padding: 0.65rem 0.9rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.75rem;
+      font-size: 16px;
+    }
 
     .member-list {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
       gap: 0.75rem;
-      margin-bottom: 1.25rem;
+      margin-bottom: 1rem;
     }
     @media (min-width: 768px) {
       .member-list { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
     }
 
-    .member-item { background: white; padding: 0.85rem; border-radius: 0.5rem; border: 2px solid #e5e7eb; transition: all 0.2s; }
+    .member-item {
+      background: white;
+      padding: 0.9rem;
+      border-radius: 0.75rem;
+      border: 2px solid #e5e7eb;
+      transition: all 0.2s;
+    }
     .member-item.checked { background: #eff6ff; border-color: #2563eb; }
 
     .member-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; gap: 0.5rem; }
-    .member-name { font-size: 1rem; font-weight: 800; color: #374151; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .member-name {
+      font-size: 1rem;
+      font-weight: 950;
+      color: #374151;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
 
-    .checkbox { width: 1.75rem; height: 1.75rem; border-radius: 9999px; border: 2px solid #d1d5db; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .checkbox {
+      width: 1.75rem;
+      height: 1.75rem;
+      border-radius: 9999px;
+      border: 2px solid #d1d5db;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
     .member-item.checked .checkbox { background: #2563eb; border-color: #2563eb; }
-    .checkmark { display: none; color: white; font-weight: bold; font-size: 0.95rem; }
+    .checkmark { display: none; color: white; font-weight: 950; font-size: 0.95rem; }
     .member-item.checked .checkmark { display: block; }
 
-    /* 특이사항 (아래) */
+    /* 특이사항(아래로) */
     .note-section { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #e5e7eb; }
-    .note-label { font-size: 0.8rem; font-weight: 800; color: #6b7280; margin-bottom: 0.35rem; }
-    .note-input { width: 100%; padding: 0.55rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 16px; }
+    .note-label { font-size: 0.8rem; font-weight: 950; color: #6b7280; margin-bottom: 0.35rem; }
+    .note-input {
+      width: 100%;
+      padding: 0.55rem 0.65rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.6rem;
+      font-size: 16px;
+    }
 
     /* 건의사항 */
-    .suggestion-section { background: white; padding: 1rem; border-radius: 0.5rem; border: 1px solid #e5e7eb; margin-bottom: 1.5rem; }
-    .suggestion-textarea { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 16px; min-height: 80px; }
+    .suggestion-section {
+      background: white;
+      padding: 1rem;
+      border-radius: 0.75rem;
+      border: 1px solid #e5e7eb;
+      margin-bottom: 1rem;
+    }
+    .suggestion-textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.75rem;
+      font-size: 16px;
+      min-height: 90px;
+    }
 
     /* 하단 저장바 */
     :root { --safe-bottom: env(safe-area-inset-bottom, 0px); }
@@ -84,20 +214,51 @@
       bottom: 0;
       background: rgba(249, 250, 251, 0.95);
       border-top: 1px solid #e5e7eb;
-      padding: 0.75rem 0 calc(0.75rem + var(--safe-bottom)) 0;
+      padding: 0.75rem 0  calc(0.75rem + var(--safe-bottom)) 0;
       backdrop-filter: blur(6px);
     }
-    .save-button { width: 100%; background: #2563eb; color: white; padding: 0.95rem; border-radius: 0.5rem; border: none; font-size: 1.05rem; font-weight: 900; cursor: pointer; }
+    .save-button {
+      width: 100%;
+      background: #2563eb;
+      color: white;
+      padding: 0.95rem;
+      border-radius: 0.75rem;
+      border: none;
+      font-size: 1.05rem;
+      font-weight: 950;
+      cursor: pointer;
+    }
     .save-button:hover { background: #1d4ed8; }
 
-    .message { padding: 0.85rem 1rem; border-radius: 0.5rem; text-align: center; font-weight: 800; margin-top: 0.75rem; }
+    .message {
+      padding: 0.85rem 1rem;
+      border-radius: 0.75rem;
+      text-align: center;
+      font-weight: 900;
+      margin-top: 0.75rem;
+    }
     .message.success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
     .message.error { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
     .message.info { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
 
     /* 관리자 */
-    .dashboard-tabs { display: flex; gap: 1rem; margin-bottom: 1.25rem; border-bottom: 2px solid #e5e7eb; }
-    .tab-button { padding: 0.75rem 1.5rem; background: none; border: none; cursor: pointer; color: #6b7280; border-bottom: 2px solid transparent; margin-bottom: -2px; font-weight: 800; }
+    .dashboard-tabs {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+      border-bottom: 2px solid #e5e7eb;
+      flex-wrap: wrap;
+    }
+    .tab-button {
+      padding: 0.75rem 1.25rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #6b7280;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      font-weight: 950;
+    }
     .tab-button.active { color: #2563eb; border-bottom-color: #2563eb; }
 
     .admin-summary {
@@ -106,25 +267,45 @@
       gap: 0.75rem;
       margin: 1rem 0;
     }
-    @media (max-width: 640px) {
-      .dashboard-tabs { flex-wrap: wrap; gap: 0.5rem; border-bottom: 1px solid #e5e7eb; }
-      .tab-button { flex: 1 1 140px; text-align: center; padding: 0.65rem 0.75rem; }
-      .admin-summary { grid-template-columns: 1fr; }
-      .container { padding: 1rem 1rem; }
-      .header { padding: 1rem 1rem; }
+    .admin-summary-card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.75rem;
+      padding: 1rem;
+    }
+    .admin-summary-label { font-size: 0.875rem; color: #6b7280; font-weight: 950; margin-bottom: 0.25rem; }
+    .admin-summary-value { font-size: 1.6rem; font-weight: 950; color: #111827; }
+    .admin-summary-note { font-size: 0.9rem; color: #6b7280; margin-bottom: 1rem; font-weight: 800; }
+
+    .attendance-table, .notes-table {
+      background: white;
+      border-radius: 0.75rem;
+      border: 1px solid #e5e7eb;
+      overflow-x: auto;
+    }
+    .attendance-table table, .notes-table table { width: 100%; border-collapse: collapse; }
+    .attendance-table th, .notes-table th {
+      background: #f9fafb;
+      padding: 0.75rem;
+      text-align: left;
+      font-size: 0.875rem;
+      font-weight: 950;
+      border-bottom: 1px solid #e5e7eb;
+      white-space: nowrap;
+    }
+    .attendance-table td, .notes-table td {
+      padding: 0.75rem;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 0.875rem;
+      vertical-align: top;
     }
 
-    .admin-summary-card { background: white; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem; }
-    .admin-summary-label { font-size: 0.875rem; color: #6b7280; font-weight: 800; margin-bottom: 0.25rem; }
-    .admin-summary-value { font-size: 1.6rem; font-weight: 950; color: #111827; }
-    .admin-summary-note { font-size: 0.875rem; color: #6b7280; margin-bottom: 1rem; }
-
-    .attendance-table, .notes-table { background: white; border-radius: 0.5rem; border: 1px solid #e5e7eb; overflow-x: auto; }
-    .attendance-table table, .notes-table table { width: 100%; border-collapse: collapse; }
-    .attendance-table th, .notes-table th { background: #f9fafb; padding: 0.75rem; text-align: left; font-size: 0.875rem; font-weight: 900; border-bottom: 1px solid #e5e7eb; white-space: nowrap; }
-    .attendance-table td, .notes-table td { padding: 0.75rem; border-bottom: 1px solid #e5e7eb; font-size: 0.875rem; vertical-align: top; }
-
-    .suggestion-list { background: white; border-radius: 0.5rem; border: 1px solid #e5e7eb; padding: 1rem; }
+    .suggestion-list {
+      background: white;
+      border-radius: 0.75rem;
+      border: 1px solid #e5e7eb;
+      padding: 1rem;
+    }
     .suggestion-item { padding: 1rem; border-bottom: 1px solid #e5e7eb; }
     .suggestion-team { font-weight: 950; color: #111827; }
 
@@ -145,23 +326,52 @@
       width: 100%;
       max-width: 420px;
       background: white;
-      border-radius: 0.75rem;
+      border-radius: 0.9rem;
       border: 1px solid #e5e7eb;
       box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15);
       overflow: hidden;
     }
     .modal-header { padding: 1rem 1rem 0.75rem 1rem; border-bottom: 1px solid #e5e7eb; }
     .modal-title { font-size: 1.1rem; font-weight: 950; color: #111827; }
-    .modal-subtitle { margin-top: 0.25rem; font-size: 0.9rem; color: #6b7280; }
+    .modal-subtitle { margin-top: 0.25rem; font-size: 0.9rem; color: #6b7280; font-weight: 800; }
     .modal-body { padding: 1rem; }
-    .modal-input { width: 100%; padding: 0.8rem 0.9rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 16px; }
-    .modal-error { margin-top: 0.75rem; color: #b91c1c; font-weight: 800; font-size: 0.9rem; }
-    .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; padding: 0 1rem 1rem 1rem; }
-    .modal-btn { border: none; border-radius: 0.5rem; padding: 0.85rem 0.9rem; font-weight: 950; cursor: pointer; font-size: 0.95rem; }
+    .modal-input {
+      width: 100%;
+      padding: 0.8rem 0.9rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.75rem;
+      font-size: 16px;
+    }
+    .modal-error { margin-top: 0.75rem; color: #b91c1c; font-weight: 950; font-size: 0.9rem; }
+    .modal-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      padding: 0 1rem 1rem 1rem;
+    }
+    .modal-btn {
+      border: none;
+      border-radius: 0.75rem;
+      padding: 0.85rem 0.9rem;
+      font-weight: 950;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
     .modal-btn.primary { background: #2563eb; color: white; }
     .modal-btn.primary:hover { background: #1d4ed8; }
     .modal-btn.ghost { background: #f3f4f6; color: #111827; }
     .modal-btn.ghost:hover { background: #e5e7eb; }
+
+    /* 모바일 최적화 */
+    @media (max-width: 640px) {
+      .header { padding: 1rem 1rem; }
+      h1 { font-size: 1.25rem; }
+      .container { padding: 1rem 1rem; }
+      .admin-button { padding: 0.45rem 0.8rem; font-size: 0.8rem; }
+      .admin-summary { grid-template-columns: 1fr; }
+      .team-grid { grid-template-columns: 1fr; }
+      .member-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
   </style>
 </head>
 
@@ -198,7 +408,7 @@
 
       <div class="summary-box">
         <div class="summary-content">
-          <span>출석 현황</span>
+          <span style="font-weight:900;color:#111827;">출석 현황</span>
           <span class="summary-count" id="attendanceCount">0 / 0</span>
         </div>
         <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
@@ -258,8 +468,8 @@
             <div class="admin-summary-value" id="adminTotalRate">0%</div>
           </div>
         </div>
-        <div class="admin-summary-note" id="adminSummaryNote"></div>
 
+        <div class="admin-summary-note" id="adminSummaryNote"></div>
         <div class="attendance-table" id="attendanceTable"></div>
       </div>
 
@@ -301,12 +511,12 @@
 
   <script>
     /*****************
-     * Apps Script URL
+     * Apps Script URL (DB)
      *****************/
     var GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxC4ZzJh1wS4N6KvWEx9oMzvYxqm0_c2ZrMoqoipJsBNAvlHLsUqV4IhQnFvDSbbh8EtQ/exec';
 
     /*****************
-     * Team definition
+     * Teams
      *****************/
     var TEAMS = [
       {id:1,name:'권준형 사랑방',leader:'방장: 권준형',members:['방원1','방원2','방원3','방원4','방원5','방원6','방원7','방원8','방원9','방원10','방원11','방원12','방원13','방원14','방원15','방원16','방원17','방원18','방원19','방원20']},
@@ -320,7 +530,7 @@
       {id:9,name:'임사랑 사랑방',leader:'방장: 임사랑',members:['방원1','방원2','방원3','방원4','방원5','방원6','방원7','방원8','방원9','방원10','방원11','방원12','방원13','방원14','방원15','방원16','방원17','방원18','방원19','방원20']},
       {id:10,name:'장하늘 사랑방',leader:'방장: 장하늘',members:['방원1','방원2','방원3','방원4','방원5','방원6','방원7','방원8','방원9','방원10','방원11','방원12','방원13','방원14','방원15','방원16','방원17','방원18','방원19','방원20']},
       {id:11,name:'하재영 사랑방',leader:'방장: 하재영',members:['방원1','방원2','방원3','방원4','방원5','방원6','방원7','방원8','방원9','방원10','방원11','방원12','방원13','방원14','방원15','방원16','방원17','방원18','방원19','방원20']},
-      {id:12,name:'Wee팀',leader:'방장: 권하경, 최수인',members:['방원1','방원2','방원3','방원4','방원5','방원6','방원7','방원8','방원9','방원10','방원11','방원12','방원13','방원14','방원15','방원16','방원17','방원18','방원19','방원20']}
+      {id:12,name:'Wee팀',leader:'방장: Wee팀',members:['방원1','방원2','방원3','방원4','방원5','방원6','방원7','방원8','방원9','방원10','방원11','방원12','방원13','방원14','방원15','방원16','방원17','방원18','방원19','방원20']}
     ];
 
     /*****************
@@ -331,7 +541,9 @@
     var memberNotes = {};
     var isLoadingFromServer = false;
 
-    // date defaults
+    /*****************
+     * Date defaults
+     *****************/
     var today = new Date().toISOString().split('T')[0];
     document.getElementById('dateInput').value = today;
     document.getElementById('adminDateInput').value = today;
@@ -339,7 +551,7 @@
     document.getElementById('adminSugDateInput').value = today;
 
     /*****************
-     * Token storage
+     * Token storage (local)
      *****************/
     function tokenKeyTeam(teamId){ return 'nw_team_token:' + teamId; }
     function tokenKeyAdmin(){ return 'nw_admin_token'; }
@@ -353,7 +565,7 @@
     function clearAdminToken(){ localStorage.removeItem(tokenKeyAdmin()); }
 
     /*****************
-     * JSONP helper (CORS 우회 GET)
+     * JSONP helper (GET, CORS 회피)
      *****************/
     function jsonp(url, params){
       return new Promise(function(resolve, reject){
@@ -510,7 +722,7 @@
     }
 
     /*****************
-     * Home grid
+     * Home
      *****************/
     function initTeamGrid(){
       var g = document.getElementById('teamGrid');
@@ -519,17 +731,20 @@
         var c = document.createElement('div');
         c.className = 'team-card';
         c.onclick = function(){ attemptEnterTeam(t); };
+
         c.innerHTML =
           '<div class="team-card-header">' +
             '<div class="team-number">' + t.id + '</div>' +
             '<div class="member-count">' + t.members.length + '명</div>' +
           '</div>' +
-          '<div class="team-name">' + t.name + '</div>' +
-          '<p style="font-size:0.875rem;color:#6b7280;">' + t.leader + '</p>';
+          '<div class="team-name">' + escapeHtml(t.name) + '</div>' +
+          '<p style="font-size:0.875rem;color:#6b7280;font-weight:800;">' + escapeHtml(t.leader) + '</p>';
+
         g.appendChild(c);
       });
     }
 
+    // ✅ 첫 페이지에서는 절대 비밀번호를 요구하지 않음
     function openAdminPassword(){
       openPasswordModal({
         mode: 'admin',
@@ -538,10 +753,11 @@
       });
     }
 
+    // ✅ 사랑방 클릭 시에만 비밀번호 요청
     function attemptEnterTeam(team){
       var token = getTeamToken(String(team.id));
       if (token) {
-        // 토큰이 만료되었으면 서버 호출 시 걸러짐 → 그때 다시 비번 요구
+        // 토큰이 만료되었으면 서버 호출에서 걸러짐 → 그때 재요청
         selectTeam(team);
         return;
       }
@@ -554,28 +770,55 @@
     }
 
     /*****************
-     * Attendance page render
+     * Attendance page
      *****************/
     function buildMemberList(team){
-      var m = document.getElementById('memberList');
-      m.innerHTML = '';
+      var list = document.getElementById('memberList');
+      list.innerHTML = '';
 
-      team.members.forEach(function(n){
+      team.members.forEach(function(name){
         var item = document.createElement('div');
         item.className = 'member-item';
-        item.setAttribute('data-name', n);
+        item.dataset.name = name;
 
-        item.innerHTML =
-          '<div class="member-header" data-name="'+ escapeHtml(n) +'">' +
-            '<span class="member-name">'+ escapeHtml(n) +'</span>' +
-            '<div class="checkbox"><span class="checkmark">✓</span></div>' +
-          '</div>' +
-          '<div class="note-section">' +
-            '<div class="note-label">특이사항</div>' +
-            '<input type="text" class="note-input" data-name="'+ escapeHtml(n) +'" placeholder="특이사항 입력" />' +
-          '</div>';
+        var header = document.createElement('div');
+        header.className = 'member-header';
+        header.dataset.name = name;
 
-        m.appendChild(item);
+        var nameSpan = document.createElement('span');
+        nameSpan.className = 'member-name';
+        nameSpan.textContent = name;
+
+        var checkbox = document.createElement('div');
+        checkbox.className = 'checkbox';
+
+        var checkmark = document.createElement('span');
+        checkmark.className = 'checkmark';
+        checkmark.textContent = '✓';
+
+        checkbox.appendChild(checkmark);
+        header.appendChild(nameSpan);
+        header.appendChild(checkbox);
+
+        var noteSec = document.createElement('div');
+        noteSec.className = 'note-section';
+
+        var noteLabel = document.createElement('div');
+        noteLabel.className = 'note-label';
+        noteLabel.textContent = '특이사항';
+
+        var noteInput = document.createElement('input');
+        noteInput.type = 'text';
+        noteInput.className = 'note-input';
+        noteInput.placeholder = '특이사항 입력';
+        noteInput.dataset.name = name;
+
+        noteSec.appendChild(noteLabel);
+        noteSec.appendChild(noteInput);
+
+        item.appendChild(header);
+        item.appendChild(noteSec);
+        list.appendChild(item);
       });
     }
 
@@ -598,7 +841,7 @@
       q = (q || '').trim().toLowerCase();
       var items = document.querySelectorAll('#memberList .member-item');
       for (var i=0; i<items.length; i++){
-        var name = (items[i].getAttribute('data-name') || '').toLowerCase();
+        var name = (items[i].dataset.name || '').toLowerCase();
         items[i].style.display = name.indexOf(q) >= 0 ? '' : 'none';
       }
     }
@@ -607,8 +850,8 @@
       team.members.forEach(function(n){
         var item = document.querySelector('.member-item[data-name="' + cssEsc(n) + '"]');
         if (!item) return;
-
         item.classList.toggle('checked', !!attendance[n]);
+
         var input = item.querySelector('.note-input');
         if (input) input.value = memberNotes[n] || '';
       });
@@ -622,8 +865,9 @@
       try {
         isLoadingFromServer = true;
         var res = await apiGet('getTeamSubmission', { teamId: String(team.id), date: date, token: token });
+
         if (!res || !res.ok) {
-          // 토큰 만료/무효 등
+          // 토큰 만료/무효
           if (res && (res.error || '').toLowerCase().indexOf('token') >= 0) {
             clearTeamToken(String(team.id));
             showMsg('error', '인증이 만료되었습니다. 비밀번호를 다시 입력해주세요.');
@@ -635,7 +879,6 @@
         }
 
         if (!res.found) {
-          // 서버에 없음 → 초기화
           resetAttendanceState(team);
           paintStateToUI(team);
           return true;
@@ -644,7 +887,6 @@
         var sub = res.submission || {};
         resetAttendanceState(team);
 
-        // attendance 배열 기반 복원
         var arr = Array.isArray(sub.attendance) ? sub.attendance : [];
         arr.forEach(function(r){
           if (!r || !r.name) return;
@@ -673,14 +915,12 @@
       buildMemberList(team);
       document.getElementById('memberSearch').value = '';
 
-      // 초기 상태
       resetAttendanceState(team);
       paintStateToUI(team);
 
       hideAll();
       document.getElementById('attendancePage').classList.remove('hidden');
 
-      // 서버에서 해당 날짜 데이터 복원
       var date = document.getElementById('dateInput').value || today;
       showMsg('info', '데이터를 불러오는 중입니다...');
       loadFromServer(team, date).then(function(){
@@ -688,14 +928,13 @@
       });
     }
 
-    /*****************
-     * Toggle / input events
-     *****************/
+    // 체크 토글
     document.getElementById('memberList').addEventListener('click', function(e){
       if (e.target && e.target.classList.contains('note-input')) return;
       var header = e.target.closest('.member-header');
       if (!header || !selectedTeam) return;
-      var name = header.getAttribute('data-name');
+
+      var name = header.dataset.name;
       attendance[name] = !attendance[name];
 
       var item = document.querySelector('.member-item[data-name="' + cssEsc(name) + '"]');
@@ -704,17 +943,19 @@
       updateCount();
     });
 
+    // 특이사항 입력
     document.getElementById('memberList').addEventListener('input', function(e){
       if (!e.target.classList.contains('note-input')) return;
       if (!selectedTeam) return;
-      var name = e.target.getAttribute('data-name');
-      memberNotes[name] = e.target.value || '';
+      memberNotes[e.target.dataset.name] = e.target.value || '';
     });
 
+    // 검색
     document.getElementById('memberSearch').addEventListener('input', function(){
       applyMemberFilter(this.value);
     });
 
+    // 날짜 변경 시: 서버 데이터 로드
     document.getElementById('dateInput').addEventListener('change', function(){
       if (!selectedTeam) return;
       var date = this.value || today;
@@ -723,7 +964,7 @@
     });
 
     /*****************
-     * Submit (POST to Apps Script)
+     * Submit (POST)
      *****************/
     async function saveAttendance(){
       if (!selectedTeam) return;
@@ -752,7 +993,7 @@
       };
 
       try {
-        // no-cors에서는 응답을 읽지 못하지만, 서버에는 정상 기록됩니다.
+        // no-cors: 응답은 못 읽어도 서버(시트)에는 저장됩니다.
         await fetch(GOOGLE_SCRIPT_URL, {
           method: 'POST',
           mode: 'no-cors',
@@ -761,7 +1002,6 @@
         });
 
         showMsg('success', '저장되었습니다!');
-        // 저장 직후 서버에서 다시 읽어 화면 정합성 확보
         loadFromServer(selectedTeam, dateVal);
       } catch(e) {
         showMsg('error', '저장에 실패했습니다. 네트워크를 확인해주세요.');
@@ -769,12 +1009,12 @@
     }
 
     /*****************
-     * Admin dashboard
+     * Admin
      *****************/
     function showAdminDashboard(){
       hideAll();
       document.getElementById('adminDashboard').classList.remove('hidden');
-      loadAdminData();
+      loadAdminData(); // ✅ 관리자 화면에서만 동작(아래 가드)
     }
 
     function switchAdminTab(tab){
@@ -793,18 +1033,16 @@
     }
 
     async function loadAdminData(){
+      // ✅ 홈(첫 페이지)에서는 절대 관리자 비밀번호 요청이 뜨지 않도록 가드
+      if (document.getElementById('adminDashboard').classList.contains('hidden')) return;
+
       var token = getAdminToken();
-      if (!token) {
-        // 관리자 토큰 없으면 다시 비번 요청
-        openAdminPassword();
-        return;
-      }
+      if (!token) { openAdminPassword(); return; }
 
       var date = document.getElementById('adminDateInput').value || today;
       var dateNotes = document.getElementById('adminNotesDateInput').value || today;
       var dateSug = document.getElementById('adminSugDateInput').value || today;
 
-      // 탭별 날짜가 다를 수 있어서 각각 요청(하지만 서버 부담 줄이려면 동일 날짜로 맞추는 것도 가능)
       await renderAdminStats(date, token);
       await renderAdminNotes(dateNotes, token);
       await renderAdminSuggestions(dateSug, token);
@@ -813,7 +1051,6 @@
     async function fetchAdminByDate(date, token){
       var res = await apiGet('getSubmissionsByDate', { date: date, token: token });
       if (!res || !res.ok) {
-        // 토큰 만료/무효
         clearAdminToken();
         showMsg('error', '관리자 인증이 만료되었습니다. 다시 입력해주세요.');
         openAdminPassword();
@@ -826,7 +1063,6 @@
       var data = await fetchAdminByDate(date, token);
       if (!data) return;
 
-      // 서버는 제출된 팀만 data.teams로 반환. → 프론트에서 전체 TEAMS에 맞춰 미제출 표시
       var submittedMap = {};
       (data.teams || []).forEach(function(t){ submittedMap[String(t.teamId)] = t; });
 
@@ -851,14 +1087,14 @@
             '<td>' + Number(sub.present || 0) + '</td>' +
             '<td>' + Number(sub.absent || 0) + '</td>' +
             '<td>' + rate.toFixed(1) + '%</td>' +
-            '<td>제출</td>' +
+            '<td style="font-weight:950;color:#15803d;">제출</td>' +
           '</tr>';
         } else {
           rows += '<tr>' +
             '<td>' + escapeHtml(team.name) + '</td>' +
             '<td>' + escapeHtml(team.leader) + '</td>' +
             '<td>-</td><td>-</td><td>-</td>' +
-            '<td style="color:#b91c1c;font-weight:800;">미제출</td>' +
+            '<td style="color:#b91c1c;font-weight:950;">미제출</td>' +
           '</tr>';
         }
       });
@@ -885,7 +1121,6 @@
 
       var rows = '';
       var notesFlat = data.notesFlat || [];
-      // notesFlat: [{teamName, member, note}]
       notesFlat.forEach(function(n){
         rows += '<tr>' +
           '<td>' + escapeHtml(n.teamName || '') + '</td>' +
@@ -898,7 +1133,7 @@
         '<table>' +
           '<thead><tr><th>사랑방</th><th>방원</th><th>특이사항</th></tr></thead>' +
           '<tbody>' +
-            (rows || '<tr><td colspan="3" style="text-align:center;color:#6b7280;">특이사항이 없습니다.</td></tr>') +
+            (rows || '<tr><td colspan="3" style="text-align:center;color:#6b7280;font-weight:900;">특이사항이 없습니다.</td></tr>') +
           '</tbody>' +
         '</table>';
     }
@@ -912,13 +1147,13 @@
         items.push(
           '<div class="suggestion-item">' +
             '<div class="suggestion-team">' + escapeHtml(s.teamName || '') + ' (' + escapeHtml(s.leader || '') + ')</div>' +
-            '<div style="margin-top:0.5rem; color:#374151; white-space:pre-wrap;">' + escapeHtml(s.suggestion || '') + '</div>' +
+            '<div style="margin-top:0.5rem; color:#374151; white-space:pre-wrap; font-weight:800;">' + escapeHtml(s.suggestion || '') + '</div>' +
           '</div>'
         );
       });
 
       document.getElementById('suggestionsList').innerHTML =
-        items.length ? items.join('') : '<div style="text-align:center;color:#6b7280;padding:2rem;">건의사항이 없습니다.</div>';
+        items.length ? items.join('') : '<div style="text-align:center;color:#6b7280;padding:2rem;font-weight:900;">건의사항이 없습니다.</div>';
     }
 
     document.getElementById('adminDateInput').addEventListener('change', loadAdminData);
@@ -926,7 +1161,7 @@
     document.getElementById('adminSugDateInput').addEventListener('change', loadAdminData);
 
     /*****************
-     * Init
+     * Init (중요: 여기서 비밀번호 모달을 절대 열지 않음)
      *****************/
     initTeamGrid();
   </script>
