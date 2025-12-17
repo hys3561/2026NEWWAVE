@@ -363,9 +363,9 @@
 
   <script>
     /************************************************************
-     * ✅ Apps Script Web App URL
+     * ✅ Apps Script Web App URL (윤호님이 준 주소)
      ************************************************************/
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx5vYyA89knsWYyEZZvryZYeAfWvcHWTFHZsJo96bbPJ-eagzp3gG0J2TJcTPUDYJa9Og/exec";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby2fRqMo71H0bogW4kg00L3jgT5owZHYJI7BZVns-74fS9_tDY2l2jv3NDhxxf0YHa-jg/exec";
 
     /************************************************************
      * ✅ 비밀번호
@@ -378,10 +378,10 @@
     };
 
     /************************************************************
-     * ✅ 사랑방 목록
+     * ✅ 사랑방 목록 (원복 + 또래 지원)
      * - members는 아래 2가지 형태 모두 지원
      *   1) "홍길동" (cohort가 없으면 ""로 저장됨)
-     *   2) { name:"홍길동", cohort:"01" }  ← 동명이인 처리 권장
+     *   2) { name:"홍길동", cohort:"01" }
      ************************************************************/
     const TEAMS = [
       { id: 1, name: "권준형 사랑방", leader: "방장: 권준형", members: [
@@ -439,13 +439,8 @@
       return new Date(d).toISOString().split("T")[0];
     }
 
-    function normCohort(c){
-      return String(c ?? "").trim();
-    }
-
-    function normName(n){
-      return String(n ?? "").trim();
-    }
+    function normCohort(c){ return String(c ?? "").trim(); }
+    function normName(n){ return String(n ?? "").trim(); }
 
     // ✅ 개인 식별키 = name||cohort
     function memberKey(name, cohort){
@@ -464,7 +459,7 @@
     }
 
     /************************************************************
-     * JSONP(GET)
+     * JSONP(GET) - 관리자/불러오기 핵심
      ************************************************************/
     function jsonp(url, params){
       return new Promise((resolve, reject)=>{
@@ -778,6 +773,7 @@
       };
 
       try {
+        // POST는 no-cors로도 저장은 되지만 응답을 못 읽음 -> 저장 후 GET로 재로딩
         await fetch(GOOGLE_SCRIPT_URL, {
           method: "POST",
           mode: "no-cors",
@@ -961,6 +957,7 @@
 
     function bindAdminRowToggle_(){
       const wrap = document.getElementById("attendanceTable");
+      if (wrap.dataset.bound === "1") return;
       wrap.dataset.bound = "1";
 
       wrap.addEventListener("click", async (e)=>{
@@ -1115,7 +1112,6 @@
       });
     }
 
-    // value format: "name||cohort"
     async function loadMemberList_(){
       try {
         const res = await apiGet("getMemberList", {});
@@ -1138,13 +1134,11 @@
     }
 
     function drawMonthlyLineChart_(monthly){
-      // monthly: [{month:"YYYY-MM", rate: number 0-100}]
       chartCtx.clearRect(0,0,chartCanvas.width, chartCanvas.height);
 
       const W = chartCanvas.width, H = chartCanvas.height;
       const padL = 55, padR = 18, padT = 18, padB = 40;
 
-      // axes
       chartCtx.strokeStyle = "#e5e7eb";
       chartCtx.lineWidth = 1;
       chartCtx.beginPath();
@@ -1153,7 +1147,6 @@
       chartCtx.lineTo(W - padR, H - padB);
       chartCtx.stroke();
 
-      // y ticks (0,25,50,75,100)
       chartCtx.fillStyle = "#6b7280";
       chartCtx.font = "12px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
       [0,25,50,75,100].forEach(v=>{
@@ -1163,7 +1156,6 @@
         chartCtx.moveTo(padL, y);
         chartCtx.lineTo(W - padR, y);
         chartCtx.stroke();
-
         chartCtx.fillStyle = "#6b7280";
         chartCtx.fillText(String(v), 12, y + 4);
       });
@@ -1178,7 +1170,6 @@
       const n = monthly.length;
       const xStep = n === 1 ? 0 : (W - padL - padR) / (n - 1);
 
-      // line
       chartCtx.strokeStyle = "#2563eb";
       chartCtx.lineWidth = 2;
       chartCtx.beginPath();
@@ -1191,7 +1182,6 @@
       });
       chartCtx.stroke();
 
-      // points + x labels (sparse)
       monthly.forEach((m,i)=>{
         const x = padL + xStep * i;
         const y = (H - padB) - (Math.max(0, Math.min(100, Number(m.rate)||0))/100) * (H - padT - padB);
@@ -1201,7 +1191,6 @@
         chartCtx.arc(x,y,3,0,Math.PI*2);
         chartCtx.fill();
 
-        // label every 2 or 3 points
         const labelEvery = n > 12 ? 3 : (n > 8 ? 2 : 1);
         if (i % labelEvery === 0 || i === n-1) {
           chartCtx.fillStyle = "#6b7280";
@@ -1248,11 +1237,9 @@
         document.getElementById("memberTotal").textContent = total + "회";
         document.getElementById("memberRate").textContent = rate.toFixed(1) + "%";
 
-        // monthly line
         const monthly = Array.isArray(res.monthly) ? res.monthly : [];
         drawMonthlyLineChart_(monthly);
 
-        // sessions table
         const sessions = Array.isArray(res.sessions) ? res.sessions : [];
         const rows = sessions.map(s=>{
           const ok = !!s.present;
