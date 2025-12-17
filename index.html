@@ -111,6 +111,54 @@
     .suggestion-item { padding:1rem; border-bottom:1px solid #e5e7eb; }
     .suggestion-team { font-weight:950; color:#111827; }
 
+    /* ✅ 관리자 출석현황: 행 아래 토글 상세 */
+    .team-row { cursor: pointer; }
+    .team-row:hover td { background: #f9fafb; }
+    
+    .detail-row td { padding: 0 !important; background: #f9fafb; }
+    .detail-panel { padding: 1rem; border-top: 1px solid #e5e7eb; }
+    
+    .detail-grid { display: grid; gap: .75rem; grid-template-columns: 1fr; }
+    @media (min-width: 768px){
+      .detail-grid { grid-template-columns: 1fr 1fr; }
+    }
+    
+    .detail-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: .95rem;
+      padding: .9rem;
+    }
+    
+    .detail-title { font-weight: 950; color: #111827; margin-bottom: .5rem; }
+    .detail-sub { font-size: .9rem; font-weight: 900; color: #6b7280; margin-bottom: .4rem; }
+    
+    .chips { display:flex; flex-wrap:wrap; gap:.35rem; }
+    .chip {
+      padding: .25rem .55rem;
+      border-radius: 9999px;
+      font-size: .85rem;
+      font-weight: 900;
+      background: #eef2ff;
+      color: #1d4ed8;
+    }
+    .chip.absent { background:#fef2f2; color:#b91c1c; }
+    .chip.note   { background:#f0fdf4; color:#15803d; }
+    
+    .note-list { display:flex; flex-direction:column; gap:.35rem; }
+    .note-item {
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      border-radius: .75rem;
+      padding: .6rem .7rem;
+      font-weight: 800;
+      color: #374151;
+      white-space: pre-wrap;
+    }
+    .note-name { font-weight: 950; color:#111827; }
+    .note-badge { font-size:.8rem; font-weight:950; color:#6b7280; margin-left:.4rem; }
+
+
     /* 비밀번호 모달 */
     .modal-overlay { position:fixed; inset:0; background:rgba(17,24,39,.55); display:flex; align-items:center; justify-content:center; padding:1rem; z-index:999; }
     .modal { width:100%; max-width:420px; background:#fff; border-radius:1rem; border:1px solid #e5e7eb; box-shadow:0 20px 25px -5px rgba(0,0,0,.15); overflow:hidden; }
@@ -737,45 +785,228 @@
       return res;
     }
 
-    // ✅ 방장 컬럼 삭제 + 행 클릭 상세
-    async function renderAdminStats(date){
-      const data = await fetchAdminByDate(date);
-
-      const map = {};
-      (data.teams || []).forEach(t => { map[String(t.teamId)] = t; });
-
-      let totalPresent = 0;
-      let totalMembers = 0;
-      let submittedCount = 0;
-
-      let rows = "";
-      TEAMS.forEach(team=>{
-        const sub = map[String(team.id)];
-        if (sub) {
-          submittedCount++;
-          totalPresent += Number(sub.present || 0);
-          totalMembers += Number(sub.total || 0);
-          const rate = (sub.total > 0) ? (Number(sub.present)/Number(sub.total))*100 : 0;
-
-          rows += `
-            <tr class="admin-team-row" data-teamid="${team.id}" style="cursor:pointer;">
-              <td>${escapeHtml(team.name)}</td>
-              <td>${Number(sub.present||0)}</td>
-              <td>${Number(sub.absent||0)}</td>
-              <td>${rate.toFixed(1)}%</td>
-              <td style="font-weight:950;color:#15803d;">제출</td>
-            </tr>
-          `;
-        } else {
-          rows += `
-            <tr class="admin-team-row" data-teamid="${team.id}" style="cursor:pointer;">
-              <td>${escapeHtml(team.name)}</td>
-              <td>-</td><td>-</td><td>-</td>
-              <td style="font-weight:950;color:#b91c1c;">미제출</td>
-            </tr>
-          `;
-        }
+  // ✅ 관리자 상세 캐시 (date|teamId)
+  const adminDetailCache = {}; // key: `${date}|${teamId}` -> submission
+  
+  async function renderAdminStats(date){
+    const data = await fetchAdminByDate(date);
+  
+    // 팀 요약 (제출 여부/출석수/결석수/총원)
+    const map = {};
+    (data.teams || []).forEach(t => { map[String(t.teamId)] = t; });
+  
+    let totalPresent = 0;
+    let totalMembers = 0;
+    let submittedCount = 0;
+  
+    // ✅ 방장 컬럼 삭제: (사랑방 / 출석 / 결석 / 출석률 / 상태)
+    let rows = "";
+    TEAMS.forEach(team=>{
+      const sub = map[String(team.id)];
+  
+      if (sub) {
+        submittedCount++;
+        totalPresent += Number(sub.present || 0);
+        totalMembers += Number(sub.total || 0);
+        const rate = (Number(sub.total) > 0) ? (Number(sub.present)/Number(sub.total))*100 : 0;
+  
+        rows += `
+          <tr class="team-row" data-teamid="${team.id}" data-submitted="1">
+            <td style="font-weight:950;">${escapeHtml(team.name)}</td>
+            <td>${Number(sub.present||0)}</td>
+            <td>${Number(sub.absent||0)}</td>
+            <td>${rate.toFixed(1)}%</td>
+            <td style="font-weight:950;color:#15803d;">제출</td>
+          </tr>
+          <tr class="detail-row hidden" data-detailfor="${team.id}">
+            <td colspan="5">
+              <div class="detail-panel" id="detail-${team.id}">
+                <div style="font-weight:950;color:#6b7280;">행을 클릭하면 상세가 표시됩니다.</div>
+              </div>
+            </td>
+          </tr>
+        `;
+      } else {
+        rows += `
+          <tr class="team-row" data-teamid="${team.id}" data-submitted="0">
+            <td style="font-weight:950;">${escapeHtml(team.name)}</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td style="font-weight:950;color:#b91c1c;">미제출</td>
+          </tr>
+          <tr class="detail-row hidden" data-detailfor="${team.id}">
+            <td colspan="5">
+              <div class="detail-panel" id="detail-${team.id}">
+                <div style="font-weight:950;color:#6b7280;">미제출 사랑방입니다.</div>
+              </div>
+            </td>
+          </tr>
+        `;
+      }
+    });
+  
+    const totalAbsent = totalMembers - totalPresent;
+    const totalRate = totalMembers > 0 ? (totalPresent/totalMembers)*100 : 0;
+  
+    document.getElementById("adminTotalPresent").textContent = totalPresent + "명";
+    document.getElementById("adminTotalAbsent").textContent = totalAbsent + "명";
+    document.getElementById("adminTotalRate").textContent = totalRate.toFixed(1) + "%";
+    document.getElementById("adminSummaryNote").textContent =
+      `집계 기준: ${date} / 제출 ${submittedCount}개 사랑방 / 집계 인원 ${totalMembers}명 (미제출은 집계에서 제외)`;
+  
+    document.getElementById("attendanceTable").innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>사랑방</th>
+            <th>출석</th>
+            <th>결석</th>
+            <th>출석률</th>
+            <th>상태</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+  
+    // ✅ 이벤트 바인딩(중복 방지 위해 매 렌더 시 한번만)
+    bindAdminRowToggle_();
+  }
+  
+  let adminRowToggleBound = false;
+  function bindAdminRowToggle_(){
+    if (adminRowToggleBound) return;
+    adminRowToggleBound = true;
+  
+    document.getElementById("attendanceTable").addEventListener("click", async (e)=>{
+      const row = e.target.closest("tr.team-row");
+      if (!row) return;
+  
+      const teamId = row.dataset.teamid;
+      const submitted = row.dataset.submitted === "1";
+      const date = adminDateInput.value || today;
+  
+      // 다른 열려있는 detail 닫기(원하시면 제거 가능)
+      document.querySelectorAll('tr.detail-row').forEach(dr=>{
+        if (dr.dataset.detailfor !== teamId) dr.classList.add("hidden");
       });
+  
+      const detailRow = document.querySelector(`tr.detail-row[data-detailfor="${teamId}"]`);
+      if (!detailRow) return;
+  
+      // 토글
+      const willOpen = detailRow.classList.contains("hidden");
+      detailRow.classList.toggle("hidden", !willOpen);
+  
+      if (!willOpen) return; // 닫는 경우 종료
+  
+      const panel = document.getElementById(`detail-${teamId}`);
+      if (!panel) return;
+  
+      if (!submitted) {
+        panel.innerHTML = `<div style="font-weight:950;color:#6b7280;">미제출 사랑방입니다.</div>`;
+        return;
+      }
+  
+      // 캐시 먼저 확인
+      const cacheKey = `${date}|${teamId}`;
+      if (adminDetailCache[cacheKey]) {
+        renderTeamDetailPanel_(panel, adminDetailCache[cacheKey]);
+        return;
+      }
+  
+      panel.innerHTML = `<div style="font-weight:950;color:#6b7280;">상세 불러오는 중...</div>`;
+  
+      try {
+        const res = await apiGet("getTeamSubmission", { teamId: String(teamId), date });
+        if (!res || !res.ok || !res.found || !res.submission) {
+          panel.innerHTML = `<div style="font-weight:950;color:#b91c1c;">상세 데이터를 찾을 수 없습니다.</div>`;
+          return;
+        }
+        adminDetailCache[cacheKey] = res.submission;
+        renderTeamDetailPanel_(panel, res.submission);
+  
+      } catch(err) {
+        panel.innerHTML = `<div style="font-weight:950;color:#b91c1c;">상세 조회 실패(네트워크/스크립트 배포 확인)</div>`;
+      }
+    });
+  }
+  
+  function renderTeamDetailPanel_(panel, submission){
+    const att = Array.isArray(submission.attendance) ? submission.attendance : [];
+  
+    const presentNames = [];
+    const absentNames = [];
+    const notes = [];
+  
+    att.forEach(a=>{
+      const name = String(a?.name || "").trim();
+      if (!name) return;
+  
+      const isPresent = !!a.present;
+      const note = String(a?.note || "").trim();
+  
+      if (isPresent) presentNames.push(name);
+      else absentNames.push(name);
+  
+      if (note) notes.push({ name, note, present: isPresent });
+    });
+  
+    const total = att.length;
+    const present = presentNames.length;
+    const absent = total - present;
+    const rate = total > 0 ? (present/total)*100 : 0;
+  
+    const presentChips = presentNames.length
+      ? presentNames.map(n=>`<span class="chip">${escapeHtml(n)}</span>`).join("")
+      : `<span style="font-weight:950;color:#6b7280;">없음</span>`;
+  
+    const absentChips = absentNames.length
+      ? absentNames.map(n=>`<span class="chip absent">${escapeHtml(n)}</span>`).join("")
+      : `<span style="font-weight:950;color:#6b7280;">없음</span>`;
+  
+    const notesHtml = notes.length
+      ? `<div class="note-list">
+          ${notes.map(x=>`
+            <div class="note-item">
+              <span class="note-name">${escapeHtml(x.name)}</span>
+              <span class="note-badge">(${x.present ? "출석" : "결석"})</span><br/>
+              ${escapeHtml(x.note)}
+            </div>
+          `).join("")}
+        </div>`
+      : `<div style="font-weight:950;color:#6b7280;">특이사항이 없습니다.</div>`;
+  
+    panel.innerHTML = `
+      <div class="detail-grid">
+        <div class="detail-card">
+          <div class="detail-title">요약</div>
+          <div class="detail-sub">출석률</div>
+          <div style="font-size:1.35rem;font-weight:950;color:#2563eb;">${rate.toFixed(1)}%</div>
+          <div style="margin-top:.4rem;font-weight:900;color:#6b7280;">
+            출석 ${present}명 · 결석 ${absent}명 · 총 ${total}명
+          </div>
+        </div>
+  
+        <div class="detail-card">
+          <div class="detail-title">출석자</div>
+          <div class="chips">${presentChips}</div>
+        </div>
+  
+        <div class="detail-card">
+          <div class="detail-title">결석자</div>
+          <div class="chips">${absentChips}</div>
+        </div>
+  
+        <div class="detail-card">
+          <div class="detail-title">특이사항</div>
+          ${notesHtml}
+        </div>
+      </div>
+    `;
+  }
+
 
       const totalAbsent = totalMembers - totalPresent;
       const totalRate = totalMembers > 0 ? (totalPresent/totalMembers)*100 : 0;
