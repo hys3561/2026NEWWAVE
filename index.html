@@ -211,7 +211,9 @@
         <button type="button" class="tab-button active" data-tab="stats">출석 현황</button>
         <button type="button" class="tab-button" data-tab="notes">특이사항</button>
         <button type="button" class="tab-button" data-tab="suggestions">건의사항</button>
+        <button type="button" class="tab-button" data-tab="members">개인 출석률</button>
       </div>
+
 
       <div id="adminStatsTab">
         <div class="date-section">
@@ -236,8 +238,29 @@
 
         <div class="admin-summary-note" id="adminSummaryNote"></div>
         <div class="attendance-table" id="attendanceTable"></div>
+        
+        <div id="adminTeamDetail" class="hidden" style="margin-top:1rem;">
+          <div class="admin-summary-note" id="adminTeamDetailTitle" style="margin-bottom:.75rem;"></div>
+         
+          <div class="admin-summary">
+          <div class="admin-summary-card">
+            <div class="admin-summary-label">출석</div>
+            <div class="admin-summary-value" id="teamDetailPresent">0명</div>
+          </div>
+          <div class="admin-summary-card">
+            <div class="admin-summary-label">결석</div>
+            <div class="admin-summary-value" id="teamDetailAbsent">0명</div>
+          </div>
+          <div class="admin-summary-card">
+            <div class="admin-summary-label">출석률</div>
+            <div class="admin-summary-value" id="teamDetailRate">0%</div>
+          </div>
+        </div>
+      
+        <div class="notes-table" id="teamDetailTable"></div>
       </div>
 
+        
       <div id="adminNotesTab" class="hidden">
         <div class="date-section">
           <div class="date-label">주차 선택</div>
