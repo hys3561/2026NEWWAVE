@@ -7,174 +7,56 @@
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background-color: #f9fafb;
-      min-height: 100vh;
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f9fafb; min-height: 100vh; }
 
-    .header {
-      background: white;
-      border-bottom: 1px solid #e5e7eb;
-      padding: 1.25rem 1rem;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
+    .header { background: white; border-bottom: 1px solid #e5e7eb; padding: 1.25rem 1rem; position: sticky; top: 0; z-index: 100; }
     .header-content { max-width: 1200px; margin: 0 auto; position: relative; }
     .header-title { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
     h1 { font-size: 1.5rem; color: #111827; }
-    .subtitle { color: #6b7280; font-size: 0.875rem; }
+    .subtitle { color: #6b7280; font-size: 0.875rem; font-weight: 700; }
 
-    .admin-button {
-      position: absolute;
-      top: 0;
-      right: 0;
-      background: #6b7280;
-      color: white;
-      padding: 0.5rem 1rem;
-      border-radius: 0.5rem;
-      border: none;
-      cursor: pointer;
-      font-size: 0.875rem;
-      font-weight: 800;
-    }
+    .admin-button { position: absolute; top: 0; right: 0; background: #6b7280; color: white; padding: 0.5rem 1rem; border-radius: 0.75rem; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 900; }
     .admin-button:hover { background: #4b5563; }
 
     .container { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1rem; }
 
     /* 홈 팀 카드 */
     .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
-    .team-card {
-      background: white;
-      padding: 1.5rem;
-      border-radius: 0.75rem;
-      border: 2px solid #e5e7eb;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .team-card:hover { border-color: #2563eb; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+    .team-card { background: white; padding: 1.5rem; border-radius: 0.9rem; border: 2px solid #e5e7eb; cursor: pointer; transition: all 0.2s; }
+    .team-card:hover { border-color: #2563eb; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
     .team-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
-    .team-number {
-      width: 3rem; height: 3rem;
-      background: #dbeafe;
-      border-radius: 0.75rem;
-      display: flex; align-items: center; justify-content: center;
-      color: #2563eb;
-      font-weight: 950;
-      font-size: 1.25rem;
-    }
+    .team-number { width: 3rem; height: 3rem; background: #dbeafe; border-radius: 0.85rem; display: flex; align-items: center; justify-content: center; color: #2563eb; font-weight: 950; font-size: 1.25rem; }
     .team-card:hover .team-number { background: #2563eb; color: white; }
-    .member-count {
-      background: #f3f4f6;
-      padding: 0.25rem 0.75rem;
-      border-radius: 9999px;
-      font-size: 0.875rem;
-      color: #6b7280;
-      font-weight: 800;
-    }
-    .team-name { font-size: 1.125rem; font-weight: 900; color: #111827; margin-bottom: 0.25rem; }
+    .member-count { background: #f3f4f6; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; color: #6b7280; font-weight: 900; }
+    .team-name { font-size: 1.125rem; font-weight: 950; color: #111827; margin-bottom: 0.25rem; }
 
     /* 상단 뒤로가기 */
-    .back-button {
-      display: flex; align-items: center; gap: 0.5rem;
-      color: #6b7280;
-      background: none; border: none;
-      cursor: pointer;
-      font-size: 1rem;
-      margin-bottom: 0.75rem;
-      padding: 0.5rem 0.25rem;
-      font-weight: 800;
-    }
+    .back-button { display: flex; align-items: center; gap: 0.5rem; color: #6b7280; background: none; border: none; cursor: pointer; font-size: 1rem; margin-bottom: 0.75rem; padding: 0.5rem 0.25rem; font-weight: 900; }
     .back-button:hover { color: #111827; }
 
     /* 날짜/요약 */
-    .date-section {
-      background: white;
-      padding: 1rem;
-      border-radius: 0.75rem;
-      border: 1px solid #e5e7eb;
-      margin-bottom: 1rem;
-    }
-    .date-label { font-size: 0.875rem; font-weight: 900; color: #374151; margin-bottom: 0.5rem; }
-    .date-input {
-      width: 100%;
-      padding: 0.75rem 1rem;
-      border: 1px solid #d1d5db;
-      border-radius: 0.75rem;
-      font-size: 16px; /* iOS 확대 방지 */
-      -webkit-appearance: none;
-      appearance: none;
-      background: white;
-    }
+    .date-section { background: white; padding: 1rem; border-radius: 0.9rem; border: 1px solid #e5e7eb; margin-bottom: 1rem; }
+    .date-label { font-size: 0.875rem; font-weight: 950; color: #374151; margin-bottom: 0.5rem; }
+    .date-input { width: 100%; padding: 0.75rem 1rem; border: 1px solid #d1d5db; border-radius: 0.85rem; font-size: 16px; -webkit-appearance: none; appearance: none; background: white; }
 
-    .summary-box {
-      background: #eff6ff;
-      padding: 1rem;
-      border-radius: 0.75rem;
-      border: 1px solid #bfdbfe;
-      margin-bottom: 1rem;
-    }
+    .summary-box { background: #eff6ff; padding: 1rem; border-radius: 0.9rem; border: 1px solid #bfdbfe; margin-bottom: 1rem; }
     .summary-content { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
     .summary-count { font-size: 1.5rem; font-weight: 950; color: #2563eb; }
     .progress-bar { background: #e5e7eb; border-radius: 9999px; height: 0.5rem; overflow: hidden; }
     .progress-fill { background: #2563eb; height: 100%; transition: width 0.3s; }
 
-    /* 검색 + 그리드 */
-    .search-section {
-      background: white;
-      padding: 0.75rem 1rem;
-      border-radius: 0.75rem;
-      border: 1px solid #e5e7eb;
-      margin-bottom: 1rem;
-    }
-    .search-input {
-      width: 100%;
-      padding: 0.65rem 0.9rem;
-      border: 1px solid #d1d5db;
-      border-radius: 0.75rem;
-      font-size: 16px;
-    }
+    /* 검색 + 멤버 그리드 */
+    .search-section { background: white; padding: 0.75rem 1rem; border-radius: 0.9rem; border: 1px solid #e5e7eb; margin-bottom: 1rem; }
+    .search-input { width: 100%; padding: 0.65rem 0.9rem; border: 1px solid #d1d5db; border-radius: 0.85rem; font-size: 16px; }
 
-    .member-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-      gap: 0.75rem;
-      margin-bottom: 1rem;
-    }
-    @media (min-width: 768px) {
-      .member-list { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
-    }
+    .member-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+    @media (min-width: 768px) { .member-list { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); } }
 
-    .member-item {
-      background: white;
-      padding: 0.9rem;
-      border-radius: 0.75rem;
-      border: 2px solid #e5e7eb;
-      transition: all 0.2s;
-    }
+    .member-item { background: white; padding: 0.9rem; border-radius: 0.9rem; border: 2px solid #e5e7eb; transition: all 0.2s; }
     .member-item.checked { background: #eff6ff; border-color: #2563eb; }
-
     .member-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; gap: 0.5rem; }
-    .member-name {
-      font-size: 1rem;
-      font-weight: 950;
-      color: #374151;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .checkbox {
-      width: 1.75rem;
-      height: 1.75rem;
-      border-radius: 9999px;
-      border: 2px solid #d1d5db;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
+    .member-name { font-size: 1rem; font-weight: 950; color: #374151; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .checkbox { width: 1.75rem; height: 1.75rem; border-radius: 9999px; border: 2px solid #d1d5db; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .member-item.checked .checkbox { background: #2563eb; border-color: #2563eb; }
     .checkmark { display: none; color: white; font-weight: 950; font-size: 0.95rem; }
     .member-item.checked .checkmark { display: block; }
@@ -182,187 +64,62 @@
     /* 특이사항(아래로) */
     .note-section { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #e5e7eb; }
     .note-label { font-size: 0.8rem; font-weight: 950; color: #6b7280; margin-bottom: 0.35rem; }
-    .note-input {
-      width: 100%;
-      padding: 0.55rem 0.65rem;
-      border: 1px solid #d1d5db;
-      border-radius: 0.6rem;
-      font-size: 16px;
-    }
+    .note-input { width: 100%; padding: 0.55rem 0.65rem; border: 1px solid #d1d5db; border-radius: 0.75rem; font-size: 16px; }
 
     /* 건의사항 */
-    .suggestion-section {
-      background: white;
-      padding: 1rem;
-      border-radius: 0.75rem;
-      border: 1px solid #e5e7eb;
-      margin-bottom: 1rem;
-    }
-    .suggestion-textarea {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid #d1d5db;
-      border-radius: 0.75rem;
-      font-size: 16px;
-      min-height: 90px;
-    }
+    .suggestion-section { background: white; padding: 1rem; border-radius: 0.9rem; border: 1px solid #e5e7eb; margin-bottom: 1rem; }
+    .suggestion-textarea { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.85rem; font-size: 16px; min-height: 90px; }
 
     /* 하단 저장바 */
     :root { --safe-bottom: env(safe-area-inset-bottom, 0px); }
-    .sticky-actions {
-      position: sticky;
-      bottom: 0;
-      background: rgba(249, 250, 251, 0.95);
-      border-top: 1px solid #e5e7eb;
-      padding: 0.75rem 0  calc(0.75rem + var(--safe-bottom)) 0;
-      backdrop-filter: blur(6px);
-    }
-    .save-button {
-      width: 100%;
-      background: #2563eb;
-      color: white;
-      padding: 0.95rem;
-      border-radius: 0.75rem;
-      border: none;
-      font-size: 1.05rem;
-      font-weight: 950;
-      cursor: pointer;
-    }
+    .sticky-actions { position: sticky; bottom: 0; background: rgba(249,250,251,0.95); border-top: 1px solid #e5e7eb; padding: 0.75rem 0 calc(0.75rem + var(--safe-bottom)) 0; backdrop-filter: blur(6px); }
+    .save-button { width: 100%; background: #2563eb; color: white; padding: 0.95rem; border-radius: 0.9rem; border: none; font-size: 1.05rem; font-weight: 950; cursor: pointer; }
     .save-button:hover { background: #1d4ed8; }
 
-    .message {
-      padding: 0.85rem 1rem;
-      border-radius: 0.75rem;
-      text-align: center;
-      font-weight: 900;
-      margin-top: 0.75rem;
-    }
+    .message { padding: 0.85rem 1rem; border-radius: 0.9rem; text-align: center; font-weight: 950; margin-top: 0.75rem; }
     .message.success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
     .message.error { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
     .message.info { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
 
     /* 관리자 */
-    .dashboard-tabs {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 1.25rem;
-      border-bottom: 2px solid #e5e7eb;
-      flex-wrap: wrap;
-    }
-    .tab-button {
-      padding: 0.75rem 1.25rem;
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: #6b7280;
-      border-bottom: 2px solid transparent;
-      margin-bottom: -2px;
-      font-weight: 950;
-    }
+    .dashboard-tabs { display: flex; gap: 1rem; margin-bottom: 1.25rem; border-bottom: 2px solid #e5e7eb; flex-wrap: wrap; }
+    .tab-button { padding: 0.75rem 1.25rem; background: none; border: none; cursor: pointer; color: #6b7280; border-bottom: 2px solid transparent; margin-bottom: -2px; font-weight: 950; }
     .tab-button.active { color: #2563eb; border-bottom-color: #2563eb; }
 
-    .admin-summary {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.75rem;
-      margin: 1rem 0;
-    }
-    .admin-summary-card {
-      background: white;
-      border: 1px solid #e5e7eb;
-      border-radius: 0.75rem;
-      padding: 1rem;
-    }
+    .admin-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin: 1rem 0; }
+    .admin-summary-card { background: white; border: 1px solid #e5e7eb; border-radius: 0.9rem; padding: 1rem; }
     .admin-summary-label { font-size: 0.875rem; color: #6b7280; font-weight: 950; margin-bottom: 0.25rem; }
     .admin-summary-value { font-size: 1.6rem; font-weight: 950; color: #111827; }
     .admin-summary-note { font-size: 0.9rem; color: #6b7280; margin-bottom: 1rem; font-weight: 800; }
 
-    .attendance-table, .notes-table {
-      background: white;
-      border-radius: 0.75rem;
-      border: 1px solid #e5e7eb;
-      overflow-x: auto;
-    }
+    .attendance-table, .notes-table { background: white; border-radius: 0.9rem; border: 1px solid #e5e7eb; overflow-x: auto; }
     .attendance-table table, .notes-table table { width: 100%; border-collapse: collapse; }
-    .attendance-table th, .notes-table th {
-      background: #f9fafb;
-      padding: 0.75rem;
-      text-align: left;
-      font-size: 0.875rem;
-      font-weight: 950;
-      border-bottom: 1px solid #e5e7eb;
-      white-space: nowrap;
-    }
-    .attendance-table td, .notes-table td {
-      padding: 0.75rem;
-      border-bottom: 1px solid #e5e7eb;
-      font-size: 0.875rem;
-      vertical-align: top;
-    }
+    .attendance-table th, .notes-table th { background: #f9fafb; padding: 0.75rem; text-align: left; font-size: 0.875rem; font-weight: 950; border-bottom: 1px solid #e5e7eb; white-space: nowrap; }
+    .attendance-table td, .notes-table td { padding: 0.75rem; border-bottom: 1px solid #e5e7eb; font-size: 0.875rem; vertical-align: top; }
 
-    .suggestion-list {
-      background: white;
-      border-radius: 0.75rem;
-      border: 1px solid #e5e7eb;
-      padding: 1rem;
-    }
+    .suggestion-list { background: white; border-radius: 0.9rem; border: 1px solid #e5e7eb; padding: 1rem; }
     .suggestion-item { padding: 1rem; border-bottom: 1px solid #e5e7eb; }
     .suggestion-team { font-weight: 950; color: #111827; }
 
     .hidden { display: none; }
 
     /* 비밀번호 모달 */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(17, 24, 39, 0.55);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-      z-index: 999;
-    }
-    .modal {
-      width: 100%;
-      max-width: 420px;
-      background: white;
-      border-radius: 0.9rem;
-      border: 1px solid #e5e7eb;
-      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15);
-      overflow: hidden;
-    }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(17,24,39,0.55); display: flex; align-items: center; justify-content: center; padding: 1rem; z-index: 999; }
+    .modal { width: 100%; max-width: 420px; background: white; border-radius: 1rem; border: 1px solid #e5e7eb; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15); overflow: hidden; }
     .modal-header { padding: 1rem 1rem 0.75rem 1rem; border-bottom: 1px solid #e5e7eb; }
     .modal-title { font-size: 1.1rem; font-weight: 950; color: #111827; }
     .modal-subtitle { margin-top: 0.25rem; font-size: 0.9rem; color: #6b7280; font-weight: 800; }
     .modal-body { padding: 1rem; }
-    .modal-input {
-      width: 100%;
-      padding: 0.8rem 0.9rem;
-      border: 1px solid #d1d5db;
-      border-radius: 0.75rem;
-      font-size: 16px;
-    }
+    .modal-input { width: 100%; padding: 0.8rem 0.9rem; border: 1px solid #d1d5db; border-radius: 0.9rem; font-size: 16px; }
     .modal-error { margin-top: 0.75rem; color: #b91c1c; font-weight: 950; font-size: 0.9rem; }
-    .modal-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.75rem;
-      padding: 0 1rem 1rem 1rem;
-    }
-    .modal-btn {
-      border: none;
-      border-radius: 0.75rem;
-      padding: 0.85rem 0.9rem;
-      font-weight: 950;
-      cursor: pointer;
-      font-size: 0.95rem;
-    }
+    .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; padding: 0 1rem 1rem 1rem; }
+    .modal-btn { border: none; border-radius: 0.9rem; padding: 0.85rem 0.9rem; font-weight: 950; cursor: pointer; font-size: 0.95rem; }
     .modal-btn.primary { background: #2563eb; color: white; }
     .modal-btn.primary:hover { background: #1d4ed8; }
     .modal-btn.ghost { background: #f3f4f6; color: #111827; }
     .modal-btn.ghost:hover { background: #e5e7eb; }
 
-    /* 모바일 최적화 */
+    /* 모바일 */
     @media (max-width: 640px) {
       .header { padding: 1rem 1rem; }
       h1 { font-size: 1.25rem; }
@@ -408,7 +165,7 @@
 
       <div class="summary-box">
         <div class="summary-content">
-          <span style="font-weight:900;color:#111827;">출석 현황</span>
+          <span style="font-weight:950;color:#111827;">출석 현황</span>
           <span class="summary-count" id="attendanceCount">0 / 0</span>
         </div>
         <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
@@ -491,7 +248,7 @@
     </div>
   </div>
 
-  <!-- 비밀번호 모달 -->
+  <!-- 비밀번호 모달 (✅ 처음부터 hidden) -->
   <div id="passwordModal" class="modal-overlay hidden" role="dialog" aria-modal="true">
     <div class="modal">
       <div class="modal-header">
@@ -510,13 +267,17 @@
   </div>
 
   <script>
-    /*****************
-     * Apps Script URL (DB)
-     *****************/
+    /******************************************************************
+     * ✅ Apps Script Web App URL (DB 저장)
+     * - Deploy: Execute as = Me, Who has access = Anyone
+     * - Script Properties:
+     *    ADMIN_PASSWORD = 관리자비번
+     *    TEAM_PASSWORDS = {"1":"pw1111","2":"pw2222",...}
+     ******************************************************************/
     var GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxC4ZzJh1wS4N6KvWEx9oMzvYxqm0_c2ZrMoqoipJsBNAvlHLsUqV4IhQnFvDSbbh8EtQ/exec';
 
     /*****************
-     * Teams
+     * 사랑방 목록
      *****************/
     var TEAMS = [
       {id:1,name:'권준형 사랑방',leader:'방장: 권준형',members:['방원1','방원2','방원3','방원4','방원5','방원6','방원7','방원8','방원9','방원10','방원11','방원12','방원13','방원14','방원15','방원16','방원17','방원18','방원19','방원20']},
@@ -534,7 +295,7 @@
     ];
 
     /*****************
-     * State
+     * 상태
      *****************/
     var selectedTeam = null;
     var attendance = {};
@@ -542,7 +303,7 @@
     var isLoadingFromServer = false;
 
     /*****************
-     * Date defaults
+     * 날짜 기본값
      *****************/
     var today = new Date().toISOString().split('T')[0];
     document.getElementById('dateInput').value = today;
@@ -551,7 +312,7 @@
     document.getElementById('adminSugDateInput').value = today;
 
     /*****************
-     * Token storage (local)
+     * 토큰 로컬 저장
      *****************/
     function tokenKeyTeam(teamId){ return 'nw_team_token:' + teamId; }
     function tokenKeyAdmin(){ return 'nw_admin_token'; }
@@ -565,7 +326,27 @@
     function clearAdminToken(){ localStorage.removeItem(tokenKeyAdmin()); }
 
     /*****************
-     * JSONP helper (GET, CORS 회피)
+     * 유틸
+     *****************/
+    function cssEsc(v) { if (window.CSS && CSS.escape) return CSS.escape(v); return String(v).replace(/["\\]/g, '\\$&'); }
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+    function showMsg(type, text) {
+      var box = document.getElementById('messageBox');
+      box.className = 'message ' + (type || '');
+      box.textContent = text || '';
+      box.classList.remove('hidden');
+      setTimeout(function(){ box.classList.add('hidden'); }, 2500);
+    }
+
+    /*****************
+     * JSONP (GET) - CORS 회피
      *****************/
     function jsonp(url, params){
       return new Promise(function(resolve, reject){
@@ -591,16 +372,8 @@
           try { delete window[cb]; } catch(e) { window[cb] = undefined; }
         }
 
-        window[cb] = function(data){
-          cleanup();
-          resolve(data);
-        };
-
-        script.onerror = function(){
-          cleanup();
-          reject(new Error('JSONP network error'));
-        };
-
+        window[cb] = function(data){ cleanup(); resolve(data); };
+        script.onerror = function(){ cleanup(); reject(new Error('JSONP network error')); };
         document.body.appendChild(script);
       });
     }
@@ -612,29 +385,23 @@
     }
 
     /*****************
-     * UI helpers
+     * 페이지 전환
      *****************/
-    function cssEsc(v) { if (window.CSS && CSS.escape) return CSS.escape(v); return String(v).replace(/["\\]/g, '\\$&'); }
-
-    function showMsg(type, text) {
-      var box = document.getElementById('messageBox');
-      box.className = 'message ' + (type || '');
-      box.textContent = text || '';
-      box.classList.remove('hidden');
-      setTimeout(function(){ box.classList.add('hidden'); }, 2500);
+    function hideAll(){
+      document.getElementById('homePage').classList.add('hidden');
+      document.getElementById('attendancePage').classList.add('hidden');
+      document.getElementById('adminDashboard').classList.add('hidden');
     }
 
-    function escapeHtml(str) {
-      return String(str)
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
+    function goHome(){
+      closePasswordModal(); // 혹시 열려있으면 닫기
+      hideAll();
+      document.getElementById('homePage').classList.remove('hidden');
+      selectedTeam = null;
     }
 
     /*****************
-     * Password modal
+     * 비밀번호 모달 (✅ prompt 사용 금지)
      *****************/
     var modalState = { mode: null, team: null };
 
@@ -670,10 +437,7 @@
       try {
         if (modalState.mode === 'admin') {
           var resA = await apiGet('authAdmin', { password: pw });
-          if (!resA || !resA.ok) {
-            setModalError((resA && resA.error) ? resA.error : '비밀번호가 틀렸습니다.');
-            return;
-          }
+          if (!resA || !resA.ok) { setModalError((resA && resA.error) ? resA.error : '비밀번호가 틀렸습니다.'); return; }
           setAdminToken(resA.token);
           closePasswordModal();
           showAdminDashboard();
@@ -683,10 +447,7 @@
         if (modalState.mode === 'team' && modalState.team) {
           var teamId = String(modalState.team.id);
           var resT = await apiGet('authTeam', { teamId: teamId, password: pw });
-          if (!resT || !resT.ok) {
-            setModalError((resT && resT.error) ? resT.error : '비밀번호가 틀렸습니다.');
-            return;
-          }
+          if (!resT || !resT.ok) { setModalError((resT && resT.error) ? resT.error : '비밀번호가 틀렸습니다.'); return; }
           setTeamToken(teamId, resT.token);
           closePasswordModal();
           selectTeam(modalState.team);
@@ -707,22 +468,7 @@
     });
 
     /*****************
-     * Navigation
-     *****************/
-    function hideAll(){
-      document.getElementById('homePage').classList.add('hidden');
-      document.getElementById('attendancePage').classList.add('hidden');
-      document.getElementById('adminDashboard').classList.add('hidden');
-    }
-
-    function goHome(){
-      hideAll();
-      document.getElementById('homePage').classList.remove('hidden');
-      selectedTeam = null;
-    }
-
-    /*****************
-     * Home
+     * 홈 - 팀 카드 생성
      *****************/
     function initTeamGrid(){
       var g = document.getElementById('teamGrid');
@@ -730,6 +476,8 @@
       TEAMS.forEach(function(t){
         var c = document.createElement('div');
         c.className = 'team-card';
+
+        // ✅ 팀 클릭 시에만 비밀번호 요청
         c.onclick = function(){ attemptEnterTeam(t); };
 
         c.innerHTML =
@@ -744,23 +492,20 @@
       });
     }
 
-    // ✅ 첫 페이지에서는 절대 비밀번호를 요구하지 않음
+    // ✅ 관리자 버튼을 눌렀을 때만 비번
     function openAdminPassword(){
       openPasswordModal({
         mode: 'admin',
         title: '관리자 탭 비밀번호',
-        subtitle: '관리자 대시보드에 प्रवेश하려면 비밀번호를 입력하세요.'
+        subtitle: '관리자 대시보드에 들어가려면 비밀번호를 입력하세요.'
       });
     }
 
-    // ✅ 사랑방 클릭 시에만 비밀번호 요청
+    // ✅ 팀 클릭 시에만 팀 비번
     function attemptEnterTeam(team){
       var token = getTeamToken(String(team.id));
-      if (token) {
-        // 토큰이 만료되었으면 서버 호출에서 걸러짐 → 그때 재요청
-        selectTeam(team);
-        return;
-      }
+      if (token) { selectTeam(team); return; } // 이미 인증된 경우 바로 입장
+
       openPasswordModal({
         mode: 'team',
         team: team,
@@ -770,7 +515,7 @@
     }
 
     /*****************
-     * Attendance page
+     * 출석 페이지 UI 구성
      *****************/
     function buildMemberList(team){
       var list = document.getElementById('memberList');
@@ -800,6 +545,7 @@
         header.appendChild(nameSpan);
         header.appendChild(checkbox);
 
+        // 특이사항은 아래로
         var noteSec = document.createElement('div');
         noteSec.className = 'note-section';
 
@@ -858,6 +604,14 @@
       updateCount();
     }
 
+    /*****************
+     * 서버에서 해당 팀/날짜 데이터 불러오기
+     * - action=getTeamSubmission&teamId=1&date=YYYY-MM-DD&token=...
+     * - 응답 예시:
+     *   {ok:true, found:true, submission:{ attendance:[{name,present,note}], suggestion:"..." }}
+     *   {ok:true, found:false}
+     *   {ok:false, error:"Invalid token"}
+     *****************/
     async function loadFromServer(team, date){
       var token = getTeamToken(String(team.id));
       if (!token) return false;
@@ -867,14 +621,10 @@
         var res = await apiGet('getTeamSubmission', { teamId: String(team.id), date: date, token: token });
 
         if (!res || !res.ok) {
-          // 토큰 만료/무효
-          if (res && (res.error || '').toLowerCase().indexOf('token') >= 0) {
-            clearTeamToken(String(team.id));
-            showMsg('error', '인증이 만료되었습니다. 비밀번호를 다시 입력해주세요.');
-            attemptEnterTeam(team);
-          } else {
-            showMsg('error', '데이터를 불러오지 못했습니다.');
-          }
+          // 토큰 만료/무효 → 재인증
+          clearTeamToken(String(team.id));
+          showMsg('error', '인증이 만료되었습니다. 비밀번호를 다시 입력해주세요.');
+          attemptEnterTeam(team);
           return false;
         }
 
@@ -964,7 +714,9 @@
     });
 
     /*****************
-     * Submit (POST)
+     * 저장 (POST)
+     * - action=submit
+     * - 서버에서 team token 검증 후 시트에 저장
      *****************/
     async function saveAttendance(){
       if (!selectedTeam) return;
@@ -993,7 +745,6 @@
       };
 
       try {
-        // no-cors: 응답은 못 읽어도 서버(시트)에는 저장됩니다.
         await fetch(GOOGLE_SCRIPT_URL, {
           method: 'POST',
           mode: 'no-cors',
@@ -1009,12 +760,12 @@
     }
 
     /*****************
-     * Admin
+     * 관리자
      *****************/
     function showAdminDashboard(){
       hideAll();
       document.getElementById('adminDashboard').classList.remove('hidden');
-      loadAdminData(); // ✅ 관리자 화면에서만 동작(아래 가드)
+      loadAdminData(); // ✅ 관리자 화면에서만 동작(가드 있음)
     }
 
     function switchAdminTab(tab){
@@ -1033,7 +784,7 @@
     }
 
     async function loadAdminData(){
-      // ✅ 홈(첫 페이지)에서는 절대 관리자 비밀번호 요청이 뜨지 않도록 가드
+      // ✅ 홈/출석 화면에서는 절대 관리자 비밀번호 모달이 뜨지 않도록 가드
       if (document.getElementById('adminDashboard').classList.contains('hidden')) return;
 
       var token = getAdminToken();
@@ -1049,6 +800,7 @@
     }
 
     async function fetchAdminByDate(date, token){
+      // action=getSubmissionsByDate&date=...&token=...
       var res = await apiGet('getSubmissionsByDate', { date: date, token: token });
       if (!res || !res.ok) {
         clearAdminToken();
@@ -1120,7 +872,7 @@
       if (!data) return;
 
       var rows = '';
-      var notesFlat = data.notesFlat || [];
+      var notesFlat = data.notesFlat || []; // [{teamName, member, note}]
       notesFlat.forEach(function(n){
         rows += '<tr>' +
           '<td>' + escapeHtml(n.teamName || '') + '</td>' +
@@ -1133,7 +885,7 @@
         '<table>' +
           '<thead><tr><th>사랑방</th><th>방원</th><th>특이사항</th></tr></thead>' +
           '<tbody>' +
-            (rows || '<tr><td colspan="3" style="text-align:center;color:#6b7280;font-weight:900;">특이사항이 없습니다.</td></tr>') +
+            (rows || '<tr><td colspan="3" style="text-align:center;color:#6b7280;font-weight:950;">특이사항이 없습니다.</td></tr>') +
           '</tbody>' +
         '</table>';
     }
@@ -1147,13 +899,13 @@
         items.push(
           '<div class="suggestion-item">' +
             '<div class="suggestion-team">' + escapeHtml(s.teamName || '') + ' (' + escapeHtml(s.leader || '') + ')</div>' +
-            '<div style="margin-top:0.5rem; color:#374151; white-space:pre-wrap; font-weight:800;">' + escapeHtml(s.suggestion || '') + '</div>' +
+            '<div style="margin-top:0.5rem;color:#374151;white-space:pre-wrap;font-weight:800;">' + escapeHtml(s.suggestion || '') + '</div>' +
           '</div>'
         );
       });
 
       document.getElementById('suggestionsList').innerHTML =
-        items.length ? items.join('') : '<div style="text-align:center;color:#6b7280;padding:2rem;font-weight:900;">건의사항이 없습니다.</div>';
+        items.length ? items.join('') : '<div style="text-align:center;color:#6b7280;padding:2rem;font-weight:950;">건의사항이 없습니다.</div>';
     }
 
     document.getElementById('adminDateInput').addEventListener('change', loadAdminData);
@@ -1161,9 +913,10 @@
     document.getElementById('adminSugDateInput').addEventListener('change', loadAdminData);
 
     /*****************
-     * Init (중요: 여기서 비밀번호 모달을 절대 열지 않음)
+     * ✅ 초기화: 비밀번호 모달을 절대 자동으로 열지 않음
      *****************/
     initTeamGrid();
+    goHome();
   </script>
 </body>
 </html>
