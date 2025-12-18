@@ -247,6 +247,9 @@
     </div>
 
     <div class="container">
+      <!-- ✅ 관리자용 에러 메시지 박스 -->
+      <div id="adminMsg" class="message error hidden"></div>
+
       <div class="dashboard-tabs">
         <button type="button" class="tab-button active" data-tab="stats">출석 현황</button>
         <button type="button" class="tab-button" data-tab="notes">특이사항</button>
@@ -363,9 +366,9 @@
 
   <script>
     /************************************************************
-     * ✅ Apps Script Web App URL (윤호님이 준 주소)
+     * ✅ Apps Script Web App URL (윤호님이 준 주소로 고정)
      ************************************************************/
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw8WxmCf23sYEUU-FCGSA5hkptyPGEd7nHJKicelLMbqpDl7svO6iIBwzCKGjrizULwFw/exec";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwjMQ7iaHuEwpO2vLfiwytD26KH04opFoGiCFcs9ZeDnlBwMSdbN9oJ900vvdOXyXkuJg/exec";
 
     /************************************************************
      * ✅ 비밀번호
@@ -378,10 +381,7 @@
     };
 
     /************************************************************
-     * ✅ 사랑방 목록 (원복 + 또래 지원)
-     * - members는 아래 2가지 형태 모두 지원
-     *   1) "홍길동" (cohort가 없으면 ""로 저장됨)
-     *   2) { name:"홍길동", cohort:"01" }
+     * ✅ 사랑방 목록 (로스터는 HTML 직접 관리)
      ************************************************************/
     const TEAMS = [
       { id: 1, name: "권준형 사랑방", leader: "방장: 권준형", members: [
@@ -432,7 +432,15 @@
       box.className = "message " + (type || "");
       box.textContent = text || "";
       box.classList.remove("hidden");
-      setTimeout(()=> box.classList.add("hidden"), 2500);
+      const ms = (type === "error") ? 8000 : 3000; // ✅ 에러는 오래
+      setTimeout(()=> box.classList.add("hidden"), ms);
+    }
+
+    function showAdminMsg(text){
+      const box = document.getElementById("adminMsg");
+      box.textContent = text || "";
+      box.classList.remove("hidden");
+      setTimeout(()=> box.classList.add("hidden"), 8000);
     }
 
     function formatISODate(d){
@@ -443,9 +451,7 @@
     function normName(n){ return String(n ?? "").trim(); }
 
     // ✅ 개인 식별키 = name||cohort
-    function memberKey(name, cohort){
-      return `${normName(name)}||${normCohort(cohort)}`;
-    }
+    function memberKey(name, cohort){ return `${normName(name)}||${normCohort(cohort)}`; }
 
     function displayMember(name, cohort){
       const c = normCohort(cohort);
@@ -459,13 +465,14 @@
     }
 
     /************************************************************
-     * JSONP(GET) - 관리자/불러오기 핵심
+     * JSONP(GET) - 캐시 방지 + 콘솔 로그 강화
      ************************************************************/
     function jsonp(url, params){
       return new Promise((resolve, reject)=>{
         const cb = "cb_" + Date.now() + "_" + Math.floor(Math.random()*1e6);
         params = params || {};
         params.callback = cb;
+        params.__ts = Date.now(); // ✅ 캐시/리다이렉트 꼬임 방지
 
         const qs = Object.keys(params).map(k => encodeURIComponent(k)+"="+encodeURIComponent(params[k])).join("&");
         const script = document.createElement("script");
@@ -473,8 +480,9 @@
 
         const t = setTimeout(()=>{
           cleanup();
+          console.error("[JSONP timeout]", script.src);
           reject(new Error("JSONP timeout"));
-        }, 12000);
+        }, 15000);
 
         function cleanup(){
           clearTimeout(t);
@@ -483,7 +491,7 @@
         }
 
         window[cb] = (data)=>{ cleanup(); resolve(data); };
-        script.onerror = ()=>{ cleanup(); reject(new Error("JSONP network error")); };
+        script.onerror = ()=>{ cleanup(); console.error("[JSONP error]", script.src); reject(new Error("JSONP network error")); };
         document.body.appendChild(script);
       });
     }
@@ -672,7 +680,12 @@
     async function loadTeamDataFromServer(team, date){
       try {
         const res = await apiGet("getTeamSubmission", { teamId:String(team.id), date });
-        if (!res || !res.ok) { showMsg("error", "데이터 로드 실패"); return; }
+
+        if (!res || !res.ok) {
+          console.warn("[getTeamSubmission failed]", res);
+          showMsg("error", "데이터 로드 실패 (배포/권한/URL 확인)");
+          return;
+        }
 
         resetStateForTeam(team);
 
@@ -696,8 +709,11 @@
         });
 
         updateCount();
+
+        if (!res.found) showMsg("info", "저장된 기록이 없습니다. (새로 체크 후 저장해주세요)");
       } catch(e){
-        showMsg("error", "서버 연결 실패");
+        console.error(e);
+        showMsg("error", "서버 연결 실패 (웹 앱 접근권한/배포 확인)");
       }
     }
 
@@ -749,6 +765,7 @@
       loadTeamDataFromServer(selectedTeam, dateInput.value || today);
     });
 
+    // ✅ 저장: POST 후 GET으로 “진짜 저장 여부” 검증 + 화면 반영
     async function saveAttendance(){
       if (!selectedTeam) return;
 
@@ -763,27 +780,41 @@
         suggestion: document.getElementById("suggestionInput").value || "",
         attendance: members.map(m => {
           const k = memberKey(m.name, m.cohort);
-          return {
-            name: m.name,
-            cohort: m.cohort || "",
-            present: !!attendance[k],
-            note: memberNotes[k] || ""
-          };
+          return { name: m.name, cohort: m.cohort || "", present: !!attendance[k], note: memberNotes[k] || "" };
         })
       };
 
       try {
-        // POST는 no-cors로도 저장은 되지만 응답을 못 읽음 -> 저장 후 GET로 재로딩
+        showMsg("info", "저장 중입니다...");
         await fetch(GOOGLE_SCRIPT_URL, {
           method: "POST",
           mode: "no-cors",
           headers: { "Content-Type":"application/json" },
           body: JSON.stringify(payload)
         });
-        showMsg("success", "저장되었습니다!");
-        loadTeamDataFromServer(selectedTeam, dateInput.value || today);
       } catch(e){
-        showMsg("error", "저장 실패 (네트워크 확인)");
+        console.error(e);
+        showMsg("error", "저장 요청이 실패했습니다(네트워크).");
+        return;
+      }
+
+      // 저장 검증 (GET)
+      try {
+        const res = await apiGet("getTeamSubmission", { teamId: payload.teamId, date: payload.date });
+        if (!res || !res.ok) {
+          showMsg("error", "저장은 되었을 수 있으나, 불러오기가 실패했습니다(배포/권한/URL).");
+          return;
+        }
+        if (!res.found) {
+          showMsg("error", "저장 검증 실패: 해당 날짜/팀으로 조회가 되지 않습니다(팀ID/날짜 불일치).");
+          return;
+        }
+        showMsg("success", "저장 완료!");
+        // 화면 반영
+        await loadTeamDataFromServer(selectedTeam, payload.date);
+      } catch(e){
+        console.error(e);
+        showMsg("error", "저장 후 검증 조회 실패(배포/권한/URL).");
       }
     }
     document.getElementById("saveBtn").addEventListener("click", saveAttendance);
@@ -805,9 +836,19 @@
     }
 
     async function fetchAdminByDate(date){
-      const res = await apiGet("getSubmissionsByDate", { date });
-      if (!res || !res.ok) throw new Error("admin fetch failed");
-      return res;
+      try{
+        const res = await apiGet("getSubmissionsByDate", { date });
+        if (!res || !res.ok) {
+          console.warn("[getSubmissionsByDate failed]", res);
+          showAdminMsg("관리자 조회 실패: 배포/권한/URL 또는 시트 헤더를 확인해주세요.");
+          throw new Error("admin fetch failed");
+        }
+        return res;
+      } catch(e){
+        console.error(e);
+        showAdminMsg("관리자 조회 실패: JSONP 응답이 오지 않습니다(웹 앱 접근권한/배포 확인).");
+        throw e;
+      }
     }
 
     const adminDetailCache = {};
@@ -1003,7 +1044,8 @@
           adminDetailCache[cacheKey] = res.submission;
           renderTeamDetailPanel_(panel, res.submission);
         } catch(err) {
-          panel.innerHTML = `<div style="font-weight:950;color:#b91c1c;">상세 조회 실패(배포/권한 확인)</div>`;
+          console.error(err);
+          panel.innerHTML = `<div style="font-weight:950;color:#b91c1c;">상세 조회 실패(배포/권한/URL 확인)</div>`;
         }
       });
     }
@@ -1105,61 +1147,70 @@
       memberEndDate.addEventListener("change", ()=> adminAuthed && renderMemberTab_());
       memberSelect.addEventListener("change", ()=> adminAuthed && renderMemberTab_());
 
-      document.getElementById("downloadCsvBtn").addEventListener("click", ()=>{
+      document.getElementById("downloadCsvBtn").addEventListener("click", async ()=>{
         const y = (memberEndDate.value || today).slice(0,4);
-        const url = `${GOOGLE_SCRIPT_URL}?action=exportAnnualRatesCsv&year=${encodeURIComponent(y)}`;
-        window.open(url, "_blank");
+        // ✅ CSV는 새창에서 열되, GAS가 JSON으로 csv를 주는 구조라면 html에서 파일다운으로 변환해야 함.
+        // 여기서는 "exportAnnualRatesCsv"가 {ok:true, csv:"..."} 를 반환한다고 가정하고 fetch(JSONP)로 내려받아 다운로드 처리.
+        try{
+          showAdminMsg("CSV 생성 중...");
+          const res = await apiGet("exportAnnualRatesCsv", { year: y });
+          if (!res || !res.ok || !res.csv) {
+            showAdminMsg("CSV 다운로드 실패: exportAnnualRatesCsv 응답을 확인해주세요.");
+            return;
+          }
+          downloadTextAsFile_(res.csv, `annual_attendance_${y}.csv`, "text/csv;charset=utf-8");
+          showAdminMsg("CSV 다운로드 완료");
+        } catch(e){
+          console.error(e);
+          showAdminMsg("CSV 다운로드 실패: 배포/권한/URL 확인");
+        }
       });
     }
 
-       // value format: "name||cohort"
+    function downloadTextAsFile_(text, filename, mime){
+      const blob = new Blob([text], {type: mime || "text/plain;charset=utf-8"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename || "download.txt";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(()=>{
+        URL.revokeObjectURL(url);
+        a.remove();
+      }, 0);
+    }
+
     async function loadMemberList_(){
-      // 1) 서버에서 먼저 시도 (저장된 전체 이력 기반)
+      // ✅ 사람 목록이 “안 뜨는 문제”는 여기 GET이 조용히 실패했던 것
       try {
         const res = await apiGet("getMemberList", {});
         const members = (res && res.ok && Array.isArray(res.members)) ? res.members : [];
-    
-        if (members.length > 0) {
-          memberSelect.innerHTML = `<option value="">사람 선택</option>` +
-            members.map(m=>{
-              const nm = normName(m?.name);
-              const ch = normCohort(m?.cohort);
-              const val = memberKey(nm, ch);
-              return `<option value="${escapeHtml(val)}">${escapeHtml(displayMember(nm, ch))}</option>`;
-            }).join("");
-          return;
-        }
-        // 서버가 ok지만 비어있으면 fallback으로 넘어감
-      } catch(e) {
-        // 서버 호출 실패 시 fallback
-      }
-    
-      // 2) ✅ fallback: TEAMS roster에서 사람 목록 생성 (서버가 막혀도 목록 표시됨)
-      const map = new Map(); // key -> {name, cohort}
-    
-      TEAMS.forEach(team=>{
-        (team.members || []).map(normalizeMemberObj).forEach(m=>{
-          const nm = normName(m?.name);
-          const ch = normCohort(m?.cohort);
-          if (!nm) return;
-          const key = memberKey(nm, ch);
-          if (!map.has(key)) map.set(key, { name: nm, cohort: ch });
-        });
-      });
-    
-      const rosterMembers = Array.from(map.values()).sort((a,b)=>{
-        const c1 = (a.name||"").localeCompare(b.name||"", "ko");
-        if (c1 !== 0) return c1;
-        return (a.cohort||"").localeCompare(b.cohort||"", "ko");
-      });
-    
-      memberSelect.innerHTML = `<option value="">사람 선택</option>` +
-        rosterMembers.map(m=>{
-          const val = memberKey(m.name, m.cohort);
-          return `<option value="${escapeHtml(val)}">${escapeHtml(displayMember(m.name, m.cohort))}</option>`;
-        }).join("");
-    }
 
+        if (!res || !res.ok) {
+          console.warn("[getMemberList failed]", res);
+          showAdminMsg("사람 목록 로드 실패: 배포/권한/URL/시트 확인");
+        }
+
+        memberSelect.innerHTML =
+          `<option value="">사람 선택</option>` +
+          members.map(m=>{
+            const nm = normName(m?.name);
+            const ch = normCohort(m?.cohort);
+            const val = memberKey(nm, ch);
+            return `<option value="${escapeHtml(val)}">${escapeHtml(displayMember(nm, ch))}</option>`;
+          }).join("");
+
+        if (members.length === 0) {
+          // 기록이 없거나, AttendanceLog 시트가 없거나, 접근 불가
+          showAdminMsg("사람 목록이 비어있습니다: AttendanceLog에 데이터가 쌓였는지 확인해주세요.");
+        }
+      } catch(e) {
+        console.error(e);
+        memberSelect.innerHTML = `<option value="">사람 선택</option>`;
+        showAdminMsg("사람 목록 로드 실패: JSONP 응답이 오지 않습니다(배포/권한/URL).");
+      }
+    }
 
     function parseMemberSelectValue_(val){
       const parts = String(val || "").split("||");
@@ -1255,12 +1306,12 @@
       drawMonthlyLineChart_([]);
 
       try {
-        const res = await apiGet("getMemberHistory", {
-          name, cohort,
-          startDate: start,
-          endDate: end
-        });
-        if (!res || !res.ok) throw new Error("member history error");
+        const res = await apiGet("getMemberHistory", { name, cohort, startDate: start, endDate: end });
+        if (!res || !res.ok) {
+          console.warn("[getMemberHistory failed]", res);
+          showAdminMsg("개인 출석 조회 실패: 배포/권한/URL/시트 확인");
+          throw new Error("member history error");
+        }
 
         const present = Number(res.present || 0);
         const total = Number(res.total || 0);
@@ -1298,8 +1349,9 @@
         `;
 
       } catch(e) {
+        console.error(e);
         document.getElementById("memberHistoryTable").innerHTML =
-          `<div style="padding:2rem;text-align:center;color:#b91c1c;font-weight:950;">개인 출석 데이터를 불러오지 못했습니다. (Apps Script 배포/권한 확인)</div>`;
+          `<div style="padding:2rem;text-align:center;color:#b91c1c;font-weight:950;">개인 출석 데이터를 불러오지 못했습니다. (Apps Script 배포/권한/URL 확인)</div>`;
         drawMonthlyLineChart_([]);
       }
     }
