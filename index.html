@@ -180,7 +180,6 @@
 </head>
 
 <body>
-  <!-- 홈 -->
   <div id="homePage">
     <div class="header">
       <div class="header-content">
@@ -194,7 +193,6 @@
     </div>
   </div>
 
-  <!-- 출석 페이지 -->
   <div id="attendancePage" class="hidden">
     <div class="header">
       <div class="header-content">
@@ -236,7 +234,6 @@
     </div>
   </div>
 
-  <!-- 관리자 대시보드 -->
   <div id="adminDashboard" class="hidden">
     <div class="header">
       <div class="header-content">
@@ -254,7 +251,6 @@
         <button type="button" class="tab-button" data-tab="members">개인 출석률</button>
       </div>
 
-      <!-- 출석 현황 -->
       <div id="adminStatsTab">
         <div class="date-section">
           <div class="date-label">날짜 선택</div>
@@ -280,7 +276,6 @@
         <div class="attendance-table" id="attendanceTable"></div>
       </div>
 
-      <!-- 특이사항 -->
       <div id="adminNotesTab" class="hidden">
         <div class="date-section">
           <div class="date-label">날짜 선택</div>
@@ -289,7 +284,6 @@
         <div class="notes-table" id="notesTable"></div>
       </div>
 
-      <!-- 건의사항 -->
       <div id="adminSuggestionsTab" class="hidden">
         <div class="date-section">
           <div class="date-label">날짜 선택</div>
@@ -298,7 +292,6 @@
         <div class="suggestion-list" id="suggestionsList"></div>
       </div>
 
-      <!-- 개인 출석률 -->
       <div id="adminMembersTab" class="hidden">
         <div class="date-section">
           <div class="date-label">조회 범위 (기본: 최근 1년)</div>
@@ -343,7 +336,6 @@
     </div>
   </div>
 
-  <!-- 비밀번호 모달 -->
   <div id="passwordModal" class="modal-overlay hidden" role="dialog" aria-modal="true">
     <div class="modal">
       <div class="modal-header">
@@ -380,8 +372,8 @@
     /************************************************************
      * ✅ 사랑방 목록 (원복 + 또래 지원)
      * - members는 아래 2가지 형태 모두 지원
-     *   1) "홍길동" (cohort가 없으면 ""로 저장됨)
-     *   2) { name:"홍길동", cohort:"01" }
+     * 1) "홍길동" (cohort가 없으면 ""로 저장됨)
+     * 2) { name:"홍길동", cohort:"01" }
      ************************************************************/
     const TEAMS = [
       { id: 1, name: "권준형 사랑방", leader: "방장: 권준형", members: [
@@ -646,807 +638,481 @@
       });
     }
 
+    // [복원된 부분]
     function updateCount(){
       if (!selectedTeam) return;
       const members = (selectedTeam.members || []).map(normalizeMemberObj).filter(x=>x.name);
-
-      let present = 0;
-      members.forEach(m=>{
-        const k = memberKey(m.name, m.cohort);
-        if (attendance[k]) present++;
-      });
-
       const total = members.length;
-      document.getElementById("attendanceCount").textContent = `${present} / ${total}`;
-      document.getElementById("progressFill").style.width = (total>0 ? (present/total)*100 : 0) + "%";
-    }
+      let present = 0;
 
-    function applyMemberFilter(q){
-      q = (q || "").trim().toLowerCase();
-      document.querySelectorAll("#memberList .member-item").forEach(item=>{
-        const name = (item.dataset.name || "").toLowerCase();
-        item.style.display = name.includes(q) ? "" : "none";
+      members.forEach(m => {
+        const k = memberKey(m.name, m.cohort);
+        const item = document.querySelector(`#memberList [data-key="${k}"]`);
+
+        if(attendance[k]){
+          present++;
+          if(item) item.classList.add("checked");
+        } else {
+          if(item) item.classList.remove("checked");
+        }
       });
+
+      const rate = total > 0 ? Math.round((present / total) * 100) : 0;
+
+      document.getElementById("attendanceCount").textContent = `${present} / ${total}`;
+      document.getElementById("progressFill").style.width = `${rate}%`;
     }
 
-    async function loadTeamDataFromServer(team, date){
+    function toggleAttendance(key){
+      attendance[key] = !attendance[key];
+      updateCount();
+    }
+
+    function saveNote(key, note){
+      memberNotes[key] = note;
+    }
+
+    async function loadAttendance(){
+      if (!selectedTeam) return;
+      const date = dateInput.value;
+      const teamId = selectedTeam.id;
+
       try {
-        const res = await apiGet("getTeamSubmission", { teamId:String(team.id), date });
+        const data = await apiGet("loadAttendance", { teamId, date });
         
-        console.log("=== 서버 응답 ===", res);
-        
-        if (!res || !res.ok) { 
-          showMsg("error", "❌ 데이터 로드 실패"); 
-          return; 
-        }
-    
-        resetStateForTeam(team);
-    
-        if (res.found && res.submission && Array.isArray(res.submission.attendance)) {
-          console.log("=== 저장된 출석 데이터 ===", res.submission.attendance);
-          
-          res.submission.attendance.forEach(r=>{
-            const nm = normName(r?.name);
-            const ch = normCohort(r?.cohort);
-            if (!nm) return;
-            const k = memberKey(nm, ch);
-            
-            console.log(`방원: ${nm}, 또래: ${ch}, 키: ${k}, 출석: ${r.present}`);
-            
-            attendance[k] = !!r.present;
-            memberNotes[k] = String(r.note || "");
-          });
-          
-          document.getElementById("suggestionInput").value = String(res.submission.suggestion || "");
-          
-          console.log("=== attendance 객체 ===", attendance);
-          console.log("=== memberNotes 객체 ===", memberNotes);
-        } else {
-          console.log("저장된 데이터가 없습니다.");
-          showMsg("info", "ℹ️ 저장된 출석 데이터가 없습니다.");
-        }
-    
-        // UI 업데이트
-        let updatedCount = 0;
-        document.querySelectorAll("#memberList .member-item").forEach(item=>{
-          const k = item.dataset.key;
-          const isChecked = !!attendance[k];
-          
-          console.log(`UI 업데이트: 키=${k}, 체크=${isChecked}`);
-          
-          if (isChecked) {
-            item.classList.add("checked");
-            updatedCount++;
-          } else {
-            item.classList.remove("checked");
-          }
-          
-          const input = item.querySelector(".note-input");
-          if (input) {
-            input.value = memberNotes[k] || "";
-          }
+        // 1. 상태 초기화
+        const members = (selectedTeam.members || []).map(normalizeMemberObj).filter(x=>x.name);
+        members.forEach(m => {
+          const k = memberKey(m.name, m.cohort);
+          attendance[k] = false;
+          memberNotes[k] = "";
         });
-    
-        console.log(`=== 총 ${updatedCount}명 체크됨 ===`);
-    
-        updateCount();
-        
-        if (res.found) {
-          showMsg("success", "✅ 데이터 로드 완료!");
+
+        if(data && data.status === "success" && data.data){
+          const loaded = data.data;
+
+          // 2. 로드된 데이터로 업데이트
+          if (loaded.attendance) {
+            loaded.attendance.forEach(att => {
+              const k = memberKey(att.name, att.cohort);
+              if (att.isPresent) attendance[k] = true;
+              if (att.note) memberNotes[k] = att.note;
+            });
+          }
+
+          document.getElementById("suggestionInput").value = loaded.suggestion || "";
+          showMsg("info", `[${date}] 저장된 출석 정보를 불러왔습니다.`);
         } else {
-          showMsg("info", "ℹ️ 새로운 출석 체크 시작");
+          document.getElementById("suggestionInput").value = "";
+          showMsg("info", `[${date}] 저장된 출석 정보가 없습니다. 새로 작성합니다.`);
         }
         
-      } catch(e){
-        showMsg("error", "❌ 서버 연결 실패");
-        console.error("로드 오류:", e);
+        // 3. UI 업데이트
+        document.querySelectorAll("#memberList .member-item").forEach(item => {
+          const k = item.dataset.key;
+          item.classList.toggle("checked", attendance[k]);
+          const noteInput = item.querySelector(".note-input");
+          if(noteInput) noteInput.value = memberNotes[k] || "";
+        });
+
+        updateCount();
+
+      } catch(e) {
+        console.error("출석 로드 오류:", e);
+        showMsg("error", "출석 정보 불러오기 중 오류가 발생했습니다.");
       }
     }
+
+    async function saveAttendance(){
+      if (!selectedTeam) return;
+
+      const date = dateInput.value;
+      const teamId = selectedTeam.id;
+      const teamName = selectedTeam.name;
+      const leader = selectedTeam.leader;
+      const suggestion = document.getElementById("suggestionInput").value;
+
+      const members = (selectedTeam.members || []).map(normalizeMemberObj).filter(x=>x.name);
+      
+      const attendanceData = members.map(m => {
+        const k = memberKey(m.name, m.cohort);
+        return {
+          name: m.name,
+          cohort: m.cohort,
+          isPresent: attendance[k] || false,
+          note: memberNotes[k] || ""
+        };
+      });
+
+      try {
+        document.getElementById("saveBtn").textContent = "저장 중...";
+        document.getElementById("saveBtn").disabled = true;
+
+        const result = await apiGet("saveAttendance", {
+          teamId,
+          teamName,
+          leader,
+          date,
+          attendance: JSON.stringify(attendanceData),
+          suggestion
+        });
+
+        if (result && result.status === "success") {
+          showMsg("success", "출석 정보가 성공적으로 저장되었습니다!");
+        } else {
+          showMsg("error", "저장 실패: " + (result?.message || "알 수 없는 오류"));
+        }
+      } catch(e) {
+        console.error("출석 저장 오류:", e);
+        showMsg("error", "출석 정보 저장 중 오류가 발생했습니다.");
+      } finally {
+        document.getElementById("saveBtn").textContent = "출석 정보 저장";
+        document.getElementById("saveBtn").disabled = false;
+      }
+    }
+
     function selectTeam(team){
       selectedTeam = team;
       document.getElementById("selectedTeamName").textContent = team.name;
       document.getElementById("selectedTeamLeader").textContent = team.leader;
-
-      buildMemberList(team);
+      
       resetStateForTeam(team);
-
+      buildMemberList(team);
       showPage("attendancePage");
 
-      document.getElementById("memberSearch").value = "";
-      applyMemberFilter("");
-
-      showMsg("info", "데이터를 불러오는 중입니다...");
-      loadTeamDataFromServer(team, dateInput.value || today);
+      // 날짜 변경 시에도 출석 로드
+      dateInput.value = today;
+      loadAttendance();
     }
 
-    document.getElementById("memberList").addEventListener("click", (e)=>{
-      const header = e.target.closest(".member-header");
-      if (!header || !selectedTeam) return;
-
-      const item = header.closest(".member-item");
-      if (!item) return;
-      const k = item.dataset.key;
-
-      attendance[k] = !attendance[k];
-      item.classList.toggle("checked", !!attendance[k]);
-      updateCount();
-    });
-
-    document.getElementById("memberList").addEventListener("input", (e)=>{
-      if (!e.target.classList.contains("note-input")) return;
-      const item = e.target.closest(".member-item");
-      if (!item) return;
-      const k = item.dataset.key;
-      memberNotes[k] = e.target.value || "";
-    });
-
-    document.getElementById("memberSearch").addEventListener("input", (e)=>{
-      applyMemberFilter(e.target.value);
-    });
-
-    dateInput.addEventListener("change", ()=>{
-      if (!selectedTeam) return;
-      showMsg("info", "데이터를 불러오는 중입니다...");
-      loadTeamDataFromServer(selectedTeam, dateInput.value || today);
-    });
-
-    async function saveAttendance(){
-      if (!selectedTeam) return;
-    
-      const members = (selectedTeam.members || []).map(normalizeMemberObj).filter(x=>x.name);
-    
-      const payload = {
-        action: "submit",
-        teamId: String(selectedTeam.id),
-        date: dateInput.value || today,
-        teamName: selectedTeam.name,
-        leader: selectedTeam.leader,
-        suggestion: document.getElementById("suggestionInput").value || "",
-        attendance: members.map(m => {
-          const k = memberKey(m.name, m.cohort);
-          return {
-            name: m.name,
-            cohort: m.cohort || "",
-            present: !!attendance[k],
-            note: memberNotes[k] || ""
-          };
-        })
-      };
-    
-      console.log("=== 저장할 데이터 ===");
-      console.log("날짜:", payload.date);
-      console.log("사랑방 ID:", payload.teamId);
-      console.log("출석 인원:", payload.attendance.filter(a => a.present).length + "/" + payload.attendance.length);
-    
-      try {
-        showMsg("info", "💾 저장 중...");
-        
-        await fetch(GOOGLE_SCRIPT_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type":"application/json" },
-          body: JSON.stringify(payload)
-        });
-        
-        console.log("POST 요청 완료");
-        
-        // ✅ 저장 완료 메시지
-        showMsg("success", "✅ 저장되었습니다!");
-        
-        // ✅ 5초 후 자동으로 다시 로드 (스프레드시트 쓰기 완료 대기)
-        setTimeout(async () => {
-          console.log("=== 저장 확인 중 ===");
-          showMsg("info", "📥 데이터 확인 중...");
-          await loadTeamDataFromServer(selectedTeam, dateInput.value || today);
-        }, 5000);  // 3초 → 5초로 증가
-        
-      } catch(e){
-        console.error("=== 저장 오류 ===", e);
-        showMsg("error", "❌ 저장 실패 (네트워크 확인)");
-      }
-    }
-```
-### 4단계: 배포 및 테스트
-
-1. **Apps Script 저장**
-2. **배포 > 배포 관리 > 편집 > 새 버전 > 배포**
-3. **HTML 파일의 URL이 최신인지 확인**
-
-### 5단계: 테스트 방법
-
-1. **F12 > Console 열기**
-2. **출석 체크 후 저장**
-3. **5초 기다리기**
-4. **Console에서 확인**:
-```
-   === 저장할 데이터 ===
-   날짜: 2024-12-19
-   사랑방 ID: 1
-   출석 인원: 2/4
-   POST 요청 완료
-   === 저장 확인 중 ===
-   === 서버 응답 ===
-     
-   {ok: true, found: true, submission: {...}}
-  
-
-    /************************************************************
-     * 관리자
-     ************************************************************/
-    const adminDateInput = document.getElementById("adminDateInput");
-    const adminNotesDateInput = document.getElementById("adminNotesDateInput");
-    const adminSugDateInput = document.getElementById("adminSugDateInput");
-    adminDateInput.value = today;
-    adminNotesDateInput.value = today;
-    adminSugDateInput.value = today;
-
-    function showAdminDashboard(){
-      showPage("adminDashboard");
-      loadAdminAll();
-      initMemberTabOnce_();
-    }
-
-    async function fetchAdminByDate(date){
-      const res = await apiGet("getSubmissionsByDate", { date });
-      if (!res || !res.ok) throw new Error("admin fetch failed");
-      return res;
-    }
-
-    const adminDetailCache = {};
-    function renderTeamDetailPanel_(panel, submission){
-      const att = Array.isArray(submission.attendance) ? submission.attendance : [];
-      const presentNames = [];
-      const absentNames = [];
-      const notes = [];
-
-      att.forEach(a=>{
-        const name = normName(a?.name);
-        const cohort = normCohort(a?.cohort);
-        if (!name) return;
-
-        const isPresent = !!a.present;
-        const note = String(a?.note || "").trim();
-        const disp = displayMember(name, cohort);
-
-        if (isPresent) presentNames.push(disp);
-        else absentNames.push(disp);
-
-        if (note) notes.push({ disp, note, present: isPresent });
-      });
-
-      const total = att.length;
-      const present = presentNames.length;
-      const absent = total - present;
-      const rate = total > 0 ? (present/total)*100 : 0;
-
-      const presentChips = presentNames.length
-        ? presentNames.map(n=>`<span class="chip">${escapeHtml(n)}</span>`).join("")
-        : `<span style="font-weight:950;color:#6b7280;">없음</span>`;
-
-      const absentChips = absentNames.length
-        ? absentNames.map(n=>`<span class="chip absent">${escapeHtml(n)}</span>`).join("")
-        : `<span style="font-weight:950;color:#6b7280;">없음</span>`;
-
-      const notesHtml = notes.length
-        ? `<div class="note-list">
-            ${notes.map(x=>`
-              <div class="note-item">
-                <span class="note-name">${escapeHtml(x.disp)}</span>
-                <span class="note-badge">(${x.present ? "출석" : "결석"})</span><br/>
-                ${escapeHtml(x.note)}
-              </div>
-            `).join("")}
-          </div>`
-        : `<div style="font-weight:950;color:#6b7280;">특이사항이 없습니다.</div>`;
-
-      panel.innerHTML = `
-        <div class="detail-grid">
-          <div class="detail-card">
-            <div class="detail-title">요약</div>
-            <div class="detail-sub">출석률</div>
-            <div style="font-size:1.35rem;font-weight:950;color:#2563eb;">${rate.toFixed(1)}%</div>
-            <div style="margin-top:.4rem;font-weight:900;color:#6b7280;">
-              출석 ${present}명 · 결석 ${absent}명 · 총 ${total}명
-            </div>
-          </div>
-          <div class="detail-card">
-            <div class="detail-title">출석자</div>
-            <div class="chips">${presentChips}</div>
-          </div>
-          <div class="detail-card">
-            <div class="detail-title">결석자</div>
-            <div class="chips">${absentChips}</div>
-          </div>
-          <div class="detail-card">
-            <div class="detail-title">특이사항</div>
-            ${notesHtml}
-          </div>
-        </div>
-      `;
-    }
-
-    async function renderAdminStats(date){
-      const data = await fetchAdminByDate(date);
-      const map = {};
-      (data.teams || []).forEach(t => { map[String(t.teamId)] = t; });
-
-      let totalPresent = 0;
-      let totalMembers = 0;
-      let submittedCount = 0;
-
-      let rows = "";
-      TEAMS.forEach(team=>{
-        const sub = map[String(team.id)];
-        if (sub) {
-          submittedCount++;
-          totalPresent += Number(sub.present || 0);
-          totalMembers += Number(sub.total || 0);
-          const rate = (Number(sub.total) > 0) ? (Number(sub.present)/Number(sub.total))*100 : 0;
-
-          rows += `
-            <tr class="team-row" data-teamid="${team.id}" data-submitted="1">
-              <td style="font-weight:950;">${escapeHtml(team.name)}</td>
-              <td>${Number(sub.present||0)}</td>
-              <td>${Number(sub.absent||0)}</td>
-              <td>${rate.toFixed(1)}%</td>
-              <td style="font-weight:950;color:#15803d;">제출</td>
-            </tr>
-            <tr class="detail-row hidden" data-detailfor="${team.id}">
-              <td colspan="5">
-                <div class="detail-panel" id="detail-${team.id}">
-                  <div style="font-weight:950;color:#6b7280;">행을 클릭하면 상세가 표시됩니다.</div>
-                </div>
-              </td>
-            </tr>
-          `;
-        } else {
-          rows += `
-            <tr class="team-row" data-teamid="${team.id}" data-submitted="0">
-              <td style="font-weight:950;">${escapeHtml(team.name)}</td>
-              <td>-</td><td>-</td><td>-</td>
-              <td style="font-weight:950;color:#b91c1c;">미제출</td>
-            </tr>
-            <tr class="detail-row hidden" data-detailfor="${team.id}">
-              <td colspan="5">
-                <div class="detail-panel" id="detail-${team.id}">
-                  <div style="font-weight:950;color:#6b7280;">미제출 사랑방입니다.</div>
-                </div>
-              </td>
-            </tr>
-          `;
-        }
-      });
-
-      const totalAbsent = totalMembers - totalPresent;
-      const totalRate = totalMembers > 0 ? (totalPresent/totalMembers)*100 : 0;
-
-      document.getElementById("adminTotalPresent").textContent = totalPresent + "명";
-      document.getElementById("adminTotalAbsent").textContent = totalAbsent + "명";
-      document.getElementById("adminTotalRate").textContent = totalRate.toFixed(1) + "%";
-      document.getElementById("adminSummaryNote").textContent =
-        `집계 기준: ${date} / 제출 ${submittedCount}개 사랑방 / 집계 인원 ${totalMembers}명 (미제출은 집계에서 제외)`;
-
-      document.getElementById("attendanceTable").innerHTML = `
-        <table>
-          <thead>
-            <tr><th>사랑방</th><th>출석</th><th>결석</th><th>출석률</th><th>상태</th></tr>
-          </thead>
-          <tbody>${rows}</tbody>
-        </table>
-      `;
-      bindAdminRowToggle_();
-    }
-
-    function bindAdminRowToggle_(){
-      const wrap = document.getElementById("attendanceTable");
-      if (wrap.dataset.bound === "1") return;
-      wrap.dataset.bound = "1";
-
-      wrap.addEventListener("click", async (e)=>{
-        const row = e.target.closest("tr.team-row");
-        if (!row) return;
-
-        const teamId = row.dataset.teamid;
-        const submitted = row.dataset.submitted === "1";
-        const date = adminDateInput.value || today;
-
-        document.querySelectorAll('tr.detail-row').forEach(dr=>{
-          if (dr.dataset.detailfor !== teamId) dr.classList.add("hidden");
-        });
-
-        const detailRow = document.querySelector(`tr.detail-row[data-detailfor="${teamId}"]`);
-        if (!detailRow) return;
-
-        const willOpen = detailRow.classList.contains("hidden");
-        detailRow.classList.toggle("hidden", !willOpen);
-        if (!willOpen) return;
-
-        const panel = document.getElementById(`detail-${teamId}`);
-        if (!panel) return;
-
-        if (!submitted) {
-          panel.innerHTML = `<div style="font-weight:950;color:#6b7280;">미제출 사랑방입니다.</div>`;
-          return;
-        }
-
-        const cacheKey = `${date}|${teamId}`;
-        if (adminDetailCache[cacheKey]) {
-          renderTeamDetailPanel_(panel, adminDetailCache[cacheKey]);
-          return;
-        }
-
-        panel.innerHTML = `<div style="font-weight:950;color:#6b7280;">상세 불러오는 중...</div>`;
-        try {
-          const res = await apiGet("getTeamSubmission", { teamId: String(teamId), date });
-          if (!res || !res.ok || !res.found || !res.submission) {
-            panel.innerHTML = `<div style="font-weight:950;color:#b91c1c;">상세 데이터를 찾을 수 없습니다.</div>`;
-            return;
-          }
-          adminDetailCache[cacheKey] = res.submission;
-          renderTeamDetailPanel_(panel, res.submission);
-        } catch(err) {
-          panel.innerHTML = `<div style="font-weight:950;color:#b91c1c;">상세 조회 실패(배포/권한 확인)</div>`;
-        }
-      });
-    }
-
-    async function renderAdminNotes(date){
-      const data = await fetchAdminByDate(date);
-      const notesFlat = data.notesFlat || [];
-
-      let rows = "";
-      notesFlat.forEach(n=>{
-        const disp = displayMember(n.member || "", n.cohort || "");
-        rows += `
-          <tr>
-            <td>${escapeHtml(n.teamName || "")}</td>
-            <td>${escapeHtml(disp)}</td>
-            <td style="white-space:pre-wrap;">${escapeHtml(n.note || "")}</td>
-          </tr>
-        `;
-      });
-
-      document.getElementById("notesTable").innerHTML = `
-        <table>
-          <thead><tr><th>사랑방</th><th>방원</th><th>특이사항</th></tr></thead>
-          <tbody>
-            ${rows || `<tr><td colspan="3" style="text-align:center;color:#6b7280;font-weight:950;">특이사항이 없습니다.</td></tr>`}
-          </tbody>
-        </table>
-      `;
-    }
-
-    async function renderAdminSuggestions(date){
-      const data = await fetchAdminByDate(date);
-      const list = data.suggestions || [];
-
-      const html = list.length ? list.map(s=>`
-        <div class="suggestion-item">
-          <div class="suggestion-team">${escapeHtml(s.teamName||"")}</div>
-          <div style="margin-top:.5rem;color:#374151;white-space:pre-wrap;font-weight:800;">${escapeHtml(s.suggestion||"")}</div>
-        </div>
-      `).join("") : `<div style="text-align:center;color:#6b7280;padding:2rem;font-weight:950;">건의사항이 없습니다.</div>`;
-
-      document.getElementById("suggestionsList").innerHTML = html;
-    }
-
-    async function loadAdminAll(){
-      if (!adminAuthed) return;
-
-      const activeTab = document.querySelector(".tab-button.active")?.dataset?.tab || "stats";
-      if (activeTab === "stats") await renderAdminStats(adminDateInput.value || today);
-      if (activeTab === "notes") await renderAdminNotes(adminNotesDateInput.value || today);
-      if (activeTab === "suggestions") await renderAdminSuggestions(adminSugDateInput.value || today);
-      if (activeTab === "members") await renderMemberTab_();
-    }
-
-    document.querySelectorAll(".tab-button").forEach(btn=>{
-      btn.addEventListener("click", ()=>{
-        document.querySelectorAll(".tab-button").forEach(b=>b.classList.remove("active"));
-        btn.classList.add("active");
-
-        const tab = btn.dataset.tab;
-        document.getElementById("adminStatsTab").classList.toggle("hidden", tab !== "stats");
-        document.getElementById("adminNotesTab").classList.toggle("hidden", tab !== "notes");
-        document.getElementById("adminSuggestionsTab").classList.toggle("hidden", tab !== "suggestions");
-        document.getElementById("adminMembersTab").classList.toggle("hidden", tab !== "members");
-
-        loadAdminAll();
-      });
-    });
-
-    adminDateInput.addEventListener("change", ()=> adminAuthed && renderAdminStats(adminDateInput.value || today));
-    adminNotesDateInput.addEventListener("change", ()=> adminAuthed && renderAdminNotes(adminNotesDateInput.value || today));
-    adminSugDateInput.addEventListener("change", ()=> adminAuthed && renderAdminSuggestions(adminSugDateInput.value || today));
-
-    /************************************************************
-     * 개인 출석률 탭
-     ************************************************************/
-    const memberStartDate = document.getElementById("memberStartDate");
-    const memberEndDate = document.getElementById("memberEndDate");
-    const memberSelect = document.getElementById("memberSelect");
-    const chartCanvas = document.getElementById("memberChart");
-    const chartCtx = chartCanvas.getContext("2d");
-
-    let memberTabInitialized = false;
-
-    function initMemberTabOnce_(){
-      if (memberTabInitialized) return;
-      memberTabInitialized = true;
-
-      const end = new Date();
-      const start = new Date();
-      start.setDate(end.getDate() - 365);
-
-      memberStartDate.value = formatISODate(start);
-      memberEndDate.value = formatISODate(end);
-
-      loadMemberList_();
-
-      memberStartDate.addEventListener("change", ()=> adminAuthed && renderMemberTab_());
-      memberEndDate.addEventListener("change", ()=> adminAuthed && renderMemberTab_());
-      memberSelect.addEventListener("change", ()=> adminAuthed && renderMemberTab_());
-
-      document.getElementById("downloadCsvBtn").addEventListener("click", ()=>{
-        const start = memberStartDate.value || "";
-        const end = memberEndDate.value || today;
-        
-        if (!start) {
-          alert("시작 날짜를 선택해주세요.");
-          return;
-        }
-        
-        const url = `${GOOGLE_SCRIPT_URL}?action=exportPeriodCsv&startDate=${encodeURIComponent(start)}&endDate=${encodeURIComponent(end)}`;
-        window.open(url, "_blank");
-      });
-    }  // ✅ initMemberTabOnce_ 함수 종료
-
-    // ✅ loadMemberList_ 함수를 밖으로 분리
-    async function loadMemberList_(){
-      try {
-        const res = await apiGet("getMemberList", {});
-        const members = (res && res.ok && Array.isArray(res.members)) ? res.members : [];
-    
-        if (members.length > 0) {
-          memberSelect.innerHTML = `<option value="">사람 선택</option>` +
-            members.map(m=>{
-              const nm = normName(m?.name);
-              const ch = normCohort(m?.cohort);
-              const val = memberKey(nm, ch);
-              return `<option value="${escapeHtml(val)}">${escapeHtml(displayMember(nm, ch))}</option>`;
-            }).join("");
-          return;
-        }
-      } catch(e) {
-        // 서버 호출 실패 시 fallback
-      }
-    
-      // fallback: TEAMS roster에서 사람 목록 생성
-      const map = new Map();
-    
-      TEAMS.forEach(team=>{
-        (team.members || []).map(normalizeMemberObj).forEach(m=>{
-          const nm = normName(m?.name);
-          const ch = normCohort(m?.cohort);
-          if (!nm) return;
-          const key = memberKey(nm, ch);
-          if (!map.has(key)) map.set(key, { name: nm, cohort: ch });
-        });
-      });
-    
-      const rosterMembers = Array.from(map.values()).sort((a,b)=>{
-        const c1 = (a.name||"").localeCompare(b.name||"", "ko");
-        if (c1 !== 0) return c1;
-        return (a.cohort||"").localeCompare(b.cohort||"", "ko");
-      });
-    
-      memberSelect.innerHTML = `<option value="">사람 선택</option>` +
-        rosterMembers.map(m=>{
-          const val = memberKey(m.name, m.cohort);
-          return `<option value="${escapeHtml(val)}">${escapeHtml(displayMember(m.name, m.cohort))}</option>`;
-        }).join("");
-    }
-
-    function parseMemberSelectValue_(val){
-    
-      // 2) ✅ fallback: TEAMS roster에서 사람 목록 생성 (서버가 막혀도 목록 표시됨)
-      const map = new Map(); // key -> {name, cohort}
-    
-      TEAMS.forEach(team=>{
-        (team.members || []).map(normalizeMemberObj).forEach(m=>{
-          const nm = normName(m?.name);
-          const ch = normCohort(m?.cohort);
-          if (!nm) return;
-          const key = memberKey(nm, ch);
-          if (!map.has(key)) map.set(key, { name: nm, cohort: ch });
-        });
-      });
-    
-      const rosterMembers = Array.from(map.values()).sort((a,b)=>{
-        const c1 = (a.name||"").localeCompare(b.name||"", "ko");
-        if (c1 !== 0) return c1;
-        return (a.cohort||"").localeCompare(b.cohort||"", "ko");
-      });
-    
-      memberSelect.innerHTML = `<option value="">사람 선택</option>` +
-        rosterMembers.map(m=>{
-          const val = memberKey(m.name, m.cohort);
-          return `<option value="${escapeHtml(val)}">${escapeHtml(displayMember(m.name, m.cohort))}</option>`;
-        }).join("");
-    }
-
-
-    function parseMemberSelectValue_(val){
-      const parts = String(val || "").split("||");
-      return { name: normName(parts[0] || ""), cohort: normCohort(parts[1] || "") };
-    }
-
-    function drawMonthlyLineChart_(monthly){
-      chartCtx.clearRect(0,0,chartCanvas.width, chartCanvas.height);
-
-      const W = chartCanvas.width, H = chartCanvas.height;
-      const padL = 55, padR = 18, padT = 18, padB = 40;
-
-      chartCtx.strokeStyle = "#e5e7eb";
-      chartCtx.lineWidth = 1;
-      chartCtx.beginPath();
-      chartCtx.moveTo(padL, padT);
-      chartCtx.lineTo(padL, H - padB);
-      chartCtx.lineTo(W - padR, H - padB);
-      chartCtx.stroke();
-
-      chartCtx.fillStyle = "#6b7280";
-      chartCtx.font = "12px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
-      [0,25,50,75,100].forEach(v=>{
-        const y = (H - padB) - (v/100) * (H - padT - padB);
-        chartCtx.strokeStyle = "#f3f4f6";
-        chartCtx.beginPath();
-        chartCtx.moveTo(padL, y);
-        chartCtx.lineTo(W - padR, y);
-        chartCtx.stroke();
-        chartCtx.fillStyle = "#6b7280";
-        chartCtx.fillText(String(v), 12, y + 4);
-      });
-
-      if (!monthly || monthly.length === 0) {
-        chartCtx.fillStyle = "#6b7280";
-        chartCtx.font = "14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
-        chartCtx.fillText("월별 데이터가 없습니다.", padL + 10, padT + 25);
-        return;
-      }
-
-      const n = monthly.length;
-      const xStep = n === 1 ? 0 : (W - padL - padR) / (n - 1);
-
-      chartCtx.strokeStyle = "#2563eb";
-      chartCtx.lineWidth = 2;
-      chartCtx.beginPath();
-
-      monthly.forEach((m, i)=>{
-        const x = padL + xStep * i;
-        const y = (H - padB) - (Math.max(0, Math.min(100, Number(m.rate)||0))/100) * (H - padT - padB);
-        if (i === 0) chartCtx.moveTo(x,y);
-        else chartCtx.lineTo(x,y);
-      });
-      chartCtx.stroke();
-
-      monthly.forEach((m,i)=>{
-        const x = padL + xStep * i;
-        const y = (H - padB) - (Math.max(0, Math.min(100, Number(m.rate)||0))/100) * (H - padT - padB);
-
-        chartCtx.fillStyle = "#2563eb";
-        chartCtx.beginPath();
-        chartCtx.arc(x,y,3,0,Math.PI*2);
-        chartCtx.fill();
-
-        const labelEvery = n > 12 ? 3 : (n > 8 ? 2 : 1);
-        if (i % labelEvery === 0 || i === n-1) {
-          chartCtx.fillStyle = "#6b7280";
-          const label = String(m.month || "");
-          chartCtx.fillText(label, x - 18, H - 18);
-        }
-      });
-    }
-
-    async function renderMemberTab_(){
-      const selectedVal = memberSelect.value;
-      const start = memberStartDate.value;
-      const end = memberEndDate.value;
-
-      if (!selectedVal) {
-        document.getElementById("memberPresent").textContent = "0회";
-        document.getElementById("memberTotal").textContent = "0회";
-        document.getElementById("memberRate").textContent = "0%";
-        document.getElementById("memberHistoryTable").innerHTML =
-          `<div style="padding:2rem;text-align:center;color:#6b7280;font-weight:950;">사람을 선택해주세요.</div>`;
-        drawMonthlyLineChart_([]);
-        return;
-      }
-
-      const { name, cohort } = parseMemberSelectValue_(selectedVal);
-
-      document.getElementById("memberHistoryTable").innerHTML =
-        `<div style="padding:2rem;text-align:center;color:#6b7280;font-weight:950;">불러오는 중...</div>`;
-      drawMonthlyLineChart_([]);
-
-      try {
-        const res = await apiGet("getMemberHistory", {
-          name, cohort,
-          startDate: start,
-          endDate: end
-        });
-        if (!res || !res.ok) throw new Error("member history error");
-
-        const present = Number(res.present || 0);
-        const total = Number(res.total || 0);
-        const rate = total > 0 ? (present/total)*100 : 0;
-
-        document.getElementById("memberPresent").textContent = present + "회";
-        document.getElementById("memberTotal").textContent = total + "회";
-        document.getElementById("memberRate").textContent = rate.toFixed(1) + "%";
-
-        const monthly = Array.isArray(res.monthly) ? res.monthly : [];
-        drawMonthlyLineChart_(monthly);
-
-        const sessions = Array.isArray(res.sessions) ? res.sessions : [];
-        const rows = sessions.map(s=>{
-          const ok = !!s.present;
-          return `
-            <tr>
-              <td>${escapeHtml(s.date || "")}</td>
-              <td>${escapeHtml(s.teamName || "")}</td>
-              <td class="${ok ? "badge-ok" : "badge-no"}">${ok ? "출석" : "결석"}</td>
-              <td style="white-space:pre-wrap;">${escapeHtml(s.note || "")}</td>
-            </tr>
-          `;
-        }).join("");
-
-        document.getElementById("memberHistoryTable").innerHTML = `
-          <table>
-            <thead>
-              <tr><th>날짜</th><th>사랑방</th><th>상태</th><th>특이사항</th></tr>
-            </thead>
-            <tbody>
-              ${rows || `<tr><td colspan="4" style="padding:2rem;text-align:center;color:#6b7280;font-weight:950;">기록이 없습니다.</td></tr>`}
-            </tbody>
-          </table>
-        `;
-
-      } catch(e) {
-        document.getElementById("memberHistoryTable").innerHTML =
-          `<div style="padding:2rem;text-align:center;color:#b91c1c;font-weight:950;">개인 출석 데이터를 불러오지 못했습니다. (Apps Script 배포/권한 확인)</div>`;
-        drawMonthlyLineChart_([]);
-      }
-    }
-
-    /************************************************************
-     * 버튼 바인딩
-     ************************************************************/
-    document.getElementById("adminBtn").addEventListener("click", ()=>{
-      openPasswordModal({
-        mode:"admin",
-        title:"관리자 탭 비밀번호",
-        subtitle:"관리자 대시보드에 들어가려면 비밀번호를 입력하세요."
-      });
-    });
-
+    // 출석 페이지 이벤트 리스너 등록
     document.getElementById("teamBackBtn").addEventListener("click", ()=>{
-      closePasswordModal();
       selectedTeam = null;
       showPage("homePage");
     });
+    
+    dateInput.addEventListener("change", loadAttendance);
+    document.getElementById("saveBtn").addEventListener("click", saveAttendance);
 
-    document.getElementById("adminBackBtn").addEventListener("click", ()=>{
-      adminAuthed = false;
-      closePasswordModal();
-      showPage("homePage");
+    document.getElementById("memberList").addEventListener("click", (e)=>{
+      const item = e.target.closest(".member-item");
+      if (!item) return;
+      
+      // 특이사항 입력 필드 클릭 시에는 토글 막기
+      if (e.target.closest(".note-input")) {
+        e.target.focus();
+        return;
+      }
+
+      const key = item.dataset.key;
+      toggleAttendance(key);
     });
 
+    document.getElementById("memberList").addEventListener("input", (e)=>{
+      const input = e.target.closest(".note-input");
+      if (!input) return;
+
+      const item = input.closest(".member-item");
+      if (!item) return;
+
+      const key = item.dataset.key;
+      saveNote(key, input.value);
+    });
+
+    document.getElementById("memberSearch").addEventListener("input", (e)=>{
+      const query = normName(e.target.value).toLowerCase();
+      document.querySelectorAll("#memberList .member-item").forEach(item => {
+        const name = normName(item.dataset.name).toLowerCase();
+        item.classList.toggle("hidden", name.indexOf(query) === -1);
+      });
+    });
+
+
     /************************************************************
-     * 초기화
+     * 관리자 대시보드
      ************************************************************/
-    initTeamGrid();
-    showPage("homePage");
+    function showAdminDashboard(){
+      if (!adminAuthed) {
+        openPasswordModal({ mode: "admin", title: "관리자 비밀번호", subtitle: "관리자 기능을 이용하려면 비밀번호를 입력해주세요." });
+        return;
+      }
+      showPage("adminDashboard");
+      initAdminTabs();
+    }
+
+    document.getElementById("adminBtn").addEventListener("click", ()=>{
+        if (adminAuthed) {
+             showAdminDashboard();
+        } else {
+             openPasswordModal({ mode: "admin", title: "관리자 비밀번호", subtitle: "관리자 기능을 이용하려면 비밀번호를 입력해주세요." });
+        }
+    });
+    document.getElementById("adminBackBtn").addEventListener("click", ()=>{ adminAuthed=false; showPage("homePage"); });
+
+    // 탭 및 컨텐츠 요소 설정
+    const adminTabs = document.querySelectorAll(".dashboard-tabs .tab-button");
+    const adminTabContents = {
+      "stats": document.getElementById("adminStatsTab"),
+      "notes": document.getElementById("adminNotesTab"),
+      "suggestions": document.getElementById("adminSuggestionsTab"),
+      "members": document.getElementById("adminMembersTab")
+    };
+    
+    function initAdminTabs() {
+      // 탭 전환 핸들러
+      adminTabs.forEach(btn => {
+        btn.addEventListener("click", function() {
+          adminTabs.forEach(b => b.classList.remove("active"));
+          this.classList.add("active");
+          
+          const targetTab = this.dataset.tab;
+          Object.values(adminTabContents).forEach(content => content.classList.add("hidden"));
+          adminTabContents[targetTab].classList.remove("hidden");
+
+          // 각 탭별 로드 함수 호출
+          if(targetTab === 'stats') loadAdminStats();
+          else if(targetTab === 'notes') loadAdminNotes();
+          else if(targetTab === 'suggestions') loadAdminSuggestions();
+          else if(targetTab === 'members') loadAdminMembers();
+        });
+      });
+      // 초기 탭 설정
+      // 날짜 필드 초기화
+      document.getElementById("adminDateInput").value = today;
+      document.getElementById("adminNotesDateInput").value = today;
+      document.getElementById("adminSugDateInput").value = today;
+      
+      // 첫 번째 탭 강제 클릭
+      adminTabs[0].click(); 
+    }
+
+    // --- 관리자 데이터 로드 함수 (Apps Script와 연동 필요) ---
+
+    // 헬퍼: 테이블 UI 생성
+    function buildAttendanceTable(data) {
+        let html = `<table><thead><tr>
+          <th>사랑방</th><th>총원</th><th>출석</th><th>결석</th><th>출석률</th>
+        </tr></thead><tbody>`;
+        
+        let totalPresent = 0;
+        let totalAbsent = 0;
+        let totalMembers = 0;
+
+        if (data && data.teamStats) {
+            data.teamStats.forEach(stat => {
+                const total = stat.present + stat.absent;
+                const rate = total > 0 ? Math.round((stat.present / total) * 100) : 0;
+                html += `<tr class="team-row" data-team-id="${stat.teamId}">
+                    <td>${escapeHtml(stat.teamName)}</td>
+                    <td>${total}</td>
+                    <td>${stat.present}</td>
+                    <td>${stat.absent}</td>
+                    <td>${rate}%</td>
+                </tr>
+                <tr class="detail-row hidden" data-team-detail="${stat.teamId}"><td colspan="5">
+                    <div class="detail-panel" id="detailPanel-${stat.teamId}">로딩 중...</div>
+                </td></tr>`;
+                totalPresent += stat.present;
+                totalAbsent += stat.absent;
+                totalMembers += total;
+            });
+        }
+        html += `</tbody></table>`;
+        
+        document.getElementById("adminTotalPresent").textContent = `${totalPresent}명`;
+        document.getElementById("adminTotalAbsent").textContent = `${totalAbsent}명`;
+        const totalRate = totalMembers > 0 ? Math.round((totalPresent / totalMembers) * 100) : 0;
+        document.getElementById("adminTotalRate").textContent = `${totalRate}%`;
+        document.getElementById("adminSummaryNote").textContent = `총 ${totalMembers}명 중 ${totalPresent}명 출석`;
+
+        return html;
+    }
+    
+    // 출석 현황 로드
+    async function loadAdminStats() { 
+      const date = document.getElementById("adminDateInput").value;
+      const tableDiv = document.getElementById("attendanceTable");
+      tableDiv.innerHTML = `<div class="message info">출석 현황 로드 중...</div>`;
+
+      try {
+          // Apps Script에서 해당 날짜의 전체 팀 통계를 가져옴
+          const data = await apiGet("getStatsByDate", { date });
+          
+          if (data && data.status === "success" && data.data) {
+            tableDiv.innerHTML = buildAttendanceTable(data.data);
+            attachDetailToggleListeners(date);
+          } else {
+            tableDiv.innerHTML = `<div class="message info">날짜: ${date}에 대한 출석 데이터가 없습니다.</div>`;
+          }
+
+      } catch (e) {
+          console.error("Admin Stats Load Error:", e);
+          tableDiv.innerHTML = `<div class="message error">통계 정보 로드 실패</div>`;
+      }
+    }
+    document.getElementById("adminDateInput").addEventListener("change", loadAdminStats);
+    
+    // 상세 정보 로드 및 토글 리스너
+    function attachDetailToggleListeners(date) {
+        document.querySelectorAll(".team-row").forEach(row => {
+            row.addEventListener('click', async function() {
+                const teamId = this.dataset.teamId;
+                const detailRow = document.querySelector(`.detail-row[data-team-detail="${teamId}"]`);
+                const detailPanel = document.getElementById(`detailPanel-${teamId}`);
+                
+                if (detailRow.classList.contains('hidden')) {
+                    // 상세 정보 로드
+                    detailPanel.innerHTML = `<div class="message info">상세 정보 로드 중...</div>`;
+                    detailRow.classList.remove('hidden');
+
+                    try {
+                        const data = await apiGet("loadAttendance", { teamId, date });
+                        if (data && data.status === "success" && data.data) {
+                            detailPanel.innerHTML = buildDetailPanel(data.data);
+                        } else {
+                            detailPanel.innerHTML = `<div class="message info">이 날짜에 대한 상세 기록이 없습니다.</div>`;
+                        }
+                    } catch(e) {
+                        detailPanel.innerHTML = `<div class="message error">상세 정보 로드 실패</div>`;
+                    }
+                } else {
+                    detailRow.classList.add('hidden');
+                }
+            });
+        });
+    }
+
+    // 헬퍼: 상세 정보 패널 UI 생성
+    function buildDetailPanel(data) {
+        const presentChips = (data.attendance || [])
+            .filter(a => a.isPresent)
+            .map(a => `<span class="chip">${displayMember(a.name, a.cohort)}</span>`)
+            .join("");
+
+        const absentChips = (data.attendance || [])
+            .filter(a => !a.isPresent)
+            .map(a => `<span class="chip absent">${displayMember(a.name, a.cohort)}</span>`)
+            .join("");
+
+        const notesList = (data.attendance || [])
+            .filter(a => a.note)
+            .map(a => `<div class="note-item"><span class="note-name">${displayMember(a.name, a.cohort)}:</span> ${escapeHtml(a.note)}</div>`)
+            .join("");
+            
+        let html = `<div class="detail-grid">`;
+        
+        // 1. 출석/결석
+        html += `<div class="detail-card">
+            <div class="detail-title">출석 (${(data.attendance || []).filter(a => a.isPresent).length}명)</div>
+            <div class="chips">${presentChips || '출석 기록 없음'}</div>
+            <div class="detail-title" style="margin-top:1rem;">결석 (${(data.attendance || []).filter(a => !a.isPresent).length}명)</div>
+            <div class="chips">${absentChips || '결석 기록 없음'}</div>
+        </div>`;
+        
+        // 2. 특이사항/건의사항
+        html += `<div class="detail-card">
+            <div class="detail-title">특이사항 (${(data.attendance || []).filter(a => a.note).length}건)</div>
+            <div class="note-list">${notesList || '특이사항 기록 없음'}</div>
+            <div class="detail-title" style="margin-top:1rem;">건의사항</div>
+            <div class="note-item">${data.suggestion ? escapeHtml(data.suggestion) : '건의사항 없음'}</div>
+        </div>`;
+
+        html += `</div>`;
+        return html;
+    }
+
+    // 특이사항 탭 로드
+    async function loadAdminNotes() {
+        const date = document.getElementById("adminNotesDateInput").value;
+        const notesDiv = document.getElementById("notesTable");
+        notesDiv.innerHTML = `<div class="message info">특이사항 로드 중...</div>`;
+
+        try {
+            const data = await apiGet("getNotesByDate", { date });
+            if (data && data.status === "success" && data.data) {
+                let tableHtml = `<table><thead><tr><th>사랑방</th><th>이름 (또래)</th><th>특이사항</th></tr></thead><tbody>`;
+                data.data.forEach(note => {
+                    tableHtml += `<tr>
+                        <td>${escapeHtml(note.teamName)}</td>
+                        <td>${displayMember(note.name, note.cohort)}</td>
+                        <td>${escapeHtml(note.note).replaceAll('\n', '<br>')}</td>
+                    </tr>`;
+                });
+                tableHtml += `</tbody></table>`;
+                notesDiv.innerHTML = tableHtml;
+            } else {
+                notesDiv.innerHTML = `<div class="message info">날짜: ${date}에 기록된 특이사항이 없습니다.</div>`;
+            }
+        } catch(e) {
+            notesDiv.innerHTML = `<div class="message error">특이사항 로드 실패</div>`;
+        }
+    }
+    document.getElementById("adminNotesDateInput").addEventListener("change", loadAdminNotes);
+    
+    // 건의사항 탭 로드
+    async function loadAdminSuggestions() {
+        const date = document.getElementById("adminSugDateInput").value;
+        const sugDiv = document.getElementById("suggestionsList");
+        sugDiv.innerHTML = `<div class="message info">건의사항 로드 중...</div>`;
+
+        try {
+            const data = await apiGet("getSuggestionsByDate", { date });
+            if (data && data.status === "success" && data.data) {
+                let html = ``;
+                data.data.forEach(sug => {
+                    html += `<div class="suggestion-item">
+                        <div class="suggestion-team">${escapeHtml(sug.teamName)}</div>
+                        <p style="margin-top:.5rem; white-space:pre-wrap;">${escapeHtml(sug.suggestion)}</p>
+                    </div>`;
+                });
+                sugDiv.innerHTML = html;
+            } else {
+                sugDiv.innerHTML = `<div class="message info">날짜: ${date}에 기록된 건의사항이 없습니다.</div>`;
+            }
+        } catch(e) {
+            sugDiv.innerHTML = `<div class="message error">건의사항 로드 실패</div>`;
+        }
+    }
+    document.getElementById("adminSugDateInput").addEventListener("change", loadAdminSuggestions);
+
+    // 개인 출석률 탭 로드 (초기 데이터 준비)
+    async function loadAdminMembers() {
+        // 이 부분은 Chart.js 라이브러리가 필요하며, Apps Script에서 모든 멤버 리스트를 가져와 select에 채워야 합니다.
+        const memberSelect = document.getElementById("memberSelect");
+        memberSelect.innerHTML = '<option value="">사람 선택</option>';
+
+        // Apps Script에서 모든 멤버 리스트를 가져온다고 가정
+        try {
+            const allMembers = await apiGet("getAllMembers"); // 가정된 API 호출
+            if (allMembers && allMembers.status === "success" && allMembers.data) {
+                allMembers.data.forEach(m => {
+                    const key = memberKey(m.name, m.cohort);
+                    const displayName = displayMember(m.name, m.cohort);
+                    memberSelect.innerHTML += `<option value="${key}">${escapeHtml(displayName)}</option>`;
+                });
+            }
+        } catch(e) {
+             console.error("멤버 목록 로드 실패:", e);
+             memberSelect.innerHTML += `<option value="" disabled>멤버 목록 로드 실패</option>`;
+        }
+        
+        // 날짜 범위 초기화 (예: 최근 1년)
+        const end = new Date();
+        const start = new Date(end);
+        start.setFullYear(end.getFullYear() - 1);
+
+        document.getElementById("memberEndDate").value = formatISODate(end);
+        document.getElementById("memberStartDate").value = formatISODate(start);
+        
+        // 여기에 초기 그래프 및 목록을 로드하는 함수 호출이 필요합니다.
+        // loadMemberAttendance(); // 예시 함수
+    }
+
+    // 초기화 시 오늘 날짜 설정 및 그리드 로드
+    document.addEventListener("DOMContentLoaded", ()=>{
+      initTeamGrid();
+    });
+    
   </script>
 </body>
 </html>
