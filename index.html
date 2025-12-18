@@ -365,7 +365,7 @@
     /************************************************************
      * ✅ Apps Script Web App URL (윤호님이 준 주소)
      ************************************************************/
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxrcmht2l_Ps3Ca6W0UWaeQpqfOTVr3mZQqEK6CKotN3-z-Y9QjPiciZAzzpOK4BLf2eQ/exec";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbykIFil8qB7FgHxqEW2kWHU6lCoR1Xb_u0c8c8jk-IAniGTKX06fGSs9rTZBphrPUHXVA/exec";
 
     /************************************************************
      * ✅ 비밀번호
@@ -813,37 +813,62 @@
         })
       };
     
-      console.log("=== 저장할 데이터 ===", payload);
+      console.log("=== 저장할 데이터 ===");
       console.log("날짜:", payload.date);
       console.log("사랑방 ID:", payload.teamId);
-      console.log("출석 데이터:", payload.attendance);
+      console.log("출석 인원:", payload.attendance.filter(a => a.present).length + "/" + payload.attendance.length);
     
       try {
-        showMsg("info", "저장 중...");
+        showMsg("info", "💾 저장 중...");
         
-        const response = await fetch(GOOGLE_SCRIPT_URL, {
+        await fetch(GOOGLE_SCRIPT_URL, {
           method: "POST",
           mode: "no-cors",
           headers: { "Content-Type":"application/json" },
           body: JSON.stringify(payload)
         });
         
-        console.log("=== POST 응답 ===", response);
+        console.log("POST 요청 완료");
         
-        // no-cors 모드에서는 응답을 읽을 수 없으므로 3초 후 재로드
-        showMsg("success", "저장 요청 완료! 확인 중...");
+        // ✅ 저장 완료 메시지
+        showMsg("success", "✅ 저장되었습니다!");
         
+        // ✅ 5초 후 자동으로 다시 로드 (스프레드시트 쓰기 완료 대기)
         setTimeout(async () => {
           console.log("=== 저장 확인 중 ===");
+          showMsg("info", "📥 데이터 확인 중...");
           await loadTeamDataFromServer(selectedTeam, dateInput.value || today);
-        }, 3000);
+        }, 5000);  // 3초 → 5초로 증가
         
       } catch(e){
         console.error("=== 저장 오류 ===", e);
-        showMsg("error", "저장 실패 (네트워크 확인)");
+        showMsg("error", "❌ 저장 실패 (네트워크 확인)");
       }
     }
-    document.getElementById("saveBtn").addEventListener("click", saveAttendance);
+```
+### 4단계: 배포 및 테스트
+
+1. **Apps Script 저장**
+2. **배포 > 배포 관리 > 편집 > 새 버전 > 배포**
+3. **HTML 파일의 URL이 최신인지 확인**
+
+### 5단계: 테스트 방법
+
+1. **F12 > Console 열기**
+2. **출석 체크 후 저장**
+3. **5초 기다리기**
+4. **Console에서 확인**:
+```
+   === 저장할 데이터 ===
+   날짜: 2024-12-19
+   사랑방 ID: 1
+   출석 인원: 2/4
+   POST 요청 완료
+   === 저장 확인 중 ===
+   === 서버 응답 ===
+     
+   {ok: true, found: true, submission: {...}}
+  
 
     /************************************************************
      * 관리자
