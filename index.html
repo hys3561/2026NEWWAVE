@@ -452,8 +452,13 @@
     function apiGet(action, params){
       params = params || {};
       params.action = action;
+    
+      // ✅ JSONP 캐시 방지 (매 호출마다 URL이 달라지도록)
+      params._ts = Date.now();
+    
       return jsonp(GOOGLE_SCRIPT_URL, params);
     }
+
 
     const modal = document.getElementById("passwordModal");
     const modalTitle = document.getElementById("modalTitle");
@@ -715,7 +720,10 @@
           body: JSON.stringify(payload)
         });
         toast("저장되었습니다!");
-        loadTeamDataFromServer(selectedTeam, dateInput.value || today);
+        setTimeout(()=>{
+          loadTeamDataFromServer(selectedTeam, dateInput.value || today);
+        }, 300);
+
       } catch(e){
         toast("저장 실패 (네트워크 확인)");
       }
