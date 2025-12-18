@@ -672,40 +672,76 @@
     async function loadTeamDataFromServer(team, date){
       try {
         const res = await apiGet("getTeamSubmission", { teamId:String(team.id), date });
+        
+        console.log("=== 서버 응답 ===", res);
+        
         if (!res || !res.ok) { 
-          showMsg("error", "데이터 로드 실패"); 
+          showMsg("error", "❌ 데이터 로드 실패"); 
           return; 
         }
-
+    
         resetStateForTeam(team);
-
+    
         if (res.found && res.submission && Array.isArray(res.submission.attendance)) {
+          console.log("=== 저장된 출석 데이터 ===", res.submission.attendance);
+          
           res.submission.attendance.forEach(r=>{
             const nm = normName(r?.name);
             const ch = normCohort(r?.cohort);
             if (!nm) return;
             const k = memberKey(nm, ch);
+            
+            console.log(`방원: ${nm}, 또래: ${ch}, 키: ${k}, 출석: ${r.present}`);
+            
             attendance[k] = !!r.present;
             memberNotes[k] = String(r.note || "");
           });
+          
           document.getElementById("suggestionInput").value = String(res.submission.suggestion || "");
+          
+          console.log("=== attendance 객체 ===", attendance);
+          console.log("=== memberNotes 객체 ===", memberNotes);
+        } else {
+          console.log("저장된 데이터가 없습니다.");
+          showMsg("info", "ℹ️ 저장된 출석 데이터가 없습니다.");
         }
-
+    
+        // UI 업데이트
+        let updatedCount = 0;
         document.querySelectorAll("#memberList .member-item").forEach(item=>{
           const k = item.dataset.key;
-          item.classList.toggle("checked", !!attendance[k]);
+          const isChecked = !!attendance[k];
+          
+          console.log(`UI 업데이트: 키=${k}, 체크=${isChecked}`);
+          
+          if (isChecked) {
+            item.classList.add("checked");
+            updatedCount++;
+          } else {
+            item.classList.remove("checked");
+          }
+          
           const input = item.querySelector(".note-input");
-          if (input) input.value = memberNotes[k] || "";
+          if (input) {
+            input.value = memberNotes[k] || "";
+          }
         });
-
+    
+        console.log(`=== 총 ${updatedCount}명 체크됨 ===`);
+    
         updateCount();
-        showMsg("success", "데이터 로드 완료!");
+        
+        if (res.found) {
+          showMsg("success", "✅ 데이터 로드 완료!");
+        } else {
+          showMsg("info", "ℹ️ 새로운 출석 체크 시작");
+        }
+        
       } catch(e){
-        showMsg("error", "서버 연결 실패");
+        showMsg("error", "❌ 서버 연결 실패");
         console.error("로드 오류:", e);
       }
     }
-
     function selectTeam(team){
       selectedTeam = team;
       document.getElementById("selectedTeamName").textContent = team.name;
