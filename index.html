@@ -423,41 +423,55 @@
     }
 
     function jsonp(url, params){
-      return new Promise((resolve, reject)=>{
-        const cb = "cb_" + Date.now() + "_" + Math.floor(Math.random()*1e6);
-        params = params || {};
-        params.callback = cb;
+      return new Promise((resolve, reject)=>{
+        const cb = "cb_" + Date.now() + "_" + Math.floor(Math.random()*1e6);
+        params = params || {};
+        params.callback = cb;
 
-        const qs = Object.keys(params).map(k => encodeURIComponent(k)+"="+encodeURIComponent(params[k])).join("&");
-        const script = document.createElement("script");
-        script.src = url + (url.includes("?") ? "&" : "?") + qs;
+        const qs = Object.keys(params).map(k => encodeURIComponent(k)+"="+encodeURIComponent(params[k])).join("&");
+        const script = document.createElement("script");
+        script.src = url + (url.includes("?") ? "&" : "?") + qs;
 
-        const t = setTimeout(()=>{
-          cleanup();
-          reject(new Error("JSONP timeout"));
-        }, 12000);
+        const t = setTimeout(()=>{
+          cleanup();
+          // JSONP 타임아웃 시 오류 메시지 명확화
+          reject(new Error("JSONP 요청 타임아웃. 서버 응답이 너무 오래 걸립니다."));
+        }, 15000); // 타임아웃 시간을 15초로 넉넉하게 설정
 
-        function cleanup(){
-          clearTimeout(t);
-          if (script && script.parentNode) script.parentNode.removeChild(script);
-          try { delete window[cb]; } catch(e){ window[cb] = undefined; }
-        }
+        function cleanup(){
+          clearTimeout(t);
+          if (script && script.parentNode) script.parentNode.removeChild(script);
+          // window 객체에서 함수 삭제
+          try { delete window[cb]; } catch(e){ window[cb] = undefined; }
+        }
 
-        window[cb] = (data)=>{ cleanup(); resolve(data); };
-        script.onerror = ()=>{ cleanup(); reject(new Error("JSONP network error")); };
-        document.body.appendChild(script);
-      });
-    }
+        window[cb] = (data)=>{ 
+          cleanup(); 
+          if (data && data.ok === false) {
+            // GAS에서 ok: false로 응답한 경우 (예: Missing teamId or date)
+            reject(new Error("서버 응답 오류: " + (data.error || "알 수 없는 오류")));
+          } else {
+            resolve(data); 
+          }
+        };
+        // 스크립트 로드 실패 (네트워크 오류, 404 등) 처리
+        script.onerror = ()=>{ 
+          cleanup(); 
+          reject(new Error("JSONP 네트워크 오류 또는 URL 문제")); 
+        };
+        document.body.appendChild(script);
+      });
+    }
 
-    function apiGet(action, params){
-      params = params || {};
-      params.action = action;
-    
-      // ✅ JSONP 캐시 방지 (매 호출마다 URL이 달라지도록)
-      params._ts = Date.now();
-    
-      return jsonp(GOOGLE_SCRIPT_URL, params);
-    }
+    function apiGet(action, params){
+      params = params || {};
+      params.action = action;
+    
+      // ✅ JSONP 캐시 방지 (매 호출마다 URL이 달라지도록)
+      params._ts = Date.now();
+    
+      return jsonp(GOOGLE_SCRIPT_URL, params);
+    }
 
 
     const modal = document.getElementById("passwordModal");
@@ -613,37 +627,50 @@
     }
 
     async function loadTeamDataFromServer(team, date){
-      try {
-        const res = await apiGet("getTeamSubmission", { teamId:String(team.id), date });
-        if (!res || !res.ok) { toast("데이터 로드 실패"); return; }
+      try {
+        toast("불러오는 중...");
+        // 날짜 형식이 올바른지 확인 (YYYY-MM-DD)
+        if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+          toast("⚠️ 유효하지 않은 날짜 형식입니다.", 'error');
+          return;
+        }
+        
+        const res = await apiGet("getTeamSubmission", { teamId:String(team.id), date });
 
-        resetStateForTeam(team);
+        if (!res || res.ok !== true) { 
+          // GAS 코드가 ok:false로 응답했으나 jsonp에서 처리되지 않은 경우
+          throw new Error(res?.error || "알 수 없는 응답 실패");
+        }
 
-        if (res.found && res.submission && Array.isArray(res.submission.attendance)) {
-          res.submission.attendance.forEach(r=>{
-            const nm = normName(r?.name);
-            const ch = normCohort(r?.cohort);
-            if (!nm) return;
-            const k = memberKey(nm, ch);
-            attendance[k] = !!r.present;
-            memberNotes[k] = String(r.note || "");
-          });
-          document.getElementById("suggestionInput").value = String(res.submission.suggestion || "");
-        }
+        resetStateForTeam(team);
 
-        document.querySelectorAll("#memberList .member-item").forEach(item=>{
-          const k = item.dataset.key;
-          item.classList.toggle("checked", !!attendance[k]);
-          const input = item.querySelector(".note-input");
-          if (input) input.value = memberNotes[k] || "";
-        });
+        if (res.found && res.submission && Array.isArray(res.submission.attendance)) {
+          res.submission.attendance.forEach(r=>{
+            const nm = normName(r?.name);
+            const ch = normCohort(r?.cohort);
+            if (!nm) return;
+            const k = memberKey(nm, ch);
+            attendance[k] = !!r.present;
+            memberNotes[k] = String(r.note || "");
+          });
+          document.getElementById("suggestionInput").value = String(res.submission.suggestion || "");
+        }
 
-        updateCount();
-        toast(res.found ? "저장된 기록을 불러왔습니다." : "해당 날짜 기록이 없습니다.");
-      } catch(e){
-        toast("서버 연결 실패 (웹앱 배포/권한/Spreadsheet ID 확인)");
-      }
-    }
+        document.querySelectorAll("#memberList .member-item").forEach(item=>{
+          const k = item.dataset.key;
+          item.classList.toggle("checked", !!attendance[k]);
+          const input = item.querySelector(".note-input");
+          if (input) input.value = memberNotes[k] || "";
+        });
+
+        updateCount();
+        toast(res.found ? "✅ 저장된 기록을 불러왔습니다." : "해당 날짜 기록이 없습니다.");
+      } catch(e){
+        console.error("데이터 로드 실패:", e.message);
+        // 서버 연결 실패 또는 GAS 오류 메시지 표시
+        toast("❌ 데이터 로드 실패: " + e.message + " (웹앱 배포/권한/Spreadsheet ID 확인)", 'error');
+      }
+    }
 
     function selectTeam(team){
       selectedTeam = team;
