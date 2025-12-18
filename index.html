@@ -313,7 +313,7 @@
             * 동명이인은 “이름+또래”로 분리됩니다. (예: 홍길동 (01))
           </div>
           <div class="btn-row">
-            <button type="button" class="ghost-btn" id="downloadCsvBtn">연말 출석률 CSV 다운로드</button>
+            <button type="button" class="ghost-btn" id="downloadCsvBtn">📊 기간별 전체 출석률 CSV 다운로드</button>
           </div>
         </div>
 
@@ -365,7 +365,7 @@
     /************************************************************
      * ✅ Apps Script Web App URL (윤호님이 준 주소)
      ************************************************************/
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw8WxmCf23sYEUU-FCGSA5hkptyPGEd7nHJKicelLMbqpDl7svO6iIBwzCKGjrizULwFw/exec";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwBwVk2_Pzkn9OsvcFOShzkuuZPi47su4Hz6bOYfc1W6WIL_3ZcNbCN9LoQ_rppaNElNw/exec";
 
     /************************************************************
      * ✅ 비밀번호
@@ -672,7 +672,10 @@
     async function loadTeamDataFromServer(team, date){
       try {
         const res = await apiGet("getTeamSubmission", { teamId:String(team.id), date });
-        if (!res || !res.ok) { showMsg("error", "데이터 로드 실패"); return; }
+        if (!res || !res.ok) { 
+          showMsg("error", "데이터 로드 실패"); 
+          return; 
+        }
 
         resetStateForTeam(team);
 
@@ -696,8 +699,10 @@
         });
 
         updateCount();
+        showMsg("success", "데이터 로드 완료!");
       } catch(e){
         showMsg("error", "서버 연결 실패");
+        console.error("로드 오류:", e);
       }
     }
 
@@ -1106,11 +1111,17 @@
       memberSelect.addEventListener("change", ()=> adminAuthed && renderMemberTab_());
 
       document.getElementById("downloadCsvBtn").addEventListener("click", ()=>{
-        const y = (memberEndDate.value || today).slice(0,4);
-        const url = `${GOOGLE_SCRIPT_URL}?action=exportAnnualRatesCsv&year=${encodeURIComponent(y)}`;
+        const start = memberStartDate.value || "";
+        const end = memberEndDate.value || today;
+        
+        if (!start) {
+          alert("시작 날짜를 선택해주세요.");
+          return;
+        }
+        
+        const url = `${GOOGLE_SCRIPT_URL}?action=exportPeriodCsv&startDate=${encodeURIComponent(start)}&endDate=${encodeURIComponent(end)}`;
         window.open(url, "_blank");
       });
-    }
 
        // value format: "name||cohort"
     async function loadMemberList_(){
