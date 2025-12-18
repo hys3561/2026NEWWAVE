@@ -1122,10 +1122,10 @@
         const url = `${GOOGLE_SCRIPT_URL}?action=exportPeriodCsv&startDate=${encodeURIComponent(start)}&endDate=${encodeURIComponent(end)}`;
         window.open(url, "_blank");
       });
+    }  // ✅ initMemberTabOnce_ 함수 종료
 
-       // value format: "name||cohort"
+    // ✅ loadMemberList_ 함수를 밖으로 분리
     async function loadMemberList_(){
-      // 1) 서버에서 먼저 시도 (저장된 전체 이력 기반)
       try {
         const res = await apiGet("getMemberList", {});
         const members = (res && res.ok && Array.isArray(res.members)) ? res.members : [];
@@ -1140,10 +1140,37 @@
             }).join("");
           return;
         }
-        // 서버가 ok지만 비어있으면 fallback으로 넘어감
       } catch(e) {
         // 서버 호출 실패 시 fallback
       }
+    
+      // fallback: TEAMS roster에서 사람 목록 생성
+      const map = new Map();
+    
+      TEAMS.forEach(team=>{
+        (team.members || []).map(normalizeMemberObj).forEach(m=>{
+          const nm = normName(m?.name);
+          const ch = normCohort(m?.cohort);
+          if (!nm) return;
+          const key = memberKey(nm, ch);
+          if (!map.has(key)) map.set(key, { name: nm, cohort: ch });
+        });
+      });
+    
+      const rosterMembers = Array.from(map.values()).sort((a,b)=>{
+        const c1 = (a.name||"").localeCompare(b.name||"", "ko");
+        if (c1 !== 0) return c1;
+        return (a.cohort||"").localeCompare(b.cohort||"", "ko");
+      });
+    
+      memberSelect.innerHTML = `<option value="">사람 선택</option>` +
+        rosterMembers.map(m=>{
+          const val = memberKey(m.name, m.cohort);
+          return `<option value="${escapeHtml(val)}">${escapeHtml(displayMember(m.name, m.cohort))}</option>`;
+        }).join("");
+    }
+
+    function parseMemberSelectValue_(val){
     
       // 2) ✅ fallback: TEAMS roster에서 사람 목록 생성 (서버가 막혀도 목록 표시됨)
       const map = new Map(); // key -> {name, cohort}
