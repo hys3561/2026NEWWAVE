@@ -365,7 +365,7 @@
     /************************************************************
      * ✅ Apps Script Web App URL (윤호님이 준 주소)
      ************************************************************/
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyYIS7wmcf7CRiUDs_Flzie8B3c1kSm5mT2QXgotNGziMyYTkhBaaDcXiwDqpkHUZURSQ/exec";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxrcmht2l_Ps3Ca6W0UWaeQpqfOTVr3mZQqEK6CKotN3-z-Y9QjPiciZAzzpOK4BLf2eQ/exec";
 
     /************************************************************
      * ✅ 비밀번호
@@ -792,9 +792,9 @@
 
     async function saveAttendance(){
       if (!selectedTeam) return;
-
+    
       const members = (selectedTeam.members || []).map(normalizeMemberObj).filter(x=>x.name);
-
+    
       const payload = {
         action: "submit",
         teamId: String(selectedTeam.id),
@@ -812,18 +812,34 @@
           };
         })
       };
-
+    
+      console.log("=== 저장할 데이터 ===", payload);
+      console.log("날짜:", payload.date);
+      console.log("사랑방 ID:", payload.teamId);
+      console.log("출석 데이터:", payload.attendance);
+    
       try {
-        // POST는 no-cors로도 저장은 되지만 응답을 못 읽음 -> 저장 후 GET로 재로딩
-        await fetch(GOOGLE_SCRIPT_URL, {
+        showMsg("info", "저장 중...");
+        
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
           method: "POST",
           mode: "no-cors",
           headers: { "Content-Type":"application/json" },
           body: JSON.stringify(payload)
         });
-        showMsg("success", "저장되었습니다!");
-        loadTeamDataFromServer(selectedTeam, dateInput.value || today);
+        
+        console.log("=== POST 응답 ===", response);
+        
+        // no-cors 모드에서는 응답을 읽을 수 없으므로 3초 후 재로드
+        showMsg("success", "저장 요청 완료! 확인 중...");
+        
+        setTimeout(async () => {
+          console.log("=== 저장 확인 중 ===");
+          await loadTeamDataFromServer(selectedTeam, dateInput.value || today);
+        }, 3000);
+        
       } catch(e){
+        console.error("=== 저장 오류 ===", e);
         showMsg("error", "저장 실패 (네트워크 확인)");
       }
     }
