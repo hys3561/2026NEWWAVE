@@ -61,7 +61,7 @@
     .message.info { background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; }
 
     .dashboard-tabs { display:flex; gap:1rem; margin-bottom:1.25rem; border-bottom:2px solid #e5e7eb; overflow-x:auto; }
-    .tab-button { padding:.75rem 1.25rem; background:none; border:none; cursor:pointer; color:#6b7280; border-bottom:2px solid transparent; margin-bottom:-2px; font-weight:1.1rem; white-space:nowrap; }
+    .tab-button { padding:.75rem 1.25rem; background:none; border:none; cursor:pointer; color:#6b7280; border-bottom:2px solid transparent; margin-bottom:-2px; font-weight:950; white-space:nowrap; }
     .tab-button.active { color:#2563eb; border-bottom-color:#2563eb; }
     .admin-summary { display:grid; grid-template-columns:repeat(3, 1fr); gap:.75rem; margin:1rem 0; }
     .admin-summary-card { background:#fff; border:1px solid #e5e7eb; border-radius:.95rem; padding:1rem; }
@@ -243,7 +243,7 @@
   </div>
 
   <script>
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwVK600264EQtMneRGTO6FaTpb2k_6qsrvAynzE_rDehNE2qWNa7w-aKlYzcseeCAlfDg/exec";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzcTHwxzFUJYeIHXWebBsgOq1OXfkKAKb7VYPKXBp_V1Rddm6C100PulVq2YswoivqlbA/exec";
     const ADMIN_PASSWORD = "newwave2026";
     
     // ⚠️ 중요: 아래 TEAMS 배열의 members 속성을 실제 방원 이름과 또래(cohort)로 모두 수정해야 합니다!
@@ -308,6 +308,14 @@
     let memberNotes = {};
     let adminAuthed = false;
     let chartInstance = null;
+
+    // ✅ 또래 정규화 헬퍼 함수 (클라이언트)
+    function normalizeCohort(value) {
+        const cohortStr = (value || "").toString().trim();
+        // 서버에서 0으로 변환되어 들어왔을 경우, 다시 '00'으로 정규화
+        if (cohortStr === '0') return '00';
+        return cohortStr;
+    }
 
     function showPage(id) {
       ["homePage","attendancePage","adminDashboard"].forEach(p => document.getElementById(p).classList.add("hidden"));
@@ -393,10 +401,10 @@
       const list = document.getElementById("memberList");
       list.innerHTML = "";
       
-      // ✅ 키 생성 로직: 이름과 또래를 trim 처리하여 공백 불일치 방지
+      // ✅ key 생성 로직: 또래 정규화 적용
       team.members.forEach(m => {
         const name = (m.name || "").toString().trim(); // 이름 trim
-        const cohort = (m.cohort || "").toString().trim(); // 또래 trim
+        const cohort = normalizeCohort(m.cohort); // 또래 정규화
         const key = name + "||" + cohort; // 일관된 키 생성
         
         attendance[key] = false;
@@ -445,9 +453,9 @@
         if (res.status === "success" && res.data.found) {
           // 2. 서버 데이터 처리
           res.data.attendance.forEach(r => {
-            // ✅ 서버에서 받은 이름과 또래로 키 재생성 (trim 적용)
+            // ✅ 서버에서 받은 이름과 또래로 키 재생성 (정규화 적용)
             const nameFromServer = (r.name || "").toString().trim();
-            const cohortFromServer = (r.cohort || "").toString().trim();
+            const cohortFromServer = normalizeCohort(r.cohort); // 또래 정규화
             const key = nameFromServer + "||" + cohortFromServer; 
             
             // 현재 팀 목록에 있는 방원인지 확인 (key가 일치하는지)
@@ -476,7 +484,7 @@
        btn.textContent = "저장 중..."; btn.disabled = true;
        const list = [];
        for(let key in attendance) {
-         const [name, cohort] = key.split("||"); // 이미 trim된 키를 사용하므로 안전함
+         const [name, cohort] = key.split("||"); // 이미 정규화된 키를 사용하므로 안전함
          list.push({ name, cohort, isPresent: attendance[key], note: memberNotes[key] || "" });
        }
        try {
@@ -615,7 +623,12 @@
        try {
          const res = await jsonp(GOOGLE_SCRIPT_URL, { action: "getAllMembers" });
          res.data.forEach(m => {
-           const opt = document.createElement("option"); opt.value = m.name + "||" + m.cohort; opt.text = `${m.name} (${m.cohort})`; sel.appendChild(opt);
+           // ✅ 정규화된 또래를 사용하여 옵션 값 생성
+           const cohort = normalizeCohort(m.cohort);
+           const opt = document.createElement("option"); 
+           opt.value = m.name + "||" + cohort; 
+           opt.text = `${m.name} (${cohort})`; 
+           sel.appendChild(opt);
          });
        } catch(e) {}
     }
