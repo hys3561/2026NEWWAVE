@@ -245,20 +245,61 @@
   <script>
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_I1-21N9lpZ4XP2xEwL7jWXbxtd7HnOB1CTgrOjSkxN59iYTGx-IOah8wbtAECJa_cA/exec";
     const ADMIN_PASSWORD = "newwave2026";
+    
+    // ⚠️ 중요: 아래 TEAMS 배열의 members 속성을 실제 방원 이름과 또래(cohort)로 모두 수정해야 합니다!
+    // 이름과 또래는 구글 시트에 기록되는 정보와 완전히 일치해야 합니다.
     const TEAMS = [
-      { id: 1, name: "권준형 사랑방", leader: "방장: 권준형", members: [{name:"방원1",cohort:"99"},{name:"방원2",cohort:"00"}]},
-      { id: 2, name: "김나림 사랑방", leader: "방장: 김나림", members: ["방원1","방원2"] },
-      { id: 3, name: "문유안 사랑방", leader: "방장: 문유안", members: ["방원1","방원2"] },
-      { id: 4, name: "벡에스더 사랑방", leader: "방장: 벡에스더", members: ["방원1","방원2"] },
-      { id: 5, name: "이예정 사랑방", leader: "방장: 이예정", members: ["방원1","방원2"] },
-      { id: 6, name: "이지빈 사랑방", leader: "방장: 이지빈", members: ["방원1","방원2"] },
-      { id: 7, name: "이하은 사랑방", leader: "방장: 이하은", members: ["방원1","방원2"] },
-      { id: 8, name: "이희진 사랑방", leader: "방장: 이희진", members: ["방원1","방원2"] },
-      { id: 9, name: "임사랑 사랑방", leader: "방장: 임사랑", members: ["방원1","방원2"] },
-      { id: 10, name: "장하늘 사랑방", leader: "방장: 장하늘", members: ["방원1","방원2"] },
-      { id: 11, name: "하재영 사랑방", leader: "방장: 하재영", members: ["방원1","방원2"] },
-      { id: 12, name: "Wee팀", leader: "방장: 권하경, 최수인", members: ["방원1","방원2"] }
+      { id: 1, name: "권준형 사랑방", leader: "방장: 권준형", members: [
+        {name:"홍길동",cohort:"99"}, // 예시: 이름과 또래를 실제 정보로 수정
+        {name:"김철수",cohort:"00"},
+        {name:"박영희",cohort:"97"} // 필요한 만큼 방원을 추가하세요
+      ]},
+      { id: 2, name: "김나림 사랑방", leader: "방장: 김나림", members: [
+        {name:"이철수",cohort:"98"},
+        {name:"정영희",cohort:"01"}
+      ] },
+      { id: 3, name: "문유안 사랑방", leader: "방장: 문유안", members: [
+        {name:"방원3-1",cohort:"00"},
+        {name:"방원3-2",cohort:"01"}
+      ] },
+      { id: 4, name: "벡에스더 사랑방", leader: "방장: 벡에스더", members: [
+        {name:"방원4-1",cohort:"00"},
+        {name:"방원4-2",cohort:"01"}
+      ] },
+      { id: 5, name: "이예정 사랑방", leader: "방장: 이예정", members: [
+        {name:"방원5-1",cohort:"00"},
+        {name:"방원5-2",cohort:"01"}
+      ] },
+      { id: 6, name: "이지빈 사랑방", leader: "방장: 이지빈", members: [
+        {name:"방원6-1",cohort:"00"},
+        {name:"방원6-2",cohort:"01"}
+      ] },
+      { id: 7, name: "이하은 사랑방", leader: "방장: 이하은", members: [
+        {name:"방원7-1",cohort:"00"},
+        {name:"방원7-2",cohort:"01"}
+      ] },
+      { id: 8, name: "이희진 사랑방", leader: "방장: 이희진", members: [
+        {name:"방원8-1",cohort:"00"},
+        {name:"방원8-2",cohort:"01"}
+      ] },
+      { id: 9, name: "임사랑 사랑방", leader: "방장: 임사랑", members: [
+        {name:"방원9-1",cohort:"00"},
+        {name:"방원9-2",cohort:"01"}
+      ] },
+      { id: 10, name: "장하늘 사랑방", leader: "방장: 장하늘", members: [
+        {name:"방원10-1",cohort:"00"},
+        {name:"방원10-2",cohort:"01"}
+      ] },
+      { id: 11, name: "하재영 사랑방", leader: "방장: 하재영", members: [
+        {name:"방원11-1",cohort:"00"},
+        {name:"방원11-2",cohort:"01"}
+      ] },
+      { id: 12, name: "Wee팀", leader: "방장: 권하경, 최수인", members: [
+        {name:"방원12-1",cohort:"00"},
+        {name:"방원12-2",cohort:"01"}
+      ] }
     ];
+    // 사랑방별 비밀번호 (예시: pw1111, pw2222...)
     const TEAM_PASSWORDS = {};
     TEAMS.forEach(t => TEAM_PASSWORDS[t.id] = "pw" + t.id + t.id + t.id + t.id);
     
@@ -307,6 +348,7 @@
       TEAMS.forEach(t => {
         const card = document.createElement("div");
         card.className = "team-card";
+        // 멤버 목록이 객체 배열로 통일되었으므로, .length는 항상 정확함
         card.innerHTML = `
           <div class="team-card-header"><div class="team-number">${t.id}</div><div class="member-count">${t.members.length}명</div></div>
           <div class="team-name">${t.name}</div><div class="team-leader">${t.leader}</div>
@@ -350,10 +392,13 @@
       attendance = {}; memberNotes = {};
       const list = document.getElementById("memberList");
       list.innerHTML = "";
+      
+      // ✅ key 생성 로직 수정: 모든 멤버는 이제 객체 형식으로 통일되었음
       team.members.forEach(m => {
-        const name = typeof m === "string" ? m : m.name;
-        const cohort = typeof m === "string" ? "" : m.cohort;
-        const key = name + "||" + cohort;
+        const name = m.name;
+        const cohort = m.cohort || ""; // 또래가 없을 경우 빈 문자열
+        const key = name + "||" + cohort; // 일관된 키 생성
+        
         attendance[key] = false;
         const el = document.createElement("div");
         el.className = "member-item";
@@ -388,16 +433,32 @@
         const res = await jsonp(GOOGLE_SCRIPT_URL, { 
           action: "loadAttendance", teamId: selectedTeam.id, date: document.getElementById("dateInput").value 
         });
+        
+        // 1. 초기화 (기존 방원 목록을 기준으로 초기화)
         const items = document.querySelectorAll(".member-item");
-        items.forEach(el => { attendance[el.dataset.key] = false; el.classList.remove("checked"); el.querySelector(".note-input").value = ""; });
+        items.forEach(el => { 
+            attendance[el.dataset.key] = false; 
+            el.classList.remove("checked"); 
+            el.querySelector(".note-input").value = ""; 
+        });
         
         if (res.status === "success" && res.data.found) {
+          // 2. 서버 데이터 처리 (서버 데이터가 최신 키와 100% 일치해야 함)
           res.data.attendance.forEach(r => {
-            const key = r.name + "||" + r.cohort;
-            if (attendance.hasOwnProperty(key)) {
-               attendance[key] = r.isPresent; memberNotes[key] = r.note;
+            // 서버에서 받은 이름과 또래로 키 재생성
+            const cohortFromServer = r.cohort || "";
+            const key = r.name + "||" + cohortFromServer; 
+            
+            // 현재 팀 목록에 있는 방원인지 확인 (key가 일치하는지)
+            if (attendance.hasOwnProperty(key)) { 
+               attendance[key] = r.isPresent; 
+               memberNotes[key] = r.note;
+               
                const el = document.querySelector(`.member-item[data-key="${key}"]`);
-               if (el) { if(r.isPresent) el.classList.add("checked"); el.querySelector(".note-input").value = r.note; }
+               if (el) { 
+                   if(r.isPresent) el.classList.add("checked"); 
+                   el.querySelector(".note-input").value = r.note; 
+               }
             }
           });
           document.getElementById("suggestionInput").value = res.data.suggestion || "";
@@ -468,16 +529,22 @@
           // 해당 팀 데이터 찾기
           const stat = submittedData.find(s => String(s.teamId) === String(team.id));
           
+          // 총원 계산: TEAMS 목록의 방원 수
+          const totalMembers = team.members.length; 
+          
           if (stat) {
-            // 제출됨
-            const total = stat.present + stat.absent; 
-            const rate = total ? Math.round(stat.present/total*100) : 0;
-            tp += stat.present; ta += stat.absent;
+            // 제출됨 (서버에서 최신 기록 기준으로 계산된 값 사용)
+            const present = stat.present;
+            const absent = stat.absent;
+            const totalRecorded = present + absent; // 실제 기록된 인원 수
+            const rate = totalRecorded ? Math.round(present/totalRecorded*100) : 0;
+            
+            tp += present; ta += absent;
             
             html += `
               <tr class="team-row" onclick="toggleDetail(this, '${team.id}', '${date}')">
                 <td><span class="status-badge status-ok">제출</span> ${team.name}</td>
-                <td>${total}</td><td>${stat.present}</td><td>${stat.absent}</td><td>${rate}%</td>
+                <td>${totalRecorded}</td><td>${present}</td><td>${absent}</td><td>${rate}%</td>
               </tr>
               <tr class="detail-row hidden" id="detail-${team.id}">
                 <td colspan="5"><div class="detail-panel" id="panel-${team.id}">로딩 중...</div></td>
