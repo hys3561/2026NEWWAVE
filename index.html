@@ -393,10 +393,10 @@
       const list = document.getElementById("memberList");
       list.innerHTML = "";
       
-      // ✅ key 생성 로직 수정: 모든 멤버는 이제 객체 형식으로 통일되었음
+      // ✅ 키 생성 로직: 이름과 또래를 trim 처리하여 공백 불일치 방지
       team.members.forEach(m => {
-        const name = m.name;
-        const cohort = m.cohort || ""; // 또래가 없을 경우 빈 문자열
+        const name = (m.name || "").toString().trim(); // 이름 trim
+        const cohort = (m.cohort || "").toString().trim(); // 또래 trim
         const key = name + "||" + cohort; // 일관된 키 생성
         
         attendance[key] = false;
@@ -434,7 +434,7 @@
           action: "loadAttendance", teamId: selectedTeam.id, date: document.getElementById("dateInput").value 
         });
         
-        // 1. 초기화 (기존 방원 목록을 기준으로 초기화)
+        // 1. 초기화 (현재 팀 목록을 기준으로 모든 상태를 초기화)
         const items = document.querySelectorAll(".member-item");
         items.forEach(el => { 
             attendance[el.dataset.key] = false; 
@@ -443,11 +443,12 @@
         });
         
         if (res.status === "success" && res.data.found) {
-          // 2. 서버 데이터 처리 (서버 데이터가 최신 키와 100% 일치해야 함)
+          // 2. 서버 데이터 처리
           res.data.attendance.forEach(r => {
-            // 서버에서 받은 이름과 또래로 키 재생성
-            const cohortFromServer = r.cohort || "";
-            const key = r.name + "||" + cohortFromServer; 
+            // ✅ 서버에서 받은 이름과 또래로 키 재생성 (trim 적용)
+            const nameFromServer = (r.name || "").toString().trim();
+            const cohortFromServer = (r.cohort || "").toString().trim();
+            const key = nameFromServer + "||" + cohortFromServer; 
             
             // 현재 팀 목록에 있는 방원인지 확인 (key가 일치하는지)
             if (attendance.hasOwnProperty(key)) { 
@@ -475,7 +476,7 @@
        btn.textContent = "저장 중..."; btn.disabled = true;
        const list = [];
        for(let key in attendance) {
-         const [name, cohort] = key.split("||");
+         const [name, cohort] = key.split("||"); // 이미 trim된 키를 사용하므로 안전함
          list.push({ name, cohort, isPresent: attendance[key], note: memberNotes[key] || "" });
        }
        try {
