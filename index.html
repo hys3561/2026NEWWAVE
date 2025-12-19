@@ -70,6 +70,7 @@
 
     .attendance-table { background:#fff; border-radius:.95rem; border:1px solid #e5e7eb; overflow:hidden; }
     table { width:100%; border-collapse:collapse; }
+    /* 관리자 대시보드 테이블 크기/글씨 크기 조정 */
     th { background:#f9fafb; padding:1rem; text-align:left; font-size:.95rem; font-weight:950; border-bottom:1px solid #e5e7eb; white-space:nowrap; }
     td { padding:1rem; border-bottom:1px solid #e5e7eb; font-size:.95rem; vertical-align:middle; }
     
@@ -158,7 +159,7 @@
       <div class="dashboard-tabs">
         <button class="tab-button active" data-tab="stats">출석 현황</button>
         <button class="tab-button" data-tab="notes">특이사항</button>
-        <button class="tab-button" data-tab="members">개인별 조회</button>
+        <button class="tab-button" data-tab="suggestions">건의사항</button> <button class="tab-button" data-tab="members">개인별 조회</button>
       </div>
 
       <div id="adminStatsTab">
@@ -189,6 +190,14 @@
            <input type="date" class="date-input" id="adminNotesDateInput" />
         </div>
         <div class="attendance-table" id="notesTable" style="padding:1rem;"></div>
+      </div>
+      
+      <div id="adminSuggestionsTab" class="hidden">
+        <div class="date-section">
+           <div class="date-label">날짜 확인</div>
+           <input type="date" class="date-input" id="adminSuggestionsDateInput" />
+        </div>
+        <div class="attendance-table" id="suggestionsTable" style="padding:1rem;"></div>
       </div>
 
       <div id="adminMembersTab" class="hidden">
@@ -346,6 +355,7 @@
     document.getElementById("dateInput").value = today;
     document.getElementById("adminDateInput").value = today;
     document.getElementById("adminNotesDateInput").value = today;
+    document.getElementById("adminSuggestionsDateInput").value = today; // ✅ 건의사항 탭 날짜 초기화
     const oneYearAgo = new Date(); oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
     document.getElementById("memberStartDate").value = oneYearAgo.toISOString().split("T")[0];
     document.getElementById("memberEndDate").value = today;
@@ -507,15 +517,28 @@
     document.getElementById("adminBtn").onclick = () => { adminAuthed ? showAdminDashboard() : openPasswordModal("admin"); };
     document.getElementById("adminBackBtn").onclick = () => { adminAuthed = false; showPage("homePage"); };
     function showAdminDashboard() { showPage("adminDashboard"); loadAdminStats(); loadMemberList(); }
+    
+    // ✅ 탭 전환 로직 수정
     document.querySelectorAll(".tab-button").forEach(btn => {
       btn.onclick = () => {
         document.querySelectorAll(".tab-button").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
-        ["adminStatsTab","adminNotesTab","adminMembersTab"].forEach(id => document.getElementById(id).classList.add("hidden"));
-        const target = { "stats":"adminStatsTab", "notes":"adminNotesTab", "members":"adminMembersTab" }[btn.dataset.tab];
-        document.getElementById(target).classList.remove("hidden");
+        // 모든 탭 콘텐츠 숨김
+        ["adminStatsTab","adminNotesTab","adminSuggestionsTab","adminMembersTab"].forEach(id => document.getElementById(id).classList.add("hidden"));
+        
+        const targetMap = { 
+            "stats":"adminStatsTab", 
+            "notes":"adminNotesTab", 
+            "suggestions":"adminSuggestionsTab", // ✅ 추가됨
+            "members":"adminMembersTab" 
+        };
+        const targetId = targetMap[btn.dataset.tab];
+
+        document.getElementById(targetId).classList.remove("hidden");
+        
         if(btn.dataset.tab === "stats") loadAdminStats();
         if(btn.dataset.tab === "notes") loadAdminNotes();
+        if(btn.dataset.tab === "suggestions") loadAdminSuggestions(); // ✅ 호출 추가
       }
     });
 
@@ -544,7 +567,7 @@
           if (stat) {
             // 제출됨 (서버에서 최신 기록 기준으로 계산된 값 사용)
             const present = stat.present;
-            const absent = stat.absent;
+            const absent = stat;
             const totalRecorded = present + absent; // 실제 기록된 인원 수
             const rate = totalRecorded ? Math.round(present/totalRecorded*100) : 0;
             
@@ -628,12 +651,26 @@
        try {
          const res = await jsonp(GOOGLE_SCRIPT_URL, { action: "getNotesByDate", date });
          if (res.data.length === 0) { div.innerHTML = "<div class='message info'>특이사항 없음</div>"; return; }
-         let html = `<table><thead><tr><th>사랑방</th><th>이름</th><th>내용</th></tr></thead><tbody>`;
-         res.data.forEach(n => html += `<tr><td>${n.teamName}</td><td>${n.name}</td><td>${n.note}</td></tr>`);
+         let html = `<table><thead><tr><th>사랑방</th><th>이름</th><th>또래</th><th>내용</th></tr></thead><tbody>`;
+         res.data.forEach(n => html += `<tr><td>${n.teamName}</td><td>${n.name}</td><td>${n.cohort}</td><td>${n.note}</td></tr>`);
          div.innerHTML = html + "</tbody></table>";
        } catch(e) { div.innerHTML = "에러 발생"; }
     }
     document.getElementById("adminNotesDateInput").onchange = loadAdminNotes;
+
+    // ✅ 관리자: 건의사항 탭 로직 추가
+    async function loadAdminSuggestions() {
+       const date = document.getElementById("adminSuggestionsDateInput").value;
+       const div = document.getElementById("suggestionsTable"); div.innerHTML = "로딩 중...";
+       try {
+         const res = await jsonp(GOOGLE_SCRIPT_URL, { action: "getSuggestionsByDate", date });
+         if (res.data.length === 0) { div.innerHTML = "<div class='message info'>건의사항 없음</div>"; return; }
+         let html = `<table><thead><tr><th>사랑방</th><th>건의사항</th></tr></thead><tbody>`;
+         res.data.forEach(s => html += `<tr><td>${s.teamName}</td><td>${s.suggestion}</td></tr>`);
+         div.innerHTML = html + "</tbody></table>";
+       } catch(e) { div.innerHTML = "에러 발생"; }
+    }
+    document.getElementById("adminSuggestionsDateInput").onchange = loadAdminSuggestions; // ✅ 날짜 변경 이벤트 추가
 
     async function loadMemberList() {
        const sel = document.getElementById("memberSelect");
