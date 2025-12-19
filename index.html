@@ -548,12 +548,15 @@
       const container = document.getElementById("attendanceTable");
       container.innerHTML = "<div class='message info'>로딩 중...</div>";
       
+      // ✅ 1. 전체 사랑방원 수 계산 (모든 팀의 멤버 수 합산)
+      const totalMembers = TEAMS.reduce((sum, team) => sum + team.members.length, 0);
+
       try {
         const res = await jsonp(GOOGLE_SCRIPT_URL, { action: "getStatsByDate", date });
         if(res.status !== "success") throw new Error();
         
         let html = `<table><thead><tr><th>사랑방</th><th>총원</th><th>출석</th><th>결석</th><th>출석률</th></tr></thead><tbody>`;
-        let tp=0, ta=0; // Total Present, Total Absent
+        let tp=0; // Total Present (tp만 누적)
         const submittedData = res.data.teamStats; // 제출된 팀 리스트
 
         // 전체 TEAMS 루프를 돌면서 제출/미제출 판단
@@ -568,8 +571,8 @@
             const totalRecorded = present + absent; // 실제 기록된 인원 수
             const rate = totalRecorded ? Math.round(present/totalRecorded*100) : 0;
             
-            tp += present; 
-            ta += absent; // 전체 결석 합산
+            tp += present; // 전체 출석 인원 누적
+            // ⚠️ 전체 결석률 계산 방식이 변경되어, ta는 별도로 누적하지 않습니다.
             
             html += `
               <tr class="team-row" onclick="toggleDetail(this, '${team.id}', '${date}')">
@@ -597,13 +600,16 @@
         html += "</tbody></table>";
         container.innerHTML = html;
         
-        // 전체 출석률 계산
-        const totalAttendance = tp + ta;
-        const overallRate = totalAttendance ? Math.round(tp/totalAttendance*100)+"%" : "0%";
+        // ✅ 2. 전체 출석률 계산: (전체 출석 인원 / 전체 사랑방원 수)
+        const overallRate = totalMembers ? Math.round(tp/totalMembers*100)+"%" : "0%";
+        
+        // ✅ 3. 전체 결석 인원 계산: (전체 사랑방원 수 - 전체 출석 인원)
+        const totalAbsent = totalMembers - tp;
+
 
         document.getElementById("adminTotalPresent").textContent = tp;
-        document.getElementById("adminTotalAbsent").textContent = ta;
-        document.getElementById("adminTotalRate").textContent = overallRate;
+        document.getElementById("adminTotalAbsent").textContent = totalAbsent; // 전체 사랑방원 수 기준 결석
+        document.getElementById("adminTotalRate").textContent = overallRate; // 전체 사랑방원 수 기준 출석률
 
       } catch(e) { container.innerHTML = "<div class='message error'>로딩 실패</div>"; }
     }
