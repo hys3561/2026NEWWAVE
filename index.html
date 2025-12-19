@@ -70,8 +70,8 @@
 
     .attendance-table { background:#fff; border-radius:.95rem; border:1px solid #e5e7eb; overflow:hidden; }
     table { width:100%; border-collapse:collapse; }
-    th { background:#f9fafb; padding:.75rem; text-align:left; font-size:.875rem; font-weight:950; border-bottom:1px solid #e5e7eb; white-space:nowrap; }
-    td { padding:.75rem; border-bottom:1px solid #e5e7eb; font-size:.875rem; vertical-align:middle; }
+    th { background:#f9fafb; padding:1rem; text-align:left; font-size:.95rem; font-weight:950; border-bottom:1px solid #e5e7eb; white-space:nowrap; }
+    td { padding:1rem; border-bottom:1px solid #e5e7eb; font-size:.95rem; vertical-align:middle; }
     
     .team-row { cursor: pointer; transition: background 0.2s; }
     .team-row:hover { background: #f3f4f6; }
@@ -590,14 +590,32 @@
            const res = await jsonp(GOOGLE_SCRIPT_URL, { action: "loadAttendance", teamId, date });
            if (res.status === "success" && res.data.found) {
              const att = res.data.attendance;
+             
+             // 1. 출석/결석 명단
              const present = att.filter(x=>x.isPresent).map(x=>`<span class="chip">${x.name}</span>`).join("");
              const absent = att.filter(x=>!x.isPresent).map(x=>`<span class="chip absent">${x.name}</span>`).join("");
+             
+             // 2. 특이사항 명단 생성 (요청하신 '이름또래: 내용' 형식)
+             const notes = att.filter(x => x.note && x.note.trim() !== "");
+             let notesHtml = notes.map(n => {
+                 // 홍길동99: 감기 형식
+                 const cohortDisplay = n.cohort ? n.cohort : '';
+                 return `<div><strong>${n.name}${cohortDisplay}:</strong> ${n.note}</div>`;
+             }).join("<div style='height: 4px;'></div>"); // 항목 간 간격
+             
+             // 3. 패널 HTML 재구성 (특이사항만 표시)
              panel.innerHTML = `
                <div class="detail-grid">
-                 <div class="detail-box"><div class="detail-header">출석 명단</div><div class="chips">${present || "-"}</div></div>
-                 <div class="detail-box"><div class="detail-header">결석 명단</div><div class="chips">${absent || "-"}</div></div>
+                 <div class="detail-box"><div class="detail-header">출석 명단</div><div class="chips">${present || "없음"}</div></div>
+                 <div class="detail-box"><div class="detail-header">결석 명단</div><div class="chips">${absent || "없음"}</div></div>
                </div>
-               <div style="margin-top:1rem; font-size:0.9rem;"><strong>건의사항:</strong> ${res.data.suggestion || "없음"}</div>
+               
+               <div class="detail-box" style="margin-top:1rem; grid-column: 1 / -1;">
+                 <div class="detail-header">방원별 특이사항</div>
+                 <div style="margin-top: 0.5rem; font-size:0.9rem;">
+                   ${notesHtml || "<div style='color:#6b7280;'>기록된 특이사항이 없습니다.</div>"}
+                 </div>
+               </div>
              `;
            } else { panel.innerHTML = "데이터 없음"; }
          } catch(e) { panel.innerHTML = "로딩 에러"; }
