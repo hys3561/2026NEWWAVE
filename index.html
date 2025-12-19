@@ -60,7 +60,7 @@
     .message.error { background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; }
     .message.info { background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; }
 
-    /* ✅ 탭 글씨 크기 키우기 적용 */
+    /* 탭 글씨 크기 키우기 적용 */
     .dashboard-tabs { display:flex; gap:1rem; margin-bottom:1.25rem; border-bottom:2px solid #e5e7eb; overflow-x:auto; }
     .tab-button { 
         padding:1rem 1.5rem; /* 버튼 크기 증가 */
@@ -164,7 +164,8 @@
       <div class="dashboard-tabs">
         <button class="tab-button active" data-tab="stats">출석 현황</button>
         <button class="tab-button" data-tab="notes">특이사항</button>
-        <button class="tab-button" data-tab="suggestions">건의사항</button> <button class="tab-button" data-tab="members">개인별 조회</button>
+        <button class="tab-button" data-tab="suggestions">건의사항</button> 
+        <button class="tab-button" data-tab="members">개인별 조회</button>
       </div>
 
       <div id="adminStatsTab">
@@ -233,7 +234,7 @@
               <div class="admin-summary-label">출석률</div>
               <div class="admin-summary-value" id="memRate">0%</div>
             </div>
-          </div>
+        </div>
           <div class="chart-card">
             <canvas id="memberChart" style="width:100%; height:250px;"></canvas>
           </div>
@@ -254,7 +255,7 @@
         <button class="modal-btn primary" id="modalOkBtn">확인</button>
       </div>
     </div>
-    </div>
+  </div>
 
   <script>
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzcTHwxzFUJYeIHXWebBsgOq1OXfkKAKb7VYPKXBp_V1Rddm6C100PulVq2YswoivqlbA/exec";
@@ -321,27 +322,17 @@
     let attendance = {}; 
     let memberNotes = {};
     let adminAuthed = false;
-    let chartInstance = null;
+    let memberChartInstance = null; // 개인별 출석 그래프 인스턴스
 
-    // ✅ 또래 정규화 헬퍼 함수 (클라이언트)
+    /* ------------------------ 헬퍼 함수 ------------------------ */
+    // 또래 정규화 헬퍼 함수
     function normalizeCohort(value) {
         const cohortStr = (value || "").toString().trim();
-        // 서버에서 0으로 변환되어 들어왔을 경우, 다시 '00'으로 정규화
         if (cohortStr === '0') return '00';
         return cohortStr;
     }
 
-    function showPage(id) {
-      ["homePage","attendancePage","adminDashboard"].forEach(p => document.getElementById(p).classList.add("hidden"));
-      document.getElementById(id).classList.remove("hidden");
-    }
-    function showMsg(type, text) {
-      const box = document.getElementById("messageBox");
-      box.className = "message " + type;
-      box.textContent = text;
-      box.classList.remove("hidden");
-      setTimeout(() => box.classList.add("hidden"), 3000);
-    }
+    // JSONP 통신 헬퍼
     function jsonp(url, params) {
       return new Promise((resolve, reject) => {
         const cb = "cb_" + Date.now() + Math.floor(Math.random()*1000);
@@ -354,15 +345,48 @@
         document.body.appendChild(script);
       });
     }
+    // API 호출 간소화
+    function apiGet(action, params = {}) { return jsonp(GOOGLE_SCRIPT_URL, { action, ...params }); }
+    // HTML 이스케이프 (보안 및 렌더링 안정성)
+    function escapeHtml(unsafe) { 
+      return unsafe
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;"); 
+    }
+    // 멤버 키 생성 (이름||또래)
+    function memberKey(name, cohort) { return (name || "").toString().trim() + "||" + normalizeCohort(cohort); }
+    // 멤버 이름 표시 형식 (이름(또래))
+    function displayMember(name, cohort) { 
+       const cohortVal = normalizeCohort(cohort);
+       return name + (cohortVal ? ` (${cohortVal})` : ""); 
+    }
+    // ISO 날짜 형식 (YYYY-MM-DD)
+    function formatISODate(date) { return date.toISOString().split("T")[0]; }
+
+
+    function showPage(id) {
+      ["homePage","attendancePage","adminDashboard"].forEach(p => document.getElementById(p).classList.add("hidden"));
+      document.getElementById(id).classList.remove("hidden");
+    }
+    function showMsg(type, text) {
+      const box = document.getElementById("messageBox");
+      box.className = "message " + type;
+      box.textContent = text;
+      box.classList.remove("hidden");
+      setTimeout(() => box.classList.add("hidden"), 3000);
+    }
 
     // 초기화
     const today = new Date().toISOString().split("T")[0];
     document.getElementById("dateInput").value = today;
     document.getElementById("adminDateInput").value = today;
     document.getElementById("adminNotesDateInput").value = today;
-    document.getElementById("adminSuggestionsDateInput").value = today; // ✅ 건의사항 탭 날짜 초기화
+    document.getElementById("adminSuggestionsDateInput").value = today;
     const oneYearAgo = new Date(); oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-    document.getElementById("memberStartDate").value = oneYearAgo.toISOString().split("T")[0];
+    document.getElementById("memberStartDate").value = formatISODate(oneYearAgo);
     document.getElementById("memberEndDate").value = today;
     initTeamGrid();
 
@@ -371,7 +395,6 @@
       TEAMS.forEach(t => {
         const card = document.createElement("div");
         card.className = "team-card";
-        // 멤버 목록이 객체 배열로 통일되었으므로, .length는 항상 정확함
         card.innerHTML = `
           <div class="team-card-header"><div class="team-number">${t.id}</div><div class="member-count">${t.members.length}명</div></div>
           <div class="team-name">${t.name}</div><div class="team-leader">${t.leader}</div>
@@ -398,10 +421,17 @@
       const input = document.getElementById("modalPassword").value;
       const err = document.getElementById("modalError");
       if (modalState.type === "admin") {
-        if (input === ADMIN_PASSWORD) { adminAuthed = true; document.getElementById("passwordModal").classList.add("hidden"); showAdminDashboard(); }
+        if (input === ADMIN_PASSWORD) { 
+          adminAuthed = true; 
+          document.getElementById("passwordModal").classList.add("hidden"); 
+          showAdminDashboard(); 
+        }
         else { err.textContent = "비밀번호 불일치"; err.classList.remove("hidden"); }
       } else {
-        if (input === TEAM_PASSWORDS[modalState.data.id]) { document.getElementById("passwordModal").classList.add("hidden"); loadTeamPage(modalState.data); }
+        if (input === TEAM_PASSWORDS[modalState.data.id]) { 
+          document.getElementById("passwordModal").classList.add("hidden"); 
+          loadTeamPage(modalState.data); 
+        }
         else { err.textContent = "비밀번호 불일치"; err.classList.remove("hidden"); }
       }
     }
@@ -416,11 +446,11 @@
       const list = document.getElementById("memberList");
       list.innerHTML = "";
       
-      // ✅ key 생성 로직: 또래 정규화 적용
+      // key 생성 로직: 또래 정규화 적용
       team.members.forEach(m => {
-        const name = (m.name || "").toString().trim(); // 이름 trim
-        const cohort = normalizeCohort(m.cohort); // 또래 정규화
-        const key = name + "||" + cohort; // 일관된 키 생성
+        const key = memberKey(m.name, m.cohort); // 헬퍼 함수 사용
+        const name = (m.name || "").toString().trim(); 
+        const cohortDisplay = normalizeCohort(m.cohort); 
         
         attendance[key] = false;
         const el = document.createElement("div");
@@ -428,7 +458,7 @@
         el.dataset.key = key;
         el.innerHTML = `
           <div class="member-header">
-            <div><div class="member-name">${name}</div><div class="member-meta">${cohort ? cohort + " 또래" : ""}</div></div>
+            <div><div class="member-name">${name}</div><div class="member-meta">${cohortDisplay ? cohortDisplay + " 또래" : ""}</div></div>
             <div class="checkbox"><span class="checkmark">✓</span></div>
           </div>
           <div class="note-section"><input class="note-input" placeholder="특이사항" oninput="saveNote('${key}', this.value)" onclick="event.stopPropagation()"></div>
@@ -453,11 +483,9 @@
     async function loadServerAttendance() {
       showMsg("info", "데이터 불러오는 중...");
       try {
-        const res = await jsonp(GOOGLE_SCRIPT_URL, { 
-          action: "loadAttendance", teamId: selectedTeam.id, date: document.getElementById("dateInput").value 
-        });
+        const res = await apiGet("loadAttendance", { teamId: selectedTeam.id, date: document.getElementById("dateInput").value });
         
-        // 1. 초기화 (현재 팀 목록을 기준으로 모든 상태를 초기화)
+        // 1. 초기화
         const items = document.querySelectorAll(".member-item");
         items.forEach(el => { 
             attendance[el.dataset.key] = false; 
@@ -468,12 +496,10 @@
         if (res.status === "success" && res.data.found) {
           // 2. 서버 데이터 처리
           res.data.attendance.forEach(r => {
-            // ✅ 서버에서 받은 이름과 또래로 키 재생성 (정규화 적용)
-            const nameFromServer = (r.name || "").toString().trim();
-            const cohortFromServer = normalizeCohort(r.cohort); // 또래 정규화
-            const key = nameFromServer + "||" + cohortFromServer; 
+            // 서버에서 받은 이름과 또래로 키 재생성 (정규화 적용)
+            const key = memberKey(r.name, r.cohort);
             
-            // 현재 팀 목록에 있는 방원인지 확인 (key가 일치하는지)
+            // 현재 팀 목록에 있는 방원인지 확인
             if (attendance.hasOwnProperty(key)) { 
                attendance[key] = r.isPresent; 
                memberNotes[key] = r.note;
@@ -499,12 +525,12 @@
        btn.textContent = "저장 중..."; btn.disabled = true;
        const list = [];
        for(let key in attendance) {
-         const [name, cohort] = key.split("||"); // 이미 정규화된 키를 사용하므로 안전함
+         const [name, cohort] = key.split("||"); 
          list.push({ name, cohort, isPresent: attendance[key], note: memberNotes[key] || "" });
        }
        try {
-         await jsonp(GOOGLE_SCRIPT_URL, {
-           action: "saveAttendance", teamId: selectedTeam.id, teamName: selectedTeam.name, leader: selectedTeam.leader,
+         await apiGet("saveAttendance", {
+           teamId: selectedTeam.id, teamName: selectedTeam.name, leader: selectedTeam.leader,
            date: document.getElementById("dateInput").value, suggestion: document.getElementById("suggestionInput").value, attendance: JSON.stringify(list)
          });
          showMsg("success", "저장되었습니다!");
@@ -518,10 +544,19 @@
       document.querySelectorAll(".member-item").forEach(el => el.style.display = el.dataset.key.toLowerCase().includes(val) ? "" : "none");
     };
 
-    // 관리자
+    /* ------------------------ 관리자 대시보드 로직 ------------------------ */
+
+    // 관리자: 초기 진입
     document.getElementById("adminBtn").onclick = () => { adminAuthed ? showAdminDashboard() : openPasswordModal("admin"); };
     document.getElementById("adminBackBtn").onclick = () => { adminAuthed = false; showPage("homePage"); };
-    function showAdminDashboard() { showPage("adminDashboard"); loadAdminStats(); loadMemberList(); }
+    function showAdminDashboard() { 
+      showPage("adminDashboard"); 
+      // 현재 활성 탭에 맞춰 로드 함수 호출 (기본값: stats)
+      const activeTab = document.querySelector(".tab-button.active");
+      if (activeTab && activeTab.dataset.tab === "stats") loadAdminStats();
+      if (activeTab && activeTab.dataset.tab === "members") loadMemberList(); 
+      else loadAdminStats();
+    }
     
     // 탭 전환 로직
     document.querySelectorAll(".tab-button").forEach(btn => {
@@ -543,40 +578,40 @@
         
         if(btn.dataset.tab === "stats") loadAdminStats();
         if(btn.dataset.tab === "notes") loadAdminNotes();
-        if(btn.dataset.tab === "suggestions") loadAdminSuggestions(); 
+        if(btn.dataset.tab === "suggestions") loadAdminSuggestions();
+        if(btn.dataset.tab === "members") loadMemberList();
       }
     });
 
-    // 관리자: 출석현황 (전체 보기 수정)
+    // 관리자: 출석현황 (전체 보기)
     async function loadAdminStats() {
       const date = document.getElementById("adminDateInput").value;
       const container = document.getElementById("attendanceTable");
       container.innerHTML = "<div class='message info'>로딩 중...</div>";
       
       try {
-        const res = await jsonp(GOOGLE_SCRIPT_URL, { action: "getStatsByDate", date });
+        const res = await apiGet("getStatsByDate", { date });
         if(res.status !== "success") throw new Error();
         
         let html = `<table><thead><tr><th>사랑방</th><th>총원</th><th>출석</th><th>결석</th><th>출석률</th></tr></thead><tbody>`;
         let tp=0, ta=0;
-        const submittedData = res.data.teamStats; // 제출된 팀 리스트
+        const submittedData = res.data.teamStats;
+        const allAttendance = res.data.allAttendance; // 전체 출석 데이터
 
         // 전체 TEAMS 루프를 돌면서 제출/미제출 판단
         TEAMS.forEach(team => {
           // 해당 팀 데이터 찾기
           const stat = submittedData.find(s => String(s.teamId) === String(team.id));
           
-          // 총원 계산: TEAMS 목록의 방원 수
-          const totalMembers = team.members.length; 
-          
           if (stat) {
             // 제출됨 (서버에서 최신 기록 기준으로 계산된 값 사용)
             const present = stat.present;
-            const absent = stat.absent; // 💡 object object 오류 해결
+            const absent = stat.absent; // 이미 숫자로 파싱되어 넘어옴
             const totalRecorded = present + absent; // 실제 기록된 인원 수
             const rate = totalRecorded ? Math.round(present/totalRecorded*100) : 0;
             
-            tp += present; ta += absent; // 💡 object object 오류 해결
+            tp += present; 
+            ta += absent; // 합산 수정 완료
             
             html += `
               <tr class="team-row" onclick="toggleDetail(this, '${team.id}', '${date}')">
@@ -592,7 +627,7 @@
             html += `
               <tr class="team-row unsubmitted">
                 <td><span class="status-badge status-no">미제출</span> ${team.name}</td>
-                <td>-</td><td>-</td><td>-</td><td>-</td>
+                <td>${team.members.length}</td><td>0</td><td>${team.members.length}</td><td>0%</td>
               </tr>
             `;
           }
@@ -607,6 +642,7 @@
     }
     document.getElementById("adminDateInput").onchange = loadAdminStats;
 
+    // 관리자: 상세 정보 토글 (수정 완료)
     async function toggleDetail(row, teamId, date) {
        const detailRow = document.getElementById(`detail-${teamId}`);
        if (!detailRow) return;
@@ -614,25 +650,34 @@
        if (isHidden) {
          detailRow.classList.remove("hidden"); row.style.background = "#eff6ff";
          const panel = document.getElementById(`panel-${teamId}`);
+         panel.innerHTML = "로딩 중...";
+
          try {
-           const res = await jsonp(GOOGLE_SCRIPT_URL, { action: "loadAttendance", teamId, date });
+           const res = await apiGet("loadAttendance", { teamId, date });
            if (res.status === "success" && res.data.found) {
              const att = res.data.attendance;
              
              // 1. 출석/결석 명단
-             const present = att.filter(x=>x.isPresent).map(x=>`<span class="chip">${x.name}</span>`).join("");
-             const absent = att.filter(x=>!x.isPresent).map(x=>`<span class="chip absent">${x.name}</span>`).join("");
+             const present = att.filter(x=>x.isPresent).map(x=>`<span class="chip">${displayMember(x.name, x.cohort)}</span>`).join("");
+             const absent = att.filter(x=>!x.isPresent).map(x=>`<span class="chip absent">${displayMember(x.name, x.cohort)}</span>`).join("");
              
-             // 2. 특이사항 명단 생성 ('이름또래: 내용' 형식)
+             // 2. 특이사항 명단 생성
              const notes = att.filter(x => x.note && x.note.trim() !== "");
              let notesHtml = notes.map(n => {
-                 // 홍길동99: 감기 형식
-                 const cohortDisplay = n.cohort ? n.cohort : '';
-                 return `<div><strong>${n.name}${cohortDisplay}:</strong> ${n.note}</div>`;
-             }).join("<div style='height: 4px;'></div>"); // 항목 간 간격
+                 const displayName = displayMember(n.name, n.cohort);
+                 return `<div><strong>${displayName}:</strong> ${escapeHtml(n.note)}</div>`;
+             }).join("<div style='height: 4px;'></div>");
              
-             // 3. 패널 HTML 재구성
+             // 3. 건의사항
+             const suggestion = res.data.suggestion || "<div style='color:#6b7280;'>기록된 건의사항이 없습니다.</div>";
+
+             // 4. 패널 HTML 재구성
              panel.innerHTML = `
+               <div class="detail-box" style="margin-bottom:1rem;">
+                 <div class="detail-header">방장 건의사항</div>
+                 <div style="margin-top: 0.5rem; font-size:0.9rem;">${escapeHtml(suggestion)}</div>
+               </div>
+
                <div class="detail-grid">
                  <div class="detail-box"><div class="detail-header">출석 명단</div><div class="chips">${present || "없음"}</div></div>
                  <div class="detail-box"><div class="detail-header">결석 명단</div><div class="chips">${absent || "없음"}</div></div>
@@ -646,11 +691,248 @@
                </div>
              `;
            } else { panel.innerHTML = "데이터 없음"; }
-         } catch(e) { panel.innerHTML = "로딩 에러"; }
-       } else { detailRow.classList.add("hidden"); row.style.background = ""; }
+       } catch(e) { panel.innerHTML = "로딩 에러"; }
+      } else { detailRow.classList.add("hidden"); row.style.background = ""; }
     }
 
-    /* (나머지 관리자 기능 함수들: loadAdminNotes, loadAdminSuggestions, loadMemberList 등은 편의상 생략되었습니다.) */
+    // 관리자: 특이사항 탭 로드
+    async function loadAdminNotes() {
+        const date = document.getElementById("adminNotesDateInput").value;
+        const container = document.getElementById("notesTable");
+        container.innerHTML = "<div class='message info'>로딩 중...</div>";
+
+        try {
+            const res = await apiGet("getAllNotesByDate", { date });
+            if(res.status !== "success" || !res.data || res.data.length === 0) {
+                container.innerHTML = `<div class='message info'>${date}에 기록된 특이사항이 없습니다.</div>`;
+                return;
+            }
+
+            let html = `<table><thead><tr><th>사랑방</th><th>이름(또래)</th><th>특이사항</th></tr></thead><tbody>`;
+            res.data.forEach(note => {
+                const team = TEAMS.find(t => String(t.id) === String(note.teamId)) || {name: "알 수 없음"};
+                const displayName = displayMember(note.name, note.cohort);
+                html += `
+                    <tr>
+                        <td>${team.name}</td>
+                        <td>${displayName}</td>
+                        <td>${escapeHtml(note.note)}</td>
+                    </tr>
+                `;
+            });
+            html += "</tbody></table>";
+            container.innerHTML = html;
+        } catch(e) { container.innerHTML = "<div class='message error'>로딩 실패</div>"; }
+    }
+    document.getElementById("adminNotesDateInput").onchange = loadAdminNotes;
+
+    // 관리자: 건의사항 탭 로드
+    async function loadAdminSuggestions() {
+        const date = document.getElementById("adminSuggestionsDateInput").value;
+        const container = document.getElementById("suggestionsTable");
+        container.innerHTML = "<div class='message info'>로딩 중...</div>";
+
+        try {
+            const res = await apiGet("getAllSuggestionsByDate", { date });
+            if(res.status !== "success" || !res.data || res.data.length === 0) {
+                container.innerHTML = `<div class='message info'>${date}에 기록된 건의사항이 없습니다.</div>`;
+                return;
+            }
+
+            let html = `<table><thead><tr><th>사랑방</th><th>건의사항</th></tr></thead><tbody>`;
+            res.data.forEach(sug => {
+                const team = TEAMS.find(t => String(t.id) === String(sug.teamId)) || {name: "알 수 없음"};
+                html += `
+                    <tr>
+                        <td>${team.name}</td>
+                        <td>${escapeHtml(sug.suggestion)}</td>
+                    </tr>
+                `;
+            });
+            html += "</tbody></table>";
+            container.innerHTML = html;
+        } catch(e) { container.innerHTML = "<div class='message error'>로딩 실패</div>"; }
+    }
+    document.getElementById("adminSuggestionsDateInput").onchange = loadAdminSuggestions;
+    
+    // 관리자: 개인별 조회 - 멤버 목록 로드
+    function loadMemberList() {
+        const memberSelect = document.getElementById("memberSelect");
+        const uniqueMembers = {}; // {key: {name, cohort}}
+
+        // TEAMS 배열을 순회하며 모든 고유 멤버 추출
+        TEAMS.forEach(team => {
+            team.members.forEach(m => {
+                const key = memberKey(m.name, m.cohort);
+                if (!uniqueMembers[key]) {
+                    uniqueMembers[key] = {name: m.name, cohort: m.cohort};
+                }
+            });
+        });
+
+        memberSelect.innerHTML = '<option value="">사람 선택</option>';
+        // 이름순으로 정렬 후 옵션 추가
+        Object.keys(uniqueMembers).sort((a,b) => uniqueMembers[a].name.localeCompare(uniqueMembers[b].name)).forEach(key => {
+            const member = uniqueMembers[key];
+            const displayName = displayMember(member.name, member.cohort);
+            memberSelect.innerHTML += `<option value="${key}">${escapeHtml(displayName)}</option>`;
+        });
+        // 멤버 목록 로드 후, 기존에 선택된 값이 있다면 출석 정보를 로드 시도
+        loadMemberAttendance();
+    }
+
+    // 관리자: 개인별 조회 - 출석 기록 로드 및 차트 업데이트
+    async function loadMemberAttendance() {
+        const memberKeyVal = document.getElementById("memberSelect").value;
+        const startDate = document.getElementById("memberStartDate").value;
+        const endDate = document.getElementById("memberEndDate").value;
+        const resultArea = document.getElementById("memberResultArea");
+        const historyTable = document.getElementById("memberHistoryTable");
+
+        if (!memberKeyVal) {
+            resultArea.classList.add("hidden");
+            historyTable.innerHTML = "";
+            return;
+        }
+
+        resultArea.classList.remove("hidden");
+        historyTable.innerHTML = "<div class='message info'>로딩 중...</div>";
+        const [name, cohort] = memberKeyVal.split("||");
+        const displayName = displayMember(name, cohort);
+
+        try {
+            const res = await apiGet("getMemberAttendanceHistory", { name, cohort, startDate, endDate });
+            if(res.status !== "success" || !res.data) throw new Error("API failed");
+            
+            const history = res.data.history || [];
+            const presentCount = res.data.presentCount || 0;
+            const totalCount = res.data.totalCount || 0;
+            const rate = totalCount ? Math.round(presentCount / totalCount * 100) : 0;
+            
+            // Summary Update
+            document.getElementById("memPresent").textContent = presentCount;
+            document.getElementById("memTotal").textContent = totalCount;
+            document.getElementById("memRate").textContent = `${rate}%`;
+
+            // Chart Update
+            if (memberChartInstance) memberChartInstance.destroy();
+            const ctx = document.getElementById('memberChart').getContext('2d');
+            memberChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['출석', '결석'],
+                    datasets: [{
+                        data: [presentCount, totalCount - presentCount],
+                        backgroundColor: ['#2563eb', '#e5e7eb'],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { position: 'bottom' }, 
+                        title: { display: true, text: `${displayName} 출석률` } 
+                    }
+                }
+            });
+            
+            // History Table Update
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>날짜</th>
+                            <th>사랑방</th>
+                            <th>상태</th>
+                            <th>특이사항</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            if (history.length > 0) {
+                history.forEach(h => {
+                    const team = TEAMS.find(t => String(t.id) === String(h.teamId)) || {name: "알 수 없음"};
+                    const statusBadge = h.isPresent 
+                        ? '<span class="status-badge status-ok">출석</span>' 
+                        : '<span class="status-badge status-no">결석</span>';
+                    html += `
+                        <tr>
+                            <td>${h.date}</td>
+                            <td>${team.name}</td>
+                            <td>${statusBadge}</td>
+                            <td>${escapeHtml(h.note || '-')}</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                html += `<tr><td colspan="4" style="text-align:center;">기간 내 기록 없음</td></tr>`;
+            }
+            html += "</tbody></table>";
+            historyTable.innerHTML = html;
+
+        } catch(e) { 
+            historyTable.innerHTML = "<div class='message error'>기록 로딩 실패</div>"; 
+            console.error("개인별 기록 로딩 오류:", e);
+        }
+    }
+    document.getElementById("memberSelect").onchange = loadMemberAttendance;
+    document.getElementById("memberStartDate").onchange = loadMemberAttendance;
+    document.getElementById("memberEndDate").onchange = loadMemberAttendance;
+    
+    // 관리자: CSV 다운로드
+    document.getElementById("downloadCsvBtn").onclick = async () => {
+        const btn = document.getElementById("downloadCsvBtn");
+        btn.textContent = "다운로드 준비 중..."; btn.disabled = true;
+
+        const startDate = document.getElementById("memberStartDate").value;
+        const endDate = document.getElementById("memberEndDate").value;
+        
+        try {
+            // 서버에서 CSV 데이터를 JSON 형태로 받아와 클라이언트에서 CSV 생성
+            const res = await apiGet("getOverallAttendanceCsvData", { startDate, endDate });
+
+            if (res.status === "success" && res.data) {
+                const data = res.data;
+                if (data.length === 0) {
+                    alert("해당 기간의 출석 기록이 없습니다.");
+                    return;
+                }
+
+                // CSV 데이터 생성 (헤더: 날짜, 총원, 출석, 결석, 출석률)
+                let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; // UTF-8 BOM 포함
+                csvContent += "날짜,총원,출석,결석,출석률\n";
+
+                data.forEach(row => {
+                    const total = row.present + row.absent;
+                    const rate = total ? Math.round(row.present / total * 100) : 0;
+                    csvContent += `${row.date},${total},${row.present},${row.absent},${rate}%\n`;
+                });
+
+                // 다운로드 링크 생성 및 클릭
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `출석률_요약_${startDate}_${endDate}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                alert("CSV 다운로드가 완료되었습니다.");
+
+            } else {
+                alert("CSV 데이터를 불러오는 데 실패했습니다.");
+            }
+        } catch(e) { 
+            console.error("CSV 다운로드 에러:", e);
+            alert("CSV 다운로드 중 오류가 발생했습니다."); 
+        }
+        finally {
+            btn.textContent = "📥 기간별 전체 출석률 CSV 다운로드"; 
+            btn.disabled = false;
+        }
+    }
+
   </script>
 </body>
 </html>
