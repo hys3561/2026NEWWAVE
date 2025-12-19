@@ -28,9 +28,10 @@
     .member-count { background:#f3f4f6; padding:.25rem .75rem; border-radius:9999px; font-size:.875rem; color:#6b7280; font-weight:900; }
     .back-button { display:flex; align-items:center; gap:.5rem; color:#6b7280; background:none; border:none; cursor:pointer; font-size:1rem; padding:.5rem .25rem; font-weight:900; }
 
-    .date-section { background:#fff; padding:1rem; border-radius:.95rem; border:1px solid #e5e7eb; margin-bottom:1rem; }
+    /* ✅ 수정: overflow: hidden 추가하여 날짜 입력 필드 삐져나옴 방지 */
+    .date-section { background:#fff; padding:1rem; border-radius:.95rem; border:1px solid #e5e7eb; margin-bottom:1rem; overflow: hidden; }
     .date-label { font-size:.875rem; font-weight:950; color:#374151; margin-bottom:.5rem; }
-    .date-input { width:100%; padding:.75rem 1rem; border:1px solid #d1d5db; border-radius:.9rem; font-size:16px; background:#fff; }
+    .date-input { width:100%; padding:.75rem 1rem; border:1px solid #d1d5db; border-radius:.9rem; font-size:16px; background:#fff; display: block; }
     .summary-box { background:#eff6ff; padding:1rem; border-radius:.95rem; border:1px solid #bfdbfe; margin-bottom:1rem; }
     .summary-content { display:flex; justify-content:space-between; align-items:center; margin-bottom:.5rem; }
     .summary-title { font-weight:950; color:#111827; }
@@ -61,19 +62,17 @@
     .message.info { background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; }
 
     .dashboard-tabs { display:flex; gap:1rem; margin-bottom:1.25rem; border-bottom:2px solid #e5e7eb; overflow-x:auto; }
-    .tab-button { padding:.75rem 1.25rem; background:none; border:none; cursor:pointer; color:#6b7280; border-bottom:2px solid transparent; margin-bottom:-2px; font-weight:950; white-space:nowrap; }
+    .tab-button { padding:1rem 1.5rem;font-size:1rem; background:none; border:none; cursor:pointer; color:#6b7280; border-bottom:2px solid transparent; margin-bottom:-2px; font-weight:950; white-space:nowrap; }
     .tab-button.active { color:#2563eb; border-bottom-color:#2563eb; }
     .admin-summary { display:grid; grid-template-columns:repeat(3, 1fr); gap:.75rem; margin:1rem 0; }
     .admin-summary-card { background:#fff; border:1px solid #e5e7eb; border-radius:.95rem; padding:1rem; }
     .admin-summary-value { font-size:1.6rem; font-weight:950; color:#111827; }
     .admin-summary-label { font-size:.875rem; color:#6b7280; font-weight:950; }
 
-    /* ✅ 수정: 모바일에서 테이블이 넓어질 경우 스크롤 허용 */
     .attendance-table { background:#fff; border-radius:.95rem; border:1px solid #e5e7eb; overflow-x: auto; }
     table { width:100%; border-collapse:collapse; }
-    th { background:#f9fafb; padding:1rem; text-align:left; font-size:1rem; font-weight:950; border-bottom:1px solid #e5e7eb; white-space:nowrap; }
-    /* ✅ 수정: 테이블 내용이 줄바꿈되지 않도록 하여 '미제출' 깨짐 방지 */
-    td { padding:1rem; border-bottom:1px solid #e5e7eb; font-size:1rem; vertical-align:middle; white-space:nowrap; }
+    th { background:#f9fafb; padding:1rem; text-align:left; font-size:.95rem; font-weight:950; border-bottom:1px solid #e5e7eb; white-space:nowrap; }
+    td { padding:1rem; border-bottom:1px solid #e5e7eb; font-size:.95rem; vertical-align:middle; white-space:nowrap; }
     
     .team-row { cursor: pointer; transition: background 0.2s; }
     .team-row:hover { background: #f3f4f6; }
@@ -253,7 +252,7 @@
   </div>
 
   <script>
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzDaSPRmbdgLXfiY6PQsYF3AdtbljMb5RAESgOENs4q_IatUOHBlu9-yjXXWNifKtfFLg/exec";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzcTHwxzFUJYeIHXWebBsgOq1OXfkKAKb7VYPKXBp_V1Rddm6C100PulVq2YswoivqlbA/exec";
     const ADMIN_PASSWORD = "newwave2026";
     
     // ⚠️ 중요: 아래 TEAMS 배열의 members 속성을 실제 방원 이름과 또래(cohort)로 모두 수정해야 합니다!
@@ -356,7 +355,7 @@
     document.getElementById("dateInput").value = today;
     document.getElementById("adminDateInput").value = today;
     document.getElementById("adminNotesDateInput").value = today;
-    document.getElementById("adminSuggestionsDateInput").value = today; 
+    document.getElementById("adminSuggestionsDateInput").value = today;
     const oneYearAgo = new Date(); oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
     document.getElementById("memberStartDate").value = oneYearAgo.toISOString().split("T")[0];
     document.getElementById("memberEndDate").value = today;
@@ -524,6 +523,7 @@
       btn.onclick = () => {
         document.querySelectorAll(".tab-button").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
+        // 모든 탭 콘텐츠 숨김
         ["adminStatsTab","adminNotesTab","adminSuggestionsTab","adminMembersTab"].forEach(id => document.getElementById(id).classList.add("hidden"));
         
         const targetMap = { 
@@ -538,7 +538,7 @@
         
         if(btn.dataset.tab === "stats") loadAdminStats();
         if(btn.dataset.tab === "notes") loadAdminNotes();
-        if(btn.dataset.tab === "suggestions") loadAdminSuggestions(); 
+        if(btn.dataset.tab === "suggestions") loadAdminSuggestions();
       }
     });
 
@@ -548,35 +548,34 @@
       const container = document.getElementById("attendanceTable");
       container.innerHTML = "<div class='message info'>로딩 중...</div>";
       
-      // ✅ 전체 사랑방 총원 계산
-      const TOTAL_MEMBERS_ALL = TEAMS.reduce((sum, team) => sum + team.members.length, 0);
-
       try {
         const res = await jsonp(GOOGLE_SCRIPT_URL, { action: "getStatsByDate", date });
         if(res.status !== "success") throw new Error();
         
         let html = `<table><thead><tr><th>사랑방</th><th>총원</th><th>출석</th><th>결석</th><th>출석률</th></tr></thead><tbody>`;
-        let tp = 0; // Total Present
+        let tp=0, ta=0; // Total Present, Total Absent
         const submittedData = res.data.teamStats; // 제출된 팀 리스트
 
         // 전체 TEAMS 루프를 돌면서 제출/미제출 판단
         TEAMS.forEach(team => {
+          // 해당 팀 데이터 찾기
           const stat = submittedData.find(s => String(s.teamId) === String(team.id));
-          const teamTotalMembers = team.members.length; 
           
           if (stat) {
-            // 제출됨 (서버에서 최신 기록 기준으로 계산된 값 사용)
+            // 수정: Object 대신 숫자값 참조 및 NaN 방지
             const present = Number(stat.present) || 0;
             const absent = Number(stat.absent) || 0; 
             const totalRecorded = present + absent; // 실제 기록된 인원 수
             const rate = totalRecorded ? Math.round(present/totalRecorded*100) : 0;
             
             tp += present; 
+            ta += absent; // 전체 결석 합산
             
             html += `
               <tr class="team-row" onclick="toggleDetail(this, '${team.id}', '${date}')">
                 <td><span class="status-badge status-ok">제출</span> ${team.name}</td>
-                <td>${teamTotalMembers}</td> <td>${present}</td>
+                <td>${totalRecorded}</td>
+                <td>${present}</td>
                 <td>${absent}</td>
                 <td>${rate}%</td>
               </tr>
@@ -589,7 +588,7 @@
             html += `
               <tr class="team-row unsubmitted">
                 <td><span class="status-badge status-no">미제출</span> ${team.name}</td>
-                <td>${teamTotalMembers}</td> <td>-</td><td>-</td><td>-</td>
+                <td>-</td><td>-</td><td>-</td><td>-</td>
               </tr>
             `;
           }
@@ -598,13 +597,13 @@
         html += "</tbody></table>";
         container.innerHTML = html;
         
-        // ✅ 전체 출석률 계산: 전체 출석 인원 / 전체 방원 명단
-        const overallAbsent = TOTAL_MEMBERS_ALL - tp; 
-        const overallRate = TOTAL_MEMBERS_ALL ? Math.round(tp/TOTAL_MEMBERS_ALL*100) : 0;
-        
+        // 전체 출석률 계산
+        const totalAttendance = tp + ta;
+        const overallRate = totalAttendance ? Math.round(tp/totalAttendance*100)+"%" : "0%";
+
         document.getElementById("adminTotalPresent").textContent = tp;
-        document.getElementById("adminTotalAbsent").textContent = overallAbsent;
-        document.getElementById("adminTotalRate").textContent = overallRate + "%";
+        document.getElementById("adminTotalAbsent").textContent = ta;
+        document.getElementById("adminTotalRate").textContent = overallRate;
 
       } catch(e) { container.innerHTML = "<div class='message error'>로딩 실패</div>"; }
     }
