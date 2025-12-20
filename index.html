@@ -252,8 +252,8 @@
   </div>
 
   <script>
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzcTHwxzFUJYeIHXWebBsgOq1OXfkKAKb7VYPKXBp_V1Rddm6C100PulVq2YswoivqlbA/exec";
-    const ADMIN_PASSWORD = "newwave2026";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyHHg32gFCsPO2j6u1yXwFrGH2c7KuT31lEL0-UTeJDkGy00mWyg7vgp6LqCyjgM1zC1g/exec";
+    const ADMIN_PASSWORD = "1";
     
     // ⚠️ 중요: 아래 TEAMS 배열의 members 속성을 실제 방원 이름과 또래(cohort)로 모두 수정해야 합니다!
     // 이름과 또래는 구글 시트에 기록되는 정보와 완전히 일치해야 합니다.
@@ -445,6 +445,8 @@
       document.getElementById("attendanceCount").textContent = `${present} / ${total}`;
       document.getElementById("progressFill").style.width = total ? (present/total*100)+"%" : "0%";
     }
+    
+    // ✅ 수정된 loadServerAttendance 함수 (안전한 note-input 접근 포함)
     async function loadServerAttendance() {
       showMsg("info", "데이터 불러오는 중...");
       try {
@@ -457,7 +459,9 @@
         items.forEach(el => { 
             attendance[el.dataset.key] = false; 
             el.classList.remove("checked"); 
-            el.querySelector(".note-input").value = ""; 
+            // ✅ 수정: note-input이 존재할 경우에만 value를 초기화
+            const noteInput = el.querySelector(".note-input");
+            if (noteInput) noteInput.value = ""; 
         });
         
         if (res.status === "success" && res.data.found) {
@@ -476,7 +480,9 @@
                const el = document.querySelector(`.member-item[data-key="${key}"]`);
                if (el) { 
                    if(r.isPresent) el.classList.add("checked"); 
-                   el.querySelector(".note-input").value = r.note; 
+                   // ✅ 수정: note-input이 존재할 경우에만 value를 설정
+                   const noteInput = el.querySelector(".note-input");
+                   if (noteInput) noteInput.value = r.note; 
                }
             }
           });
@@ -489,6 +495,7 @@
         updateUI();
       } catch(e) { console.error(e); showMsg("error", "불러오기 실패"); }
     }
+    
     document.getElementById("saveBtn").onclick = async () => {
        const btn = document.getElementById("saveBtn");
        btn.textContent = "저장 중..."; btn.disabled = true;
@@ -507,7 +514,10 @@
        finally { btn.textContent = "출석 정보 저장"; btn.disabled = false; }
     };
     document.getElementById("teamBackBtn").onclick = () => showPage("homePage");
+    
+    // ✅ 날짜 변경 시 서버 데이터 즉시 로드
     document.getElementById("dateInput").onchange = loadServerAttendance;
+    
     document.getElementById("memberSearch").oninput = (e) => {
       const val = e.target.value.toLowerCase();
       document.querySelectorAll(".member-item").forEach(el => el.style.display = el.dataset.key.toLowerCase().includes(val) ? "" : "none");
