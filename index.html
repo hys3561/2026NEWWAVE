@@ -28,10 +28,16 @@
     .member-count { background:#f3f4f6; padding:.25rem .75rem; border-radius:9999px; font-size:.875rem; color:#6b7280; font-weight:900; }
     .back-button { display:flex; align-items:center; gap:.5rem; color:#6b7280; background:none; border:none; cursor:pointer; font-size:1rem; padding:.5rem .25rem; font-weight:900; }
 
-    /* ✅ 수정: overflow: hidden 추가하여 날짜 입력 필드 삐져나옴 방지 */
     .date-section { background:#fff; padding:1rem; border-radius:.95rem; border:1px solid #e5e7eb; margin-bottom:1rem; }
+    .date-row { display: flex; gap: 0.5rem; align-items: center; }
     .date-label { font-size:.875rem; font-weight:950; color:#374151; margin-bottom:.5rem; }
-    .date-input { width: calc(100%-2px); padding:.75rem 1rem; border:1px solid #d1d5db; border-radius:.9rem; font-size:16px; background:#fff; display: block; }
+    .date-input { flex: 1; padding:.75rem 1rem; border:1px solid #d1d5db; border-radius:.9rem; font-size:16px; background:#fff; display: block; }
+    
+    /* 불러오기 버튼 스타일 */
+    .load-button { background:#4b5563; color:white; border:none; padding:0 1.2rem; border-radius:.9rem; font-weight:900; cursor:pointer; font-size:0.9rem; transition: background 0.2s; }
+    .load-button:hover { background:#374151; }
+    .load-button:active { transform: scale(0.98); }
+
     .summary-box { background:#eff6ff; padding:1rem; border-radius:.95rem; border:1px solid #bfdbfe; margin-bottom:1rem; }
     .summary-content { display:flex; justify-content:space-between; align-items:center; margin-bottom:.5rem; }
     .summary-title { font-weight:950; color:#111827; }
@@ -126,7 +132,10 @@
     <div class="container">
       <div class="date-section">
         <div class="date-label">날짜 선택</div>
-        <input type="date" class="date-input" id="dateInput" />
+        <div class="date-row">
+          <input type="date" class="date-input" id="dateInput" />
+          <button type="button" class="load-button" id="forceLoadBtn">불러오기</button>
+        </div>
       </div>
       <div class="summary-box">
         <div class="summary-content">
@@ -252,8 +261,8 @@
   </div>
 
   <script>
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyHHg32gFCsPO2j6u1yXwFrGH2c7KuT31lEL0-UTeJDkGy00mWyg7vgp6LqCyjgM1zC1g/exec";
-    const ADMIN_PASSWORD = "1";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxPbNXMiP_nW8cntdCzKgVjoSyyNvqdCQwes_ERqv7PsuVhcGy0lpi7pe674M0jGtbmpQ/exec";
+    const ADMIN_PASSWORD = "1234";
     
     // ⚠️ 중요: 아래 TEAMS 배열의 members 속성을 실제 방원 이름과 또래(cohort)로 모두 수정해야 합니다!
     // 이름과 또래는 구글 시트에 기록되는 정보와 완전히 일치해야 합니다.
@@ -318,11 +327,16 @@
     let adminAuthed = false;
     let chartInstance = null;
 
-    // ✅ 또래 정규화 헬퍼 함수 (클라이언트)
+    // ✅ 핵심 수정: 또래 정규화 (한 자리 숫자는 자동으로 0을 붙임)
     function normalizeCohort(value) {
-        const cohortStr = (value || "").toString().trim();
-        // 서버에서 0으로 변환되어 들어왔을 경우, 다시 '00'으로 정규화
-        if (cohortStr === '0') return '00';
+        let cohortStr = (value || "").toString().trim();
+        // 서버에서 '01', '02' 등 따옴표가 포함되어 올 수 있으므로 제거
+        cohortStr = cohortStr.replace(/'/g, ""); 
+        
+        // 한 자리 숫자(0~9)인 경우 앞에 0을 붙여 00~09로 정규화
+        if (/^\d$/.test(cohortStr)) {
+            return '0' + cohortStr;
+        }
         return cohortStr;
     }
 
@@ -366,7 +380,6 @@
       TEAMS.forEach(t => {
         const card = document.createElement("div");
         card.className = "team-card";
-        // 멤버 목록이 객체 배열로 통일되었으므로, .length는 항상 정확함
         card.innerHTML = `
           <div class="team-card-header"><div class="team-number">${t.id}</div><div class="member-count">${t.members.length}명</div></div>
           <div class="team-name">${t.name}</div><div class="team-leader">${t.leader}</div>
@@ -411,11 +424,10 @@
       const list = document.getElementById("memberList");
       list.innerHTML = "";
       
-      // ✅ key 생성 로직: 또래 정규화 적용
       team.members.forEach(m => {
-        const name = (m.name || "").toString().trim(); // 이름 trim
-        const cohort = normalizeCohort(m.cohort); // 또래 정규화
-        const key = name + "||" + cohort; // 일관된 키 생성
+        const name = (m.name || "").toString().trim(); 
+        const cohort = normalizeCohort(m.cohort); 
+        const key = name + "||" + cohort; 
         
         attendance[key] = false;
         const el = document.createElement("div");
@@ -436,7 +448,7 @@
         };
         list.appendChild(el);
       });
-      loadServerAttendance();
+      loadServerAttendance(); 
     }
     function saveNote(key, val) { memberNotes[key] = val; }
     function updateUI() {
@@ -446,7 +458,6 @@
       document.getElementById("progressFill").style.width = total ? (present/total*100)+"%" : "0%";
     }
     
-    // ✅ 수정된 loadServerAttendance 함수 (안전한 note-input 접근 포함)
     async function loadServerAttendance() {
       showMsg("info", "데이터 불러오는 중...");
       try {
@@ -454,25 +465,20 @@
           action: "loadAttendance", teamId: selectedTeam.id, date: document.getElementById("dateInput").value 
         });
         
-        // 1. 초기화 (현재 팀 목록을 기준으로 모든 상태를 초기화)
         const items = document.querySelectorAll(".member-item");
         items.forEach(el => { 
             attendance[el.dataset.key] = false; 
             el.classList.remove("checked"); 
-            // ✅ 수정: note-input이 존재할 경우에만 value를 초기화
             const noteInput = el.querySelector(".note-input");
             if (noteInput) noteInput.value = ""; 
         });
         
         if (res.status === "success" && res.data.found) {
-          // 2. 서버 데이터 처리
           res.data.attendance.forEach(r => {
-            // ✅ 서버에서 받은 이름과 또래로 키 재생성 (정규화 적용)
             const nameFromServer = (r.name || "").toString().trim();
-            const cohortFromServer = normalizeCohort(r.cohort); // 또래 정규화
+            const cohortFromServer = normalizeCohort(r.cohort); 
             const key = nameFromServer + "||" + cohortFromServer; 
             
-            // 현재 팀 목록에 있는 방원인지 확인 (key가 일치하는지)
             if (attendance.hasOwnProperty(key)) { 
                attendance[key] = r.isPresent; 
                memberNotes[key] = r.note;
@@ -480,7 +486,6 @@
                const el = document.querySelector(`.member-item[data-key="${key}"]`);
                if (el) { 
                    if(r.isPresent) el.classList.add("checked"); 
-                   // ✅ 수정: note-input이 존재할 경우에만 value를 설정
                    const noteInput = el.querySelector(".note-input");
                    if (noteInput) noteInput.value = r.note; 
                }
@@ -501,7 +506,7 @@
        btn.textContent = "저장 중..."; btn.disabled = true;
        const list = [];
        for(let key in attendance) {
-         const [name, cohort] = key.split("||"); // 이미 정규화된 키를 사용하므로 안전함
+         const [name, cohort] = key.split("||"); 
          list.push({ name, cohort, isPresent: attendance[key], note: memberNotes[key] || "" });
        }
        try {
@@ -515,8 +520,10 @@
     };
     document.getElementById("teamBackBtn").onclick = () => showPage("homePage");
     
-    // ✅ 날짜 변경 시 서버 데이터 즉시 로드
+    // ✅ 날짜 변경 시 자동 로드
     document.getElementById("dateInput").onchange = loadServerAttendance;
+    // ✅ [불러오기] 버튼 클릭 시 수동 로드
+    document.getElementById("forceLoadBtn").onclick = loadServerAttendance;
     
     document.getElementById("memberSearch").oninput = (e) => {
       const val = e.target.value.toLowerCase();
@@ -528,12 +535,10 @@
     document.getElementById("adminBackBtn").onclick = () => { adminAuthed = false; showPage("homePage"); };
     function showAdminDashboard() { showPage("adminDashboard"); loadAdminStats(); loadMemberList(); }
     
-    // 탭 전환 로직
     document.querySelectorAll(".tab-button").forEach(btn => {
       btn.onclick = () => {
         document.querySelectorAll(".tab-button").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
-        // 모든 탭 콘텐츠 숨김
         ["adminStatsTab","adminNotesTab","adminSuggestionsTab","adminMembersTab"].forEach(id => document.getElementById(id).classList.add("hidden"));
         
         const targetMap = { 
@@ -543,7 +548,6 @@
             "members":"adminMembersTab" 
         };
         const targetId = targetMap[btn.dataset.tab];
-
         document.getElementById(targetId).classList.remove("hidden");
         
         if(btn.dataset.tab === "stats") loadAdminStats();
@@ -552,13 +556,10 @@
       }
     });
 
-    // 관리자: 출석현황 (전체 보기 수정)
     async function loadAdminStats() {
       const date = document.getElementById("adminDateInput").value;
       const container = document.getElementById("attendanceTable");
       container.innerHTML = "<div class='message info'>로딩 중...</div>";
-      
-      // ✅ 1. 전체 사랑방원 수 계산 (모든 팀의 멤버 수 합산)
       const totalMembers = TEAMS.reduce((sum, team) => sum + team.members.length, 0);
 
       try {
@@ -566,23 +567,17 @@
         if(res.status !== "success") throw new Error();
         
         let html = `<table><thead><tr><th>사랑방</th><th>총원</th><th>출석</th><th>결석</th><th>출석률</th></tr></thead><tbody>`;
-        let tp=0; // Total Present (tp만 누적)
-        const submittedData = res.data.teamStats; // 제출된 팀 리스트
+        let tp=0; 
+        const submittedData = res.data.teamStats; 
 
-        // 전체 TEAMS 루프를 돌면서 제출/미제출 판단
         TEAMS.forEach(team => {
-          // 해당 팀 데이터 찾기
           const stat = submittedData.find(s => String(s.teamId) === String(team.id));
-          
           if (stat) {
-            // 수정: Object 대신 숫자값 참조 및 NaN 방지
             const present = Number(stat.present) || 0;
             const absent = Number(stat.absent) || 0; 
-            const totalRecorded = present + absent; // 실제 기록된 인원 수
+            const totalRecorded = present + absent; 
             const rate = totalRecorded ? Math.round(present/totalRecorded*100) : 0;
-            
-            tp += present; // 전체 출석 인원 누적
-            // ⚠️ 전체 결석률 계산 방식이 변경되어, ta는 별도로 누적하지 않습니다.
+            tp += present; 
             
             html += `
               <tr class="team-row" onclick="toggleDetail(this, '${team.id}', '${date}')">
@@ -597,30 +592,17 @@
               </tr>
             `;
           } else {
-            // 미제출
-            html += `
-              <tr class="team-row unsubmitted">
-                <td><span class="status-badge status-no">미제출</span> ${team.name}</td>
-                <td>-</td><td>-</td><td>-</td><td>-</td>
-              </tr>
-            `;
+            html += `<tr class="team-row unsubmitted"><td><span class="status-badge status-no">미제출</span> ${team.name}</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>`;
           }
         });
 
         html += "</tbody></table>";
         container.innerHTML = html;
-        
-        // ✅ 2. 전체 출석률 계산: (전체 출석 인원 / 전체 사랑방원 수)
         const overallRate = totalMembers ? Math.round(tp/totalMembers*100)+"%" : "0%";
-        
-        // ✅ 3. 전체 결석 인원 계산: (전체 사랑방원 수 - 전체 출석 인원)
         const totalAbsent = totalMembers - tp;
-
-
         document.getElementById("adminTotalPresent").textContent = tp;
-        document.getElementById("adminTotalAbsent").textContent = totalAbsent; // 전체 사랑방원 수 기준 결석
-        document.getElementById("adminTotalRate").textContent = overallRate; // 전체 사랑방원 수 기준 출석률
-
+        document.getElementById("adminTotalAbsent").textContent = totalAbsent; 
+        document.getElementById("adminTotalRate").textContent = overallRate; 
       } catch(e) { container.innerHTML = "<div class='message error'>로딩 실패</div>"; }
     }
     document.getElementById("adminDateInput").onchange = loadAdminStats;
@@ -636,33 +618,19 @@
            const res = await jsonp(GOOGLE_SCRIPT_URL, { action: "loadAttendance", teamId, date });
            if (res.status === "success" && res.data.found) {
              const att = res.data.attendance;
-             
-             // 1. 출석/결석 명단
              const present = att.filter(x=>x.isPresent).map(x=>`<span class="chip">${x.name}</span>`).join("");
              const absent = att.filter(x=>!x.isPresent).map(x=>`<span class="chip absent">${x.name}</span>`).join("");
-             
-             // 2. 특이사항 명단 생성 (요청하신 '이름또래: 내용' 형식)
              const notes = att.filter(x => x.note && x.note.trim() !== "");
              let notesHtml = notes.map(n => {
-                 // 홍길동99: 감기 형식
                  const cohortDisplay = n.cohort ? n.cohort : '';
                  return `<div><strong>${n.name}${cohortDisplay}:</strong> ${n.note}</div>`;
-             }).join("<div style='height: 4px;'></div>"); // 항목 간 간격
-             
-             // 3. 패널 HTML 재구성 (특이사항만 표시)
+             }).join("<div style='height: 4px;'></div>"); 
              panel.innerHTML = `
                <div class="detail-grid">
                  <div class="detail-box"><div class="detail-header">출석 명단</div><div class="chips">${present || "없음"}</div></div>
                  <div class="detail-box"><div class="detail-header">결석 명단</div><div class="chips">${absent || "없음"}</div></div>
                </div>
-               
-               <div class="detail-box" style="margin-top:1rem; grid-column: 1 / -1;">
-                 <div class="detail-header">방원별 특이사항</div>
-                 <div style="margin-top: 0.5rem; font-size:0.9rem;">
-                   ${notesHtml || "<div style='color:#6b7280;'>기록된 특이사항이 없습니다.</div>"}
-                 </div>
-               </div>
-             `;
+               <div class="detail-box" style="margin-top:1rem; grid-column: 1 / -1;"><div class="detail-header">방원별 특이사항</div><div style="margin-top: 0.5rem; font-size:0.9rem;">${notesHtml || "<div style='color:#6b7280;'>기록된 특이사항이 없습니다.</div>"}</div></div>`;
            } else { panel.innerHTML = "데이터 없음"; }
          } catch(e) { panel.innerHTML = "로딩 에러"; }
        } else { detailRow.classList.add("hidden"); row.style.background = ""; }
@@ -681,7 +649,6 @@
     }
     document.getElementById("adminNotesDateInput").onchange = loadAdminNotes;
 
-    // 관리자: 건의사항 탭 로직
     async function loadAdminSuggestions() {
        const date = document.getElementById("adminSuggestionsDateInput").value;
        const div = document.getElementById("suggestionsTable"); div.innerHTML = "로딩 중...";
@@ -701,7 +668,6 @@
        try {
          const res = await jsonp(GOOGLE_SCRIPT_URL, { action: "getAllMembers" });
          res.data.forEach(m => {
-           // ✅ 정규화된 또래를 사용하여 옵션 값 생성
            const cohort = normalizeCohort(m.cohort);
            const opt = document.createElement("option"); 
            opt.value = m.name + "||" + cohort; 
