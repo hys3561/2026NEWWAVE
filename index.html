@@ -219,8 +219,8 @@
           <select class="date-input" id="memberSelect" style="margin-bottom:0.5rem;">
             <option value="">사람 선택</option>
           </select>
-          <button type="button" class="save-button" id="downloadCsvBtn" style="background:#4b5563; margin-top:0.5rem;">
-            📥 기간별 전체 출석률 CSV 다운로드
+          <button type="button" class="save-button" id="saveToSheetBtn" style="background:#059669; margin-top:0.5rem;">
+            📊 구글 시트에 기간별 통계 저장
           </button>
         </div>
         <div id="memberResultArea" class="hidden">
@@ -261,8 +261,8 @@
   </div>
 
   <script>
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxPbNXMiP_nW8cntdCzKgVjoSyyNvqdCQwes_ERqv7PsuVhcGy0lpi7pe674M0jGtbmpQ/exec";
-    const ADMIN_PASSWORD = "1234";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyRnhJiDj-Od632NlLmnCWp7Yl8_KOySlH0VSdwLAwVbQsdyDSZNBox2Rhqe6Ch_-aY2g/exec";
+    const ADMIN_PASSWORD = "newwave2026";
     
     // ⚠️ 중요: 아래 TEAMS 배열의 members 속성을 실제 방원 이름과 또래(cohort)로 모두 수정해야 합니다!
     // 이름과 또래는 구글 시트에 기록되는 정보와 완전히 일치해야 합니다.
@@ -327,11 +327,10 @@
     let adminAuthed = false;
     let chartInstance = null;
 
-    // ✅ 핵심 수정: 또래 정규화 (한 자리 숫자는 자동으로 0을 붙임)
+    // ✅ 또래 정규화 (한 자리 숫자는 자동으로 0을 붙임)
     function normalizeCohort(value) {
         let cohortStr = (value || "").toString().trim();
-        // 서버에서 '01', '02' 등 따옴표가 포함되어 올 수 있으므로 제거
-        cohortStr = cohortStr.replace(/'/g, ""); 
+        cohortStr = cohortStr.replace(/'/g, ""); // 따옴표 제거
         
         // 한 자리 숫자(0~9)인 경우 앞에 0을 붙여 00~09로 정규화
         if (/^\d$/.test(cohortStr)) {
@@ -520,9 +519,9 @@
     };
     document.getElementById("teamBackBtn").onclick = () => showPage("homePage");
     
-    // ✅ 날짜 변경 시 자동 로드
+    // 날짜 변경 시 자동 로드
     document.getElementById("dateInput").onchange = loadServerAttendance;
-    // ✅ [불러오기] 버튼 클릭 시 수동 로드
+    // [불러오기] 버튼 클릭 시 수동 로드
     document.getElementById("forceLoadBtn").onclick = loadServerAttendance;
     
     document.getElementById("memberSearch").oninput = (e) => {
@@ -703,9 +702,42 @@
         options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } } }
       });
     }
-    document.getElementById("downloadCsvBtn").onclick = () => {
-      const url = `${GOOGLE_SCRIPT_URL}?action=exportPeriodCsv&startDate=${document.getElementById("memberStartDate").value}&endDate=${document.getElementById("memberEndDate").value}`;
-      window.open(url, "_blank");
+    
+    // ✅ 수정된 기능: 구글 시트로 저장하기
+    document.getElementById("saveToSheetBtn").onclick = async () => {
+      const btn = document.getElementById("saveToSheetBtn");
+      const startDate = document.getElementById("memberStartDate").value;
+      const endDate = document.getElementById("memberEndDate").value;
+      
+      if (!startDate || !endDate) {
+        alert("시작일과 종료일을 모두 선택해주세요.");
+        return;
+      }
+      
+      if (!confirm(`${startDate}부터 ${endDate}까지의 통계를\n구글 스프레드시트의 새 탭으로 저장하시겠습니까?`)) return;
+
+      btn.disabled = true;
+      btn.textContent = "저장 중... (잠시만 기다려주세요)";
+      
+      try {
+        const res = await jsonp(GOOGLE_SCRIPT_URL, { 
+          action: "saveSummaryToSheet", 
+          startDate: startDate, 
+          endDate: endDate 
+        });
+        
+        if (res.status === "success") {
+          alert("성공!\n" + res.message);
+        } else {
+          alert("오류 발생: " + res.message);
+        }
+      } catch(e) {
+        console.error(e);
+        alert("저장 중 네트워크 오류가 발생했습니다.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "📊 구글 시트에 기간별 통계 저장";
+      }
     };
   </script>
 </body>
