@@ -266,7 +266,7 @@
     
     // ⚠️ 중요: 아래 TEAMS 배열의 members 속성을 실제 방원 이름과 또래(cohort)로 모두 수정해야 합니다!
     // 이름과 또래는 구글 시트에 기록되는 정보와 완전히 일치해야 합니다.
-    const TEAMS = [
+   const TEAMS = [
   {
     id: 1,
     name: "권준형 사랑방",
@@ -298,6 +298,7 @@
     members: [
       { name: "김나림", cohort: "03" }, // ⭐ 방장 (고정)
       { name: "강규호", cohort: "06" },
+      { name: "권세영", cohort: "04" },
       { name: "김새록", cohort: "01" },
       { name: "김시우", cohort: "01" },
       { name: "김예진", cohort: "06" },
@@ -323,8 +324,8 @@
       { name: "고동현", cohort: "06" },
       { name: "권승지", cohort: "05" },
       { name: "김도현", cohort: "07" },
-      { name: "김유경", cohort: "05" },
       { name: "김예원", cohort: "05" },
+      { name: "김유경", cohort: "05" },
       { name: "김하준", cohort: "06" },
       { name: "박승희", cohort: "03" },
       { name: "박지성", cohort: "07" },
@@ -341,8 +342,8 @@
   },
   {
     id: 4,
-    name: "벡에스더 사랑방",
-    leader: "방장: 벡에스더",
+    name: "백에스더 사랑방",
+    leader: "방장: 백에스더",
     members: [
       { name: "백에스더", cohort: "02" }, // ⭐ 방장 (고정)
       { name: "강유나", cohort: "07" },
@@ -351,18 +352,19 @@
       { name: "박서림", cohort: "05" },
       { name: "백민서", cohort: "05" },
       { name: "백승우", cohort: "05" },
-      { name: "오하늘", cohort: "04" },
-      { name: "유지혜", cohort: "02" },
       { name: "이동화", cohort: "03" },
       { name: "이민지", cohort: "04" },
-      { name: "이서현b", cohort: "07" },
       { name: "이성준", cohort: "05" },
+      { name: "이서현b", cohort: "07" },
       { name: "이예진", cohort: "03" },
+      { name: "오하늘", cohort: "04" },
+      { name: "유지혜", cohort: "02" },
       { name: "장준환", cohort: "01" },
       { name: "장진우", cohort: "05" },
       { name: "장하나", cohort: "07" },
       { name: "천예빈", cohort: "04" },
       { name: "천유빈", cohort: "07" },
+      { name: "최하은", cohort: "04" },
     ],
   },
   {
@@ -399,6 +401,7 @@
       { name: "김승원", cohort: "08" },
       { name: "김은찬", cohort: "05" },
       { name: "박수빈", cohort: "03" },
+      { name: "신민규", cohort: "03" },
       { name: "쏘토", cohort: "03" },
       { name: "오준환", cohort: "06" },
       { name: "오지윤", cohort: "06" },
@@ -417,15 +420,16 @@
     leader: "방장: 이하은",
     members: [
       { name: "이하은", cohort: "05" }, // ⭐ 방장 (고정)
-      { name: "김보은", cohort: "02" },
       { name: "김병현", cohort: "04" },
+      { name: "김보은", cohort: "02" },
       { name: "남하은", cohort: "05" },
       { name: "박민용", cohort: "01" },
       { name: "백한나", cohort: "04" },
-      { name: "소윤아", cohort: "07" },
       { name: "손상규", cohort: "04" },
+      { name: "소윤아", cohort: "07" },
       { name: "원찬영", cohort: "02" },
       { name: "이동인", cohort: "06" },
+      { name: "이민규", cohort: "03" },
       { name: "이서현a", cohort: "07" },
       { name: "이세린", cohort: "07" },
       { name: "장윤진", cohort: "04" },
@@ -446,8 +450,8 @@
       { name: "노하형", cohort: "04" },
       { name: "박상호", cohort: "07" },
       { name: "선민영", cohort: "05" },
-      { name: "신혜성", cohort: "06" },
       { name: "심유나", cohort: "02" },
+      { name: "신혜성", cohort: "06" },
       { name: "윤이안", cohort: "05" },
       { name: "이상경", cohort: "00" },
       { name: "이서륜", cohort: "05" },
@@ -472,13 +476,15 @@
       { name: "김제현", cohort: "05" },
       { name: "김종찬", cohort: "07" },
       { name: "류영서", cohort: "07" },
+      { name: "박수예", cohort: "07" },
+      { name: "배현아", cohort: "07" },
       { name: "신영은", cohort: "05" },
       { name: "안수지", cohort: "07" },
       { name: "안진주", cohort: "06" },
       { name: "윤서빈", cohort: "06" },
       { name: "윤준서", cohort: "03" },
-      { name: "이나림", cohort: "03" },
       { name: "이상혁", cohort: "01" },
+      { name: "이나림", cohort: "03" },
       { name: "이찬희", cohort: "06" },
       { name: "이하경", cohort: "02" },
       { name: "장수환", cohort: "03" },
@@ -492,6 +498,7 @@
     members: [
       { name: "장하늘", cohort: "00" }, // ⭐ 방장 (고정)
       { name: "권준형", cohort: "07" },
+      { name: "김수아a", cohort: "05" },
       { name: "김수아b", cohort: "05" },
       { name: "김아인", cohort: "07" },
       { name: "김은주b", cohort: "07" },
@@ -499,6 +506,7 @@
       { name: "박정민", cohort: "07" },
       { name: "박종화", cohort: "05" },
       { name: "박현진", cohort: "04" },
+      { name: "송예준", cohort: "00" },
       { name: "송용석", cohort: "02" },
       { name: "이정진", cohort: "01" },
       { name: "이하준", cohort: "07" },
@@ -547,11 +555,11 @@
       { name: "오하진", cohort: "05" },
       { name: "유예희", cohort: "04" },
       { name: "유요한", cohort: "03" },
-      { name: "이민규", cohort: "03" },
       { name: "장석범", cohort: "98" },
     ],
   },
 ];
+
     // 사랑방별 비밀번호 (예시: pw1111, pw2222...)
     const TEAM_PASSWORDS = {
       1: "7053", // 권준형 사랑방 (여기를 수정하세요)
