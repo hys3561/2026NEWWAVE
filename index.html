@@ -424,18 +424,39 @@
       });
     }
 
+    // ✅ 수정된 기능: 구글 시트로 저장할 때 ISO 형식을 사용하여 이전 방식과 통일
     document.getElementById("saveToSheetBtn").onclick = async () => {
       const btn = document.getElementById("saveToSheetBtn");
-      const start = document.getElementById("memberStartDate").value;
-      const end = document.getElementById("memberEndDate").value;
-      if (!start || !end) { alert("시작일과 종료일을 선택해주세요."); return; }
-      if(!confirm(`${start}부터 ${end}까지의 통계를 구글 시트 새 탭으로 저장할까요?`)) return;
-      btn.disabled = true; btn.textContent = "저장 중...";
+      const startRaw = document.getElementById("memberStartDate").value;
+      const endRaw = document.getElementById("memberEndDate").value;
+      
+      if (!startRaw || !endRaw) {
+        alert("시작일과 종료일을 선택해주세요.");
+        return;
+      }
+
+      // 이전 형식(ISO 8601)으로 변환
+      const isoStartDate = new Date(startRaw).toISOString();
+      const isoEndDate = new Date(endRaw).toISOString();
+
+      if (!confirm(`${startRaw}부터 ${endRaw}까지의 통계를 구글 시트 새 탭으로 저장할까요?`)) return;
+      
+      btn.disabled = true;
+      btn.textContent = "저장 중...";
+      
       try {
-        const res = await jsonp(GOOGLE_SCRIPT_URL, { action: "saveSummaryToSheet", startDate: start, endDate: end });
+        const res = await jsonp(GOOGLE_SCRIPT_URL, { 
+          action: "saveSummaryToSheet", 
+          startDate: isoStartDate, 
+          endDate: isoEndDate 
+        });
         alert("성공!\n" + res.message);
-      } catch(e) { alert("저장 중 오류가 발생했습니다."); }
-      btn.disabled = false; btn.textContent = "통계 구글 시트로 저장";
+      } catch(e) {
+        alert("저장 중 오류가 발생했습니다.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "통계 구글 시트로 저장";
+      }
     };
 
     ["adminDateInput","adminNotesDateInput","adminSuggestionsDateInput"].forEach(id => {
