@@ -7,16 +7,19 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    /* CSS: 스타일은 기존의 깔끔한 모바일 최적화 스타일 유지 */
     * { margin:0; padding:0; box-sizing:border-box; }
     body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:#f9fafb; min-height:100vh; }
     .hidden { display:none !important; }
+
     .header { background:#fff; border-bottom:1px solid #e5e7eb; padding:1.25rem 1rem; position:sticky; top:0; z-index:100; }
     .header-content { max-width:1200px; margin:0 auto; position:relative; }
     h1 { font-size:1.5rem; color:#111827; }
     .subtitle { color:#6b7280; font-size:0.9rem; font-weight:800; margin-top:0.35rem; }
     .admin-button { position:absolute; top:0; right:0; background:#6b7280; color:#fff; padding:0.5rem 1rem; border-radius:0.85rem; border:none; cursor:pointer; font-size:0.875rem; font-weight:900; }
+
     .container { max-width:1200px; margin:0 auto; padding:1.5rem 1rem; }
+
+    /* 메인 사랑방 그리드 레이아웃 */
     .team-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:1rem; }
     .team-card { background:#fff; padding:1.5rem; border-radius:0.95rem; border:2px solid #e5e7eb; cursor:pointer; transition:all .2s; }
     .team-card:hover { border-color:#2563eb; box-shadow:0 10px 15px -3px rgba(0,0,0,.1); }
@@ -25,19 +28,25 @@
     .team-name { font-size:1.65rem; font-weight:950; color:#111827; margin-bottom:.25rem; }
     .team-leader { font-size:.9rem; color:#6b7280; font-weight:800; }
     .member-count { background:#f3f4f6; padding:.25rem .75rem; border-radius:9999px; font-size:.875rem; color:#6b7280; font-weight:900; }
+
     .back-button { display:flex; align-items:center; gap:.5rem; color:#6b7280; background:none; border:none; cursor:pointer; font-size:1rem; padding:.5rem .25rem; font-weight:900; }
+
     .date-section { background:#fff; padding:1rem; border-radius:.95rem; border:1px solid #e5e7eb; margin-bottom:1rem; }
-    .date-row { display: flex; gap: 0.5rem; align-items: center; }
     .date-label { font-size:.875rem; font-weight:950; color:#374151; margin-bottom:.5rem; }
-    .date-input { flex: 1; padding:.75rem 1rem; border:1px solid #d1d5db; border-radius:.9rem; font-size:16px; background:#fff; }
-    .load-button { background:#4b5563; color:white; border:none; padding:0 1.2rem; border-radius:.9rem; font-weight:900; cursor:pointer; height: 45px; font-size: 0.9rem; }
+    .date-row { display:flex; gap:.5rem; }
+    .date-input { flex:1; padding:.75rem 1rem; border:1px solid #d1d5db; border-radius:.9rem; font-size:16px; background:#fff; }
+    .load-button { background:#4b5563; color:white; border:none; padding:0 1.2rem; border-radius:.9rem; font-weight:900; cursor:pointer; }
+
     .summary-box { background:#eff6ff; padding:1rem; border-radius:.95rem; border:1px solid #bfdbfe; margin-bottom:1rem; }
     .summary-content { display:flex; justify-content:space-between; align-items:center; margin-bottom:.5rem; }
     .summary-title { font-weight:950; color:#111827; }
     .summary-count { font-size:1.5rem; font-weight:950; color:#2563eb; }
     .progress-bar { background:#e5e7eb; border-radius:9999px; height:.5rem; overflow:hidden; }
     .progress-fill { background:#2563eb; height:100%; transition:width .3s; }
-    .search-input { width:100%; padding:.65rem .9rem; border:1px solid #d1d5db; border-radius:.9rem; font-size:16px; margin-bottom: 1rem; }
+
+    .search-input { width:100%; padding:.65rem .9rem; border:1px solid #d1d5db; border-radius:.9rem; font-size:16px; margin-bottom:1rem; }
+
+    /* 사랑방 명단 그리드 */
     .member-list { display:grid; grid-template-columns:repeat(auto-fill, minmax(170px, 1fr)); gap:.75rem; margin-bottom:1rem; }
     .member-item { background:#fff; padding:.9rem; border-radius:.95rem; border:2px solid #e5e7eb; transition:all .2s; }
     .member-item.checked { background:#eff6ff; border-color:#2563eb; }
@@ -48,20 +57,27 @@
     .member-item.checked .checkbox { background:#2563eb; border-color:#2563eb; }
     .checkmark { display:none; color:#fff; font-weight:950; font-size:.95rem; }
     .member-item.checked .checkmark { display:block; }
-    .note-input { width:100%; padding:.55rem .65rem; border:1px solid #d1d5db; border-radius:.85rem; font-size:16px; margin-top:0.75rem; }
+
+    .note-input { width:100%; padding:.55rem .65rem; border:1px solid #d1d5db; border-radius:.85rem; font-size:14px; margin-top:0.75rem; }
     .suggestion-textarea { width:100%; padding:.75rem; border:1px solid #d1d5db; border-radius:.9rem; font-size:16px; min-height:90px; }
+
     .save-button { width:100%; background:#2563eb; color:#fff; padding:.95rem; border-radius:.95rem; border:none; font-size:1.05rem; font-weight:950; cursor:pointer; }
+    
     .message { padding:.85rem 1rem; border-radius:.95rem; text-align:center; font-weight:950; margin-top:.75rem; }
     .message.success { background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; }
     .message.error { background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; }
     .message.info { background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; }
+
+    /* 관리자 탭 디자인 */
     .dashboard-tabs { display:flex; gap:1rem; margin-bottom:1.25rem; border-bottom:2px solid #e5e7eb; overflow-x:auto; }
     .tab-button { padding:0.75rem 1.25rem; font-size:1rem; background:none; border:none; cursor:pointer; color:#6b7280; border-bottom:2px solid transparent; margin-bottom:-2px; font-weight:950; white-space:nowrap; }
     .tab-button.active { color:#2563eb; border-bottom-color:#2563eb; }
-    .attendance-table { background:#fff; border-radius:.95rem; border:1px solid #e5e7eb; overflow-x: auto; }
+
+    .attendance-table { background:#fff; border-radius:.95rem; border:1px solid #e5e7eb; overflow:hidden; }
     table { width:100%; border-collapse:collapse; }
-    th { background:#f9fafb; padding:1rem; text-align:left; font-size:.95rem; font-weight:950; border-bottom:1px solid #e5e7eb; white-space:nowrap; }
-    td { padding:1rem; border-bottom:1px solid #e5e7eb; font-size:.95rem; vertical-align:middle; white-space:nowrap; }
+    th { background:#f9fafb; padding:1rem; text-align:left; font-size:.95rem; font-weight:950; border-bottom:1px solid #e5e7eb; }
+    td { padding:1rem; border-bottom:1px solid #e5e7eb; font-size:.95rem; vertical-align:middle; }
+
     .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:999; }
     .modal { background:#fff; width:90%; max-width:400px; padding:1.5rem; border-radius:1rem; }
     .modal-actions { display:flex; gap:0.5rem; margin-top:1rem; }
@@ -69,8 +85,8 @@
     .modal-btn.primary { background:#2563eb; color:#fff; }
   </style>
 </head>
-
 <body>
+
   <div id="homePage">
     <div class="header">
       <div class="header-content">
@@ -79,7 +95,9 @@
         <p class="subtitle">출석 체크를 위해 사랑방을 선택해주세요</p>
       </div>
     </div>
-    <div class="container"><div class="team-grid" id="teamGrid"></div></div>
+    <div class="container">
+      <div class="team-grid" id="teamGrid"></div>
+    </div>
   </div>
 
   <div id="attendancePage" class="hidden">
@@ -98,18 +116,27 @@
           <button type="button" class="load-button" id="forceLoadBtn">불러오기</button>
         </div>
       </div>
+
       <div class="summary-box">
-        <div class="summary-content"><span class="summary-title">출석률</span><span class="summary-count" id="attendanceCount">0 / 0</span></div>
-        <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+        <div class="summary-content">
+          <span class="summary-title">오늘의 출석 인원</span>
+          <span class="summary-count" id="attendanceCount">0 / 0</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill" style="width:0%"></div>
+        </div>
       </div>
-      <input id="memberSearch" class="search-input" placeholder="이름 검색..." />
+
+      <input id="memberSearch" class="search-input" placeholder="이름으로 검색..." />
       <div class="member-list" id="memberList"></div>
+
       <div style="margin-bottom:1rem;">
-        <div class="date-label">건의사항 (선택)</div>
-        <textarea class="suggestion-textarea" id="suggestionInput" placeholder="건의사항을 입력하세요"></textarea>
+        <div class="date-label">건의사항 및 기타 (선택사항)</div>
+        <textarea class="suggestion-textarea" id="suggestionInput" placeholder="공동체에 전달하고 싶은 내용을 입력하세요"></textarea>
       </div>
+
       <div style="position:sticky; bottom:1rem;">
-        <button type="button" class="save-button" id="saveBtn">출석 정보 저장</button>
+        <button type="button" class="save-button" id="saveBtn">출석 정보 저장하기</button>
         <div id="messageBox" class="hidden"></div>
       </div>
     </div>
@@ -131,17 +158,23 @@
       </div>
 
       <div id="adminStatsTab">
-        <div class="date-section"><input type="date" class="date-input" id="adminDateInput" /></div>
+        <div class="date-section">
+          <input type="date" class="date-input" id="adminDateInput" />
+        </div>
         <div class="attendance-table" id="attendanceTable"></div>
       </div>
 
       <div id="adminNotesTab" class="hidden">
-        <div class="date-section"><input type="date" class="date-input" id="adminNotesDateInput" /></div>
+        <div class="date-section">
+          <input type="date" class="date-input" id="adminNotesDateInput" />
+        </div>
         <div id="notesTable" class="attendance-table"></div>
       </div>
 
       <div id="adminSuggestionsTab" class="hidden">
-        <div class="date-section"><input type="date" class="date-input" id="adminSuggestionsDateInput" /></div>
+        <div class="date-section">
+          <input type="date" class="date-input" id="adminSuggestionsDateInput" />
+        </div>
         <div id="suggestionsTable" class="attendance-table"></div>
       </div>
 
@@ -152,8 +185,10 @@
             <input type="date" id="memberStartDate" class="date-input" />
             <input type="date" id="memberEndDate" class="date-input" />
           </div>
-          <select id="memberSelect" class="date-input" style="width:100%"><option value="">방원 선택</option></select>
-          <button id="saveToSheetBtn" class="load-button" style="width:100%; margin-top:10px; background:#059669; color:white;">통계 구글 시트로 저장</button>
+          <select id="memberSelect" class="date-input" style="width:100%">
+            <option value="">방원 선택</option>
+          </select>
+          <button id="saveToSheetBtn" class="load-button" style="width:100%; margin-top:10px; background:#059669; color:white; height:45px;">📊 통계 구글 시트로 저장</button>
         </div>
         <div id="memberResultArea" class="hidden">
           <div style="background:white; padding:15px; border-radius:15px; margin-bottom:15px; border:1px solid #e5e7eb;">
@@ -181,10 +216,66 @@
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzAVZkfYIhgTLmxdt-iKf5VBfu6AsfpsYKxXe2tiNbItKD7SFDc7dsm07w8z_JtuWteTg/exec";
     
     const TEAMS = [
-      { id: 1, name: "권준형 사랑방", leader: "방장: 권준형", members: [{name:"권준형", cohort:"99"},{name:"김시아", cohort:"01"},{name:"김예준", cohort:"06"},{name:"김우주", cohort:"06"},{name:"김해성", cohort:"02"},{name:"맹성원", cohort:"06"},{name:"신재영", cohort:"00"},{name:"오세현", cohort:"01"},{name:"원찬희", cohort:"01"},{name:"윤리경", cohort:"00"},{name:"이민정", cohort:"00"},{name:"이예은", cohort:"00"},{name:"조에녹", cohort:"02"},{name:"차해온", cohort:"00"},{name:"최동하", cohort:"06"},{name:"최서연", cohort:"00"},{name:"황재준", cohort:"03"}] },
-      { id: 2, name: "김나림 사랑방", leader: "방장: 김나림", members: [{name:"김나림", cohort:"03"},{name:"강규호", cohort:"06"},{name:"권세영", cohort:"04"},{name:"김새록", cohort:"01"},{name:"김시우", cohort:"01"},{name:"김예진", cohort:"06"},{name:"김유찬", cohort:"06"},{name:"김해민", cohort:"07"},{name:"박윤화", cohort:"07"},{name:"박종은", cohort:"04"},{name:"배수아", cohort:"04"},{name:"심이삭", cohort:"06"},{name:"이래준", cohort:"06"},{name:"이세원", cohort:"04"},{name:"이수현", cohort:"07"},{name:"이하희", cohort:"04"},{name:"이해민", cohort:"07"}] },
-      { id: 3, name: "문유안 사랑방", leader: "방장: 문유안", members: [{name:"문유안", cohort:"03"},{name:"고동현", cohort:"06"},{name:"권승지", cohort:"05"},{name:"김도현", cohort:"07"},{name:"김예원", cohort:"05"},{name:"김유경", cohort:"05"},{name:"김하준", cohort:"06"},{name:"박승희", cohort:"03"},{name:"박지성", cohort:"07"},{name:"박혜진", cohort:"02"},{name:"연유나", cohort:"04"},{name:"이성민", cohort:"07"},{name:"이 수", cohort:"06"},{name:"이수빈", cohort:"04"},{name:"이희원", cohort:"05"},{name:"임아현", cohort:"06"},{name:"장혜준", cohort:"03"},{name:"정서연", cohort:"05"}] },
-      { id: 4, name: "백에스더 사랑방", leader: "방장: 백에스더", members: [{name:"백에스더", cohort:"02"},{name:"강유나", cohort:"07"},{name:"김동은", cohort:"05"},{name:"마혜리", cohort:"04"},{name:"박서림", cohort:"05"},{name:"백민서", cohort:"05"},{name:"백승우", cohort:"05"},{name:"이동화", cohort:"03"},{name:"이민지", cohort:"04"},{name:"이성준", cohort:"05"},{name:"이서현b", cohort:"07"},{name:"이예진", cohort:"03"},{name:"오하늘", cohort:"04"},{name:"유지혜", cohort:"02"},{name:"장준환", cohort:"01"},{name:"장진우", cohort:"05"},{name:"장하나", cohort:"07"},{name:"천예빈", cohort:"04"},{name:"천유빈", cohort:"07"},{name:"최하은", cohort:"04"}] },
+      { id: 1, name: "권준형 사랑방", leader: "방장: 권준형", 
+       members: [
+        {name:"권준형", cohort:"99"},
+        {name:"김시아", cohort:"01"},
+        {name:"김예준", cohort:"06"},
+        {name:"김우주", cohort:"06"},
+        {name:"김해성", cohort:"02"},
+        {name:"맹성원", cohort:"06"},
+        {name:"신재영", cohort:"00"},
+        {name:"오세현", cohort:"01"},
+        {name:"원찬희", cohort:"01"},
+        {name:"윤리경", cohort:"00"},
+        {name:"이민정", cohort:"00"},
+        {name:"이예은", cohort:"00"},
+        {name:"조에녹", cohort:"02"},
+        {name:"차해온", cohort:"00"},
+        {name:"최동하", cohort:"06"},
+        {name:"최서연", cohort:"00"},
+        {name:"황재준", cohort:"03"}] },
+      { id: 2, name: "김나림 사랑방", leader: "방장: 김나림", 
+       members: [
+         {name:"김나림", cohort:"03"},
+         {name:"강규호", cohort:"06"},
+         {name:"권세영", cohort:"04"},
+         {name:"김새록", cohort:"01"},
+         {name:"김시우", cohort:"01"},
+         {name:"김예진", cohort:"06"},
+         {name:"김유찬", cohort:"06"},
+         {name:"김해민", cohort:"07"},
+         {name:"박윤화", cohort:"07"},
+         {name:"박종은", cohort:"04"},
+         {name:"배수아", cohort:"04"},
+         {name:"심이삭", cohort:"06"},
+         {name:"이래준", cohort:"06"},
+         {name:"이세원", cohort:"04"},
+         {name:"이수현", cohort:"07"},
+         {name:"이하희", cohort:"04"},
+         {name:"이해민", cohort:"07"}] },
+      { id: 3, name: "문유안 사랑방", leader: "방장: 문유안", 
+       members: [
+         {name:"문유안", cohort:"03"},
+         {name:"고동현", cohort:"06"},
+         {name:"권승지", cohort:"05"},
+         {name:"김도현", cohort:"07"},
+         {name:"김예원", cohort:"05"},
+         {name:"김유경", cohort:"05"},
+         {name:"김하준", cohort:"06"},
+         {name:"박승희", cohort:"03"},
+         {name:"박지성", cohort:"07"},
+         {name:"박혜진", cohort:"02"},
+         {name:"연유나", cohort:"04"},
+         {name:"이성민", cohort:"07"},
+         {name:"이 수", cohort:"06"},
+         {name:"이수빈", cohort:"04"},
+         {name:"이희원", cohort:"05"},
+         {name:"임아현", cohort:"06"},
+         {name:"장혜준", cohort:"03"},
+         {name:"정서연", cohort:"05"}] },
+      { id: 4, name: "백에스더 사랑방", leader: "방장: 백에스더", 
+       members: [{name:"백에스더", cohort:"02"},{name:"강유나", cohort:"07"},{name:"김동은", cohort:"05"},{name:"마혜리", cohort:"04"},{name:"박서림", cohort:"05"},{name:"백민서", cohort:"05"},{name:"백승우", cohort:"05"},{name:"이동화", cohort:"03"},{name:"이민지", cohort:"04"},{name:"이성준", cohort:"05"},{name:"이서현b", cohort:"07"},{name:"이예진", cohort:"03"},{name:"오하늘", cohort:"04"},{name:"유지혜", cohort:"02"},{name:"장준환", cohort:"01"},{name:"장진우", cohort:"05"},{name:"장하나", cohort:"07"},{name:"천예빈", cohort:"04"},{name:"천유빈", cohort:"07"},{name:"최하은", cohort:"04"}] },
       { id: 5, name: "이예정 사랑방", leader: "방장: 이예정", members: [{name:"이예정", cohort:"98"},{name:"권채민", cohort:"05"},{name:"나예안", cohort:"04"},{name:"마현빈", cohort:"02"},{name:"박규리", cohort:"04"},{name:"박은경", cohort:"01"},{name:"박종운", cohort:"02"},{name:"박태희", cohort:"03"},{name:"양산얼", cohort:"99"},{name:"오성헌", cohort:"99"},{name:"이병헌", cohort:"99"},{name:"이영채", cohort:"06"},{name:"이창호", cohort:"01"},{name:"정다원", cohort:"02"},{name:"정여원", cohort:"05"},{name:"하성민", cohort:"99"}] },
       { id: 6, name: "이지빈 사랑방", leader: "방장: 이지빈", members: [{name:"이지빈", cohort:"03"},{name:"곽채율", cohort:"06"},{name:"권예은", cohort:"06"},{name:"김도영", cohort:"07"},{name:"김승원", cohort:"08"},{name:"김은찬", cohort:"05"},{name:"박수빈", cohort:"03"},{name:"신민규", cohort:"03"},{name:"쏘토", cohort:"03"},{name:"오준환", cohort:"06"},{name:"오지윤", cohort:"06"},{name:"이시헌", cohort:"07"},{name:"장동주", cohort:"05"},{name:"정예원", cohort:"06"},{name:"정하준", cohort:"07"},{name:"최수안", cohort:"06"},{name:"한다연", cohort:"04"},{name:"황윤수", cohort:"03"}] },
       { id: 7, name: "이하은 사랑방", leader: "방장: 이하은", members: [{name:"이하은", cohort:"05"},{name:"김병현", cohort:"04"},{name:"김보은", cohort:"02"},{name:"남하은", cohort:"05"},{name:"박민용", cohort:"01"},{name:"백한나", cohort:"04"},{name:"손상규", cohort:"04"},{name:"소윤아", cohort:"07"},{name:"원찬영", cohort:"02"},{name:"이동인", cohort:"06"},{name:"이민규", cohort:"03"},{name:"이서현a", cohort:"07"},{name:"이세린", cohort:"07"},{name:"장윤진", cohort:"04"},{name:"하지헌", cohort:"05"},{name:"한시현", cohort:"06"},{name:"허시온", cohort:"01"}] },
@@ -195,78 +286,111 @@
       { id: 12, name: "Wee팀", leader: "방장: 권하경, 최수인", members: [{name:"권하경", cohort:"03"},{name:"최수인", cohort:"98"},{name:"고보민", cohort:"05"},{name:"김민지", cohort:"99"},{name:"오하진", cohort:"05"},{name:"유예희", cohort:"04"},{name:"유요한", cohort:"03"},{name:"장석범", cohort:"98"}] }
     ];
 
-    const TEAM_PASSWORDS = { 1:"7053", 2:"2580", 3:"0726", 4:"1111", 5:"1218", 6:"4884", 7:"2005", 8:"8888", 9:"1015", 10:"9804", 11:"0831", 12:"1212" };
+    const TEAM_PASSWORDS = { 1: "7053", 2: "2580", 3: "0726", 4: "1111", 5: "1218", 6: "4884", 7: "2005", 8: "8888", 9: "1015", 10: "9804", 11: "0831", 12: "1212" };
     const ADMIN_PASSWORD = "6789";
 
     let selectedTeam = null;
-    let attendance = {}; 
+    let attendance = {};
     let memberNotes = {};
     let adminAuthed = false;
     let chartInstance = null;
 
-    // 공통 헬퍼 함수
+    // 공통 함수
     function normalizeCohort(v) {
       let s = (v || "").toString().replace(/'/g, "").trim();
       if (/^\d$/.test(s)) s = "0" + s;
       return s;
     }
-    function showPage(id) {
-      ["homePage","attendancePage","adminDashboard"].forEach(p => document.getElementById(p).classList.add("hidden"));
-      document.getElementById(id).classList.remove("hidden");
+
+    function showPage(pageId) {
+      document.getElementById("homePage").classList.add("hidden");
+      document.getElementById("attendancePage").classList.add("hidden");
+      document.getElementById("adminDashboard").classList.add("hidden");
+      document.getElementById(pageId).classList.remove("hidden");
     }
+
     function showMsg(type, text) {
       const box = document.getElementById("messageBox");
-      box.className = "message " + type; box.textContent = text; box.classList.remove("hidden");
+      box.className = "message " + type;
+      box.textContent = text;
+      box.classList.remove("hidden");
       setTimeout(() => box.classList.add("hidden"), 3000);
     }
+
     function jsonp(url, params) {
       return new Promise((resolve, reject) => {
-        const cb = "cb_" + Date.now() + Math.floor(Math.random()*1000);
-        params.callback = cb;
-        const query = Object.keys(params).map(k => encodeURIComponent(k)+"="+encodeURIComponent(params[k])).join("&");
+        const callbackName = "cb_" + Date.now() + Math.floor(Math.random() * 1000);
+        params.callback = callbackName;
+        const queryString = Object.keys(params).map(k => encodeURIComponent(k) + "=" + encodeURIComponent(params[k])).join("&");
         const script = document.createElement("script");
-        script.src = url + "?" + query;
-        window[cb] = (data) => { delete window[cb]; document.body.removeChild(script); resolve(data); };
-        script.onerror = () => { delete window[cb]; if(script.parentNode) document.body.removeChild(script); reject("Network Error"); };
+        script.src = url + "?" + queryString;
+        window[callbackName] = (data) => {
+          delete window[callbackName];
+          document.body.removeChild(script);
+          resolve(data);
+        };
+        script.onerror = () => {
+          delete window[callbackName];
+          if (script.parentNode) document.body.removeChild(script);
+          reject(new Error("JSONP request failed"));
+        };
         document.body.appendChild(script);
       });
     }
 
-    // 초기화
-    const today = new Date().toISOString().split("T")[0];
-    document.getElementById("dateInput").value = today;
+    // 메인 홈 초기화
+    const todayStr = new Date().toISOString().split("T")[0];
+    document.getElementById("dateInput").value = todayStr;
 
-    const grid = document.getElementById("teamGrid");
-    TEAMS.forEach(t => {
+    const teamGrid = document.getElementById("teamGrid");
+    TEAMS.forEach(team => {
       const card = document.createElement("div");
       card.className = "team-card";
-      card.innerHTML = `<div class="team-card-header"><div class="team-number">${t.id}</div><div class="member-count">${t.members.length}명</div></div><div class="team-name">${t.name}</div><div class="team-leader">${t.leader}</div>`;
-      card.onclick = () => openPasswordModal("team", t);
-      grid.appendChild(card);
+      card.innerHTML = `
+        <div class="team-card-header">
+          <div class="team-number">${team.id}</div>
+          <div class="member-count">${team.members.length}명</div>
+        </div>
+        <div class="team-name">${team.name}</div>
+        <div class="team-leader">${team.leader}</div>
+      `;
+      card.onclick = () => openPasswordModal("team", team);
+      teamGrid.appendChild(card);
     });
 
-    // 모달 및 비밀번호 확인
+    // 비밀번호 모달 로직
     const modalState = { type: null, data: null };
     function openPasswordModal(type, data) {
-      modalState.type = type; modalState.data = data;
+      modalState.type = type;
+      modalState.data = data;
       document.getElementById("passwordModal").classList.remove("hidden");
       document.getElementById("modalPassword").value = "";
       document.getElementById("modalError").classList.add("hidden");
-      document.getElementById("modalSubtitle").textContent = type === "admin" ? "관리자 접속" : data.name;
+      document.getElementById("modalSubtitle").textContent = type === "admin" ? "관리자 대시보드 접속" : data.name;
       document.getElementById("modalPassword").focus();
     }
+
     document.getElementById("modalOkBtn").onclick = checkPassword;
-    document.getElementById("modalPassword").onkeydown = (e) => { if(e.key==="Enter") checkPassword(); };
+    document.getElementById("modalPassword").onkeydown = (e) => { if (e.key === "Enter") checkPassword(); };
     document.getElementById("modalCancelBtn").onclick = () => document.getElementById("passwordModal").classList.add("hidden");
 
     function checkPassword() {
       const input = document.getElementById("modalPassword").value;
       if (modalState.type === "admin") {
-        if (input === ADMIN_PASSWORD) { adminAuthed = true; document.getElementById("passwordModal").classList.add("hidden"); showAdminDashboard(); }
-        else document.getElementById("modalError").classList.remove("hidden");
+        if (input === ADMIN_PASSWORD) {
+          adminAuthed = true;
+          document.getElementById("passwordModal").classList.add("hidden");
+          showAdminDashboard();
+        } else {
+          document.getElementById("modalError").classList.remove("hidden");
+        }
       } else {
-        if (input === TEAM_PASSWORDS[modalState.data.id]) { document.getElementById("passwordModal").classList.add("hidden"); loadTeamPage(modalState.data); }
-        else document.getElementById("modalError").classList.remove("hidden");
+        if (input === TEAM_PASSWORDS[modalState.data.id]) {
+          document.getElementById("passwordModal").classList.add("hidden");
+          loadTeamPage(modalState.data);
+        } else {
+          document.getElementById("modalError").classList.remove("hidden");
+        }
       }
     }
 
@@ -276,15 +400,35 @@
       document.getElementById("selectedTeamName").textContent = team.name;
       document.getElementById("selectedTeamLeader").textContent = team.leader;
       showPage("attendancePage");
-      attendance = {}; memberNotes = {};
+
+      attendance = {};
+      memberNotes = {};
       const list = document.getElementById("memberList");
       list.innerHTML = "";
+
       team.members.forEach(m => {
         const key = m.name.trim() + "||" + normalizeCohort(m.cohort);
         attendance[key] = false;
-        const el = document.createElement("div"); el.className = "member-item"; el.dataset.key = key;
-        el.innerHTML = `<div class="member-header"><div><div class="member-name">${m.name}</div><div class="member-meta">${m.cohort} 또래</div></div><div class="checkbox"><span class="checkmark">✓</span></div></div><input class="note-input" placeholder="특이사항" oninput="memberNotes['${key}']=this.value" onclick="event.stopPropagation()">`;
-        el.onclick = (e) => { if(e.target.tagName==="INPUT") return; attendance[key]=!attendance[key]; el.classList.toggle("checked", attendance[key]); updateUI(); };
+        
+        const el = document.createElement("div");
+        el.className = "member-item";
+        el.dataset.key = key;
+        el.innerHTML = `
+          <div class="member-header">
+            <div>
+              <div class="member-name">${m.name}</div>
+              <div class="member-meta">${m.cohort} 또래</div>
+            </div>
+            <div class="checkbox"><span class="checkmark">✓</span></div>
+          </div>
+          <input type="text" class="note-input" placeholder="특이사항 입력" oninput="memberNotes['${key}']=this.value" onclick="event.stopPropagation()">
+        `;
+        el.onclick = (e) => {
+          if (e.target.tagName === "INPUT") return;
+          attendance[key] = !attendance[key];
+          el.classList.toggle("checked", attendance[key]);
+          updateUI();
+        };
         list.appendChild(el);
       });
       loadServerAttendance();
@@ -292,107 +436,225 @@
 
     function updateUI() {
       const total = Object.keys(attendance).length;
-      const present = Object.values(attendance).filter(Boolean).length;
+      const present = Object.values(attendance).filter(v => v === true).length;
       document.getElementById("attendanceCount").textContent = `${present} / ${total}`;
-      document.getElementById("progressFill").style.width = total ? (present/total*100)+"%" : "0%";
+      document.getElementById("progressFill").style.width = total > 0 ? (present / total * 100) + "%" : "0%";
     }
 
     async function loadServerAttendance() {
-      showMsg("info", "데이터를 불러오는 중...");
+      showMsg("info", "이전 기록을 불러오는 중...");
       try {
-        const res = await jsonp(GOOGLE_SCRIPT_URL, { action: "loadAttendance", teamId: selectedTeam.id, date: document.getElementById("dateInput").value });
-        document.querySelectorAll(".member-item").forEach(el => { 
-          const k = el.dataset.key; attendance[k]=false; el.classList.remove("checked"); el.querySelector("input").value=""; memberNotes[k]=""; 
+        const dateVal = document.getElementById("dateInput").value;
+        const res = await jsonp(GOOGLE_SCRIPT_URL, {
+          action: "loadAttendance",
+          teamId: selectedTeam.id,
+          date: dateVal
+        });
+
+        // 초기화
+        document.querySelectorAll(".member-item").forEach(el => {
+          const k = el.dataset.key;
+          attendance[k] = false;
+          el.classList.remove("checked");
+          el.querySelector("input").value = "";
+          memberNotes[k] = "";
         });
         document.getElementById("suggestionInput").value = "";
 
-        if (res.status === "success") {
-          if (res.data.found) {
-            res.data.attendance.forEach(r => {
-              const k = r.name.trim() + "||" + normalizeCohort(r.cohort);
-              if (attendance.hasOwnProperty(k)) {
-                attendance[k] = r.isPresent; memberNotes[k] = r.note || "";
-                const el = document.querySelector(`.member-item[data-key="${k.replace(/([ #;?%&,.+*~\':"!^$[\]()=>|/@])/g,'\\$1')}"]`);
-                if (el) { if(r.isPresent) el.classList.add("checked"); el.querySelector("input").value = r.note || ""; }
+        if (res.status === "success" && res.data.found) {
+          res.data.attendance.forEach(row => {
+            const k = row.name.trim() + "||" + normalizeCohort(row.cohort);
+            if (attendance.hasOwnProperty(k)) {
+              attendance[k] = row.isPresent;
+              memberNotes[k] = row.note || "";
+              const itemEl = document.querySelector(`.member-item[data-key="${k.replace(/([ #;?%&,.+*~\':"!^$[\]()=>|/@])/g, '\\$1')}"]`);
+              if (itemEl) {
+                if (row.isPresent) itemEl.classList.add("checked");
+                itemEl.querySelector("input").value = row.note || "";
               }
-            });
-            document.getElementById("suggestionInput").value = res.data.suggestion || "";
-            showMsg("success", "불러오기 성공! 기록을 복원했습니다.");
-          } else {
-            showMsg("info", "불러오기 성공! (저장된 기록 없음)");
-          }
+            }
+          });
+          document.getElementById("suggestionInput").value = res.data.suggestion || "";
+          showMsg("success", "기존 데이터를 불러왔습니다.");
+        } else {
+          showMsg("info", "해당 날짜의 저장된 기록이 없습니다.");
         }
         updateUI();
-      } catch(e) { showMsg("error", "불러오기 실패!"); }
+      } catch (e) {
+        showMsg("error", "데이터를 불러오지 못했습니다.");
+      }
     }
 
     document.getElementById("saveBtn").onclick = async () => {
       const btn = document.getElementById("saveBtn");
-      btn.textContent = "저장 중..."; btn.disabled = true;
-      const list = Object.keys(attendance).map(k => ({ name: k.split("||")[0], cohort: k.split("||")[1], isPresent: attendance[k], note: memberNotes[k] || "" }));
+      btn.textContent = "저장 중...";
+      btn.disabled = true;
+
+      const dateVal = document.getElementById("dateInput").value;
+      const attendanceList = Object.keys(attendance).map(k => ({
+        name: k.split("||")[0],
+        cohort: k.split("||")[1],
+        isPresent: attendance[k],
+        note: memberNotes[k] || ""
+      }));
+
+      const payload = {
+        action: "saveAttendance",
+        teamId: selectedTeam.id,
+        teamName: selectedTeam.name,
+        leader: selectedTeam.leader,
+        date: dateVal,
+        suggestion: document.getElementById("suggestionInput").value,
+        attendance: attendanceList
+      };
+
       try {
-        await fetch(GOOGLE_SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "saveAttendance", teamId: selectedTeam.id, teamName: selectedTeam.name, leader: selectedTeam.leader, date: document.getElementById("dateInput").value, suggestion: document.getElementById("suggestionInput").value, attendance: list }) });
-        showMsg("success", "저장 성공!");
-      } catch(e) { showMsg("error", "저장 실패!"); }
-      btn.textContent = "출석 정보 저장"; btn.disabled = false;
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          body: JSON.stringify(payload)
+        });
+        showMsg("success", "성공적으로 저장되었습니다!");
+      } catch (e) {
+        showMsg("error", "저장에 실패했습니다.");
+      } finally {
+        btn.textContent = "출석 정보 저장하기";
+        btn.disabled = false;
+      }
     };
 
     document.getElementById("forceLoadBtn").onclick = loadServerAttendance;
     document.getElementById("dateInput").onchange = loadServerAttendance;
     document.getElementById("teamBackBtn").onclick = () => showPage("homePage");
+
     document.getElementById("memberSearch").oninput = (e) => {
       const val = e.target.value.toLowerCase();
-      document.querySelectorAll(".member-item").forEach(el => el.style.display = el.dataset.key.toLowerCase().includes(val) ? "" : "none");
+      document.querySelectorAll(".member-item").forEach(el => {
+        const name = el.dataset.key.split("||")[0].toLowerCase();
+        el.style.display = name.includes(val) ? "" : "none";
+      });
     };
 
-    // --- 관리자 기능 (파일 기반 복구) ---
-    document.getElementById("adminBtn").onclick = () => adminAuthed ? showAdminDashboard() : openPasswordModal("admin");
-    document.getElementById("adminBackBtn").onclick = () => { adminAuthed = false; showPage("homePage"); };
+    // --- 관리자 기능 ---
+    document.getElementById("adminBtn").onclick = () => {
+      if (adminAuthed) showAdminDashboard();
+      else openPasswordModal("admin");
+    };
+    document.getElementById("adminBackBtn").onclick = () => {
+      adminAuthed = false;
+      showPage("homePage");
+    };
 
     function showAdminDashboard() {
       showPage("adminDashboard");
       const adToday = new Date().toISOString().split("T")[0];
-      ["adminDateInput","adminNotesDateInput","adminSuggestionsDateInput","memberStartDate","memberEndDate"].forEach(id => { 
-        if(!document.getElementById(id).value) document.getElementById(id).value = adToday; 
-      });
+      if (!document.getElementById("adminDateInput").value) document.getElementById("adminDateInput").value = adToday;
+      if (!document.getElementById("adminNotesDateInput").value) document.getElementById("adminNotesDateInput").value = adToday;
+      if (!document.getElementById("adminSuggestionsDateInput").value) document.getElementById("adminSuggestionsDateInput").value = adToday;
+      if (!document.getElementById("memberStartDate").value) document.getElementById("memberStartDate").value = adToday;
+      if (!document.getElementById("memberEndDate").value) document.getElementById("memberEndDate").value = adToday;
+
       refreshAdminStats();
       loadMemberListForAdmin();
     }
 
+    // 관리자 탭 전환 로직 (원본 완벽 복구)
     document.querySelectorAll(".tab-button").forEach(btn => {
       btn.onclick = () => {
-        document.querySelectorAll(".tab-button").forEach(b => b.classList.remove("active")); btn.classList.add("active");
-        ["adminStatsTab","adminNotesTab","adminSuggestionsTab","adminMembersTab"].forEach(t => document.getElementById(t).classList.add("hidden"));
-        const tab = btn.dataset.tab;
-        if(tab==="stats") { document.getElementById("adminStatsTab").classList.remove("hidden"); refreshAdminStats(); }
-        else if(tab==="notes") { document.getElementById("adminNotesTab").classList.remove("hidden"); refreshAdminNotes(); }
-        else if(tab==="suggestions") { document.getElementById("adminSuggestionsTab").classList.remove("hidden"); refreshAdminSuggestions(); }
-        else if(tab==="members") { document.getElementById("adminMembersTab").classList.remove("hidden"); }
+        document.querySelectorAll(".tab-button").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        const targetTab = btn.dataset.tab;
+        document.getElementById("adminStatsTab").classList.add("hidden");
+        document.getElementById("adminNotesTab").classList.add("hidden");
+        document.getElementById("adminSuggestionsTab").classList.add("hidden");
+        document.getElementById("adminMembersTab").classList.add("hidden");
+
+        if (targetTab === "stats") {
+          document.getElementById("adminStatsTab").classList.remove("hidden");
+          refreshAdminStats();
+        } else if (targetTab === "notes") {
+          document.getElementById("adminNotesTab").classList.remove("hidden");
+          refreshAdminNotes();
+        } else if (targetTab === "suggestions") {
+          document.getElementById("adminSuggestionsTab").classList.remove("hidden");
+          refreshAdminSuggestions();
+        } else if (targetTab === "members") {
+          document.getElementById("adminMembersTab").classList.remove("hidden");
+        }
       };
     });
 
+    // 출석 현황 테이블 및 상세 토글
     async function refreshAdminStats() {
-      const res = await jsonp(GOOGLE_SCRIPT_URL, { action: "getStatsByDate", date: document.getElementById("adminDateInput").value });
+      const dateVal = document.getElementById("adminDateInput").value;
+      const res = await jsonp(GOOGLE_SCRIPT_URL, { action: "getStatsByDate", date: dateVal });
+      
       let html = `<table><thead><tr><th>사랑방</th><th>출석</th><th>결석</th><th>출석률</th></tr></thead><tbody>`;
       TEAMS.forEach(t => {
-        const s = res.data.teamStats.find(x => String(x.teamId) === String(t.id)) || { present: 0, absent: 0 };
-        const rate = (s.present + s.absent) > 0 ? ((s.present / (s.present+s.absent))*100).toFixed(1) : "0";
-        html += `<tr><td>${t.name}</td><td>${s.present}</td><td>${s.absent}</td><td>${rate}%</td></tr>`;
+        const stats = res.data.teamStats.find(x => String(x.teamId) === String(t.id)) || { present: 0, absent: 0 };
+        const total = stats.present + stats.absent;
+        const rate = total > 0 ? ((stats.present / total) * 100).toFixed(1) : "0";
+        html += `
+          <tr style="cursor:pointer" onclick="toggleDetail('${t.id}')">
+            <td>${t.name}</td>
+            <td>${stats.present}</td>
+            <td>${stats.absent}</td>
+            <td>${rate}%</td>
+          </tr>
+          <tr id="detail-${t.id}" class="hidden">
+            <td colspan="4" style="background:#f9fafb; padding:15px; border-bottom:1px solid #e5e7eb;" id="content-${t.id}">로딩 중...</td>
+          </tr>
+        `;
       });
-      document.getElementById("attendanceTable").innerHTML = html + "</tbody></table>";
+      html += `</tbody></table>`;
+      document.getElementById("attendanceTable").innerHTML = html;
     }
 
+    window.toggleDetail = async (teamId) => {
+      const row = document.getElementById(`detail-${teamId}`);
+      if (!row.classList.contains("hidden")) {
+        row.classList.add("hidden");
+        return;
+      }
+      row.classList.remove("hidden");
+      const content = document.getElementById(`content-${teamId}`);
+      const dateVal = document.getElementById("adminDateInput").value;
+
+      try {
+        const res = await jsonp(GOOGLE_SCRIPT_URL, { action: "loadAttendance", teamId: teamId, date: dateVal });
+        if (!res.data.found) {
+          content.innerHTML = "저장된 데이터가 없습니다.";
+          return;
+        }
+        const presentNames = res.data.attendance.filter(a => a.isPresent).map(a => `<span style="display:inline-block; background:#dbeafe; color:#2563eb; padding:2px 8px; border-radius:15px; margin:2px; font-size:0.8rem;">${a.name}</span>`).join("");
+        const absentNames = res.data.attendance.filter(a => !a.isPresent).map(a => `<span style="display:inline-block; background:#fee2e2; color:#b91c1c; padding:2px 8px; border-radius:15px; margin:2px; font-size:0.8rem;">${a.name}</span>`).join("");
+        content.innerHTML = `
+          <div style="margin-bottom:8px;"><strong>출석:</strong> ${presentNames || "없음"}</div>
+          <div><strong>결석:</strong> ${absentNames || "없음"}</div>
+        `;
+      } catch (e) { content.innerHTML = "오류 발생"; }
+    };
+
     async function refreshAdminNotes() {
-      const res = await jsonp(GOOGLE_SCRIPT_URL, { action: "getNotesByDate", date: document.getElementById("adminNotesDateInput").value });
+      const dateVal = document.getElementById("adminNotesDateInput").value;
+      const res = await jsonp(GOOGLE_SCRIPT_URL, { action: "getNotesByDate", date: dateVal });
       let html = `<table><thead><tr><th>사랑방</th><th>이름</th><th>내용</th></tr></thead><tbody>`;
-      res.data.forEach(n => { html += `<tr><td>${n.teamName}</td><td>${n.name}(${n.cohort})</td><td>${n.note}</td></tr>`; });
+      if (res.data.length === 0) html += `<tr><td colspan="3" style="text-align:center; color:#9ca3af;">특이사항이 없습니다.</td></tr>`;
+      res.data.forEach(n => {
+        html += `<tr><td>${n.teamName}</td><td>${n.name}(${n.cohort})</td><td>${n.note}</td></tr>`;
+      });
       document.getElementById("notesTable").innerHTML = html + "</tbody></table>";
     }
 
     async function refreshAdminSuggestions() {
-      const res = await jsonp(GOOGLE_SCRIPT_URL, { action: "getSuggestionsByDate", date: document.getElementById("adminSuggestionsDateInput").value });
+      const dateVal = document.getElementById("adminSuggestionsDateInput").value;
+      const res = await jsonp(GOOGLE_SCRIPT_URL, { action: "getSuggestionsByDate", date: dateVal });
       let html = `<table><thead><tr><th>사랑방</th><th>건의사항</th></tr></thead><tbody>`;
-      res.data.forEach(s => { html += `<tr><td>${s.teamName}</td><td>${s.suggestion}</td></tr>`; });
+      if (res.data.length === 0) html += `<tr><td colspan="2" style="text-align:center; color:#9ca3af;">건의사항이 없습니다.</td></tr>`;
+      res.data.forEach(s => {
+        html += `<tr><td>${s.teamName}</td><td>${s.suggestion}</td></tr>`;
+      });
       document.getElementById("suggestionsTable").innerHTML = html + "</tbody></table>";
     }
 
@@ -400,71 +662,95 @@
       const res = await jsonp(GOOGLE_SCRIPT_URL, { action: "getAllMembers" });
       const sel = document.getElementById("memberSelect");
       sel.innerHTML = `<option value="">방원 선택</option>`;
-      res.data.forEach(m => { sel.innerHTML += `<option value="${m.name}||${m.cohort}">${m.name} (${m.cohort})</option>`; });
+      res.data.forEach(m => {
+        sel.innerHTML += `<option value="${m.name}||${m.cohort}">${m.name} (${m.cohort} 또래)</option>`;
+      });
     }
 
     document.getElementById("memberSelect").onchange = async () => {
-      const val = document.getElementById("memberSelect").value; if(!val) return;
+      const val = document.getElementById("memberSelect").value;
+      if (!val) return;
       const [name, cohort] = val.split("||");
-      const res = await jsonp(GOOGLE_SCRIPT_URL, { action: "getMemberHistory", name, cohort, startDate: document.getElementById("memberStartDate").value, endDate: document.getElementById("memberEndDate").value });
+      const start = document.getElementById("memberStartDate").value;
+      const end = document.getElementById("memberEndDate").value;
+
+      const res = await jsonp(GOOGLE_SCRIPT_URL, { action: "getMemberHistory", name, cohort, startDate: start, endDate: end });
       document.getElementById("memberResultArea").classList.remove("hidden");
       renderChart(res.data.monthly);
+
       let html = `<table><thead><tr><th>날짜</th><th>사랑방</th><th>출석</th></tr></thead><tbody>`;
-      res.data.sessions.forEach(s => { html += `<tr><td>${s.date}</td><td>${s.teamName}</td><td>${s.isPresent?'출석':'결석'}</td></tr>`; });
+      res.data.sessions.forEach(s => {
+        html += `<tr><td>${s.date}</td><td>${s.teamName}</td><td>${s.isPresent ? "✅" : "❌"}</td></tr>`;
+      });
       document.getElementById("memberHistoryTable").innerHTML = html + "</tbody></table>";
     };
 
     function renderChart(monthlyData) {
       const ctx = document.getElementById('memberChart').getContext('2d');
-      if(chartInstance) chartInstance.destroy();
+      if (chartInstance) chartInstance.destroy();
       chartInstance = new Chart(ctx, {
         type: 'bar',
-        data: { labels: monthlyData.map(d=>d.month), datasets: [{ label: '월별 출석률 (%)', data: monthlyData.map(d=>parseFloat(d.rate)), backgroundColor: '#3b82f6', borderRadius: 5 }] },
-        options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } } }
+        data: {
+          labels: monthlyData.map(d => d.month),
+          datasets: [{
+            label: '월별 출석률 (%)',
+            data: monthlyData.map(d => parseFloat(d.rate)),
+            backgroundColor: '#3b82f6',
+            borderRadius: 5
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: { y: { beginAtZero: true, max: 100 } }
+        }
       });
     }
 
-    // ✅ 수정된 기능: 구글 시트로 저장할 때 ISO 형식을 사용하여 이전 방식과 통일
     document.getElementById("saveToSheetBtn").onclick = async () => {
       const btn = document.getElementById("saveToSheetBtn");
-      const startRaw = document.getElementById("memberStartDate").value;
-      const endRaw = document.getElementById("memberEndDate").value;
+      const startDate = document.getElementById("memberStartDate").value;
+      const endDate = document.getElementById("memberEndDate").value;
       
-      if (!startRaw || !endRaw) {
-        alert("시작일과 종료일을 선택해주세요.");
+      if (!startDate || !endDate) {
+        alert("시작일과 종료일을 모두 선택해주세요.");
         return;
       }
-
-      // 이전 형식(ISO 8601)으로 변환
-      const isoStartDate = new Date(startRaw).toISOString();
-      const isoEndDate = new Date(endRaw).toISOString();
-
-      if (!confirm(`${startRaw}부터 ${endRaw}까지의 통계를 구글 시트 새 탭으로 저장할까요?`)) return;
       
+      // 구글 시트 저장을 위한 ISO 형식 변환
+      const isoStart = new Date(startDate).toISOString();
+      const isoEnd = new Date(endDate).toISOString();
+
+      if (!confirm(`${startDate}부터 ${endDate}까지의 통계를\n구글 스프레드시트의 새 탭으로 저장하시겠습니까?`)) return;
+
       btn.disabled = true;
-      btn.textContent = "저장 중...";
+      btn.textContent = "저장 중... (잠시만 기다려주세요)";
       
       try {
         const res = await jsonp(GOOGLE_SCRIPT_URL, { 
           action: "saveSummaryToSheet", 
-          startDate: isoStartDate, 
-          endDate: isoEndDate 
+          startDate: isoStart, 
+          endDate: isoEnd 
         });
-        alert("성공!\n" + res.message);
-      } catch(e) {
-        alert("저장 중 오류가 발생했습니다.");
+        
+        if (res.status === "success") {
+          alert("성공!\n" + res.message);
+        } else {
+          alert("오류 발생: " + res.message);
+        }
+      } catch (e) {
+        alert("네트워크 오류 또는 권한 문제로 실패했습니다.");
       } finally {
         btn.disabled = false;
-        btn.textContent = "통계 구글 시트로 저장";
+        btn.textContent = "📊 통계 구글 시트로 저장";
       }
     };
 
-    ["adminDateInput","adminNotesDateInput","adminSuggestionsDateInput"].forEach(id => {
-       document.getElementById(id).onchange = () => {
-         if(id==="adminDateInput") refreshAdminStats();
-         else if(id==="adminNotesDateInput") refreshAdminNotes();
-         else refreshAdminSuggestions();
-       };
+    ["adminDateInput", "adminNotesDateInput", "adminSuggestionsDateInput"].forEach(id => {
+      document.getElementById(id).onchange = () => {
+        if (id === "adminDateInput") refreshAdminStats();
+        else if (id === "adminNotesDateInput") refreshAdminNotes();
+        else refreshAdminSuggestions();
+      };
     });
   </script>
 </body>
