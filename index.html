@@ -719,99 +719,84 @@
           action: "loadAttendance", teamId: selectedTeam.id, date: document.getElementById("dateInput").value 
         });
         
+        // 1. 초기화
         const items = document.querySelectorAll(".member-item");
-        items.forEach(el => { 
-            attendance[el.dataset.key] = false; 
-            el.classList.remove("checked"); 
-            const noteInput = el.querySelector(".note-input");
-            if (noteInput) noteInput.value = ""; 
+        items.forEach(el => {
+          const key = el.dataset.key;
+          attendance[key] = false;
+          el.classList.remove("checked");
+          el.querySelector(".note-input").value = "";
+          memberNotes[key] = "";
         });
-        
+        document.getElementById("suggestionInput").value = "";
+
+        // 2. 서버 데이터 매칭 및 복원
         if (res.status === "success" && res.data.found) {
           res.data.attendance.forEach(r => {
-            const nameFromServer = (r.name || "").toString().trim();
-            const cohortFromServer = normalizeCohort(r.cohort); 
-            const key = nameFromServer + "||" + cohortFromServer; 
+            const serverName = r.name.trim();
+            const serverCohort = normalizeCohort(r.cohort);
+            const key = serverName + "||" + serverCohort;
             
-            if (attendance.hasOwnProperty(key)) { 
-               attendance[key] = r.isPresent; 
-               memberNotes[key] = r.note;
-               
-               const el = document.querySelector(`.member-item[data-key="${key}"]`);
-               if (el) { 
-                   if(r.isPresent) el.classList.add("checked"); 
-                   const noteInput = el.querySelector(".note-input");
-                   if (noteInput) noteInput.value = r.note; 
-               }
+            if (attendance.hasOwnProperty(key)) {
+              attendance[key] = r.isPresent;
+              memberNotes[key] = r.note || "";
+              const el = document.querySelector(`.member-item[data-key="${key.replace(/([ #;?%&,.+*~\':"!^$[\]()=>|/@])/g,'\\$1')}"]`);
+              if (el) {
+                if (r.isPresent) el.classList.add("checked");
+                el.querySelector(".note-input").value = r.note || "";
+              }
             }
           });
           document.getElementById("suggestionInput").value = res.data.suggestion || "";
-          showMsg("success", "불러오기 완료");
+          showMsg("success", "이전 데이터를 불러왔습니다.");
         } else {
-          document.getElementById("suggestionInput").value = "";
-          showMsg("info", "저장된 데이터가 없습니다.");
+          showMsg("info", "새로운 출석체크를 시작합니다.");
         }
         updateUI();
-      } catch(e) { console.error(e); showMsg("error", "불러오기 실패"); }
+      } catch(e) { console.error(e); showMsg("error", "데이터 로드 실패"); }
     }
     
     // index.html 내부의 saveBtn.onclick 부분을 아래 코드로 교체하세요.
 
     document.getElementById("saveBtn").onclick = async () => {
        const btn = document.getElementById("saveBtn");
-       btn.textContent = "저장 중..."; 
-       btn.disabled = true;
+       btn.textContent = "저장 중..."; btn.disabled = true;
        
        const list = [];
        for(let key in attendance) {
-         const [name, cohort] = key.split("||"); 
-         list.push({ 
-           name, 
-           cohort, 
-           isPresent: attendance[key], 
-           note: memberNotes[key] || "" 
-         });
+         const [name, cohort] = key.split("||");
+         list.push({ name, cohort, isPresent: attendance[key], note: memberNotes[key] || "" });
        }
        
-       const suggestionText = document.getElementById("suggestionInput").value;
-       
-       // 전송할 데이터 뭉치
        const payload = {
-         action: "saveAttendance", 
-         teamId: selectedTeam.id, 
-         teamName: selectedTeam.name, 
+         action: "saveAttendance",
+         teamId: selectedTeam.id,
+         teamName: selectedTeam.name,
          leader: selectedTeam.leader,
-         date: document.getElementById("dateInput").value, 
-         suggestion: suggestionText, 
+         date: document.getElementById("dateInput").value,
+         suggestion: document.getElementById("suggestionInput").value,
          attendance: list
        };
-    
+
        try {
-         // ✅ GET 방식(jsonp) 대신 POST 방식(fetch) 사용
-         const response = await fetch(GOOGLE_SCRIPT_URL, {
+         await fetch(GOOGLE_SCRIPT_URL, {
            method: "POST",
-           mode: "no-cors", // GAS POST를 위한 설정
+           mode: "no-cors",
            cache: "no-cache",
            headers: { "Content-Type": "application/json" },
            body: JSON.stringify(payload)
          });
-         
-         // no-cors 모드에서는 응답 내용을 읽을 수 없으므로 성공으로 간주하고 메시지 출력
-         showMsg("success", "저장되었습니다!");
+         showMsg("success", "안전하게 저장되었습니다!");
        } catch(e) { 
-         console.error(e);
-         showMsg("error", "저장 실패 (네트워크 오류)"); 
+         showMsg("error", "저장 실패"); 
        } finally { 
          btn.textContent = "출석 정보 저장"; 
          btn.disabled = false; 
        }
     };
-    
+
     document.getElementById("teamBackBtn").onclick = () => showPage("homePage");
-    
-    // 날짜 변경 시 자동 로드
     document.getElementById("dateInput").onchange = loadServerAttendance;
-    // [불러오기] 버튼 클릭 시 수동 로드
     document.getElementById("forceLoadBtn").onclick = loadServerAttendance;
     
     document.getElementById("memberSearch").oninput = (e) => {
@@ -996,24 +981,30 @@
     // ✅ 수정된 기능: 구글 시트로 저장하기
     document.getElementById("saveToSheetBtn").onclick = async () => {
       const btn = document.getElementById("saveToSheetBtn");
-      const startDate = document.getElementById("memberStartDate").value;
-      const endDate = document.getElementById("memberEndDate").value;
       
-      if (!startDate || !endDate) {
+      // input 필드에서 가져온 날짜 값을 Date 객체로 변환
+      const startRaw = document.getElementById("memberStartDate").value;
+      const endRaw = document.getElementById("memberEndDate").value;
+      
+      if (!startRaw || !endRaw) {
         alert("시작일과 종료일을 모두 선택해주세요.");
         return;
       }
-      
-      if (!confirm(`${startDate}부터 ${endDate}까지의 통계를\n구글 스프레드시트의 새 탭으로 저장하시겠습니까?`)) return;
-
+    
+      // 이 부분이 핵심입니다: 이전과 동일한 ISO 형식(2026-02-03T13:29:57.618Z)으로 변환
+      const isoStartDate = new Date(startRaw).toISOString();
+      const isoEndDate = new Date(endRaw).toISOString();
+    
+      if (!confirm(`${startRaw}부터 ${endRaw}까지의 통계를\n구글 스프레드시트의 새 탭으로 저장하시겠습니까?`)) return;
+    
       btn.disabled = true;
       btn.textContent = "저장 중... (잠시만 기다려주세요)";
       
       try {
         const res = await jsonp(GOOGLE_SCRIPT_URL, { 
           action: "saveSummaryToSheet", 
-          startDate: startDate, 
-          endDate: endDate 
+          startDate: isoStartDate, // 변환된 ISO 형식 전송
+          endDate: isoEndDate     // 변환된 ISO 형식 전송
         });
         
         if (res.status === "success") {
