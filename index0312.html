@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>뉴웨이브 청년1부 사랑방 출석체크</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
@@ -129,30 +130,83 @@
         <p class="subtitle" id="selectedTeamLeader"></p>
       </div>
     </div>
-    <div class="container">
-      <div class="date-section">
-        <div class="date-label">날짜 선택</div>
-        <div class="date-row">
-          <input type="date" class="date-input" id="dateInput" />
-          <button type="button" class="load-button" id="forceLoadBtn">불러오기</button>
+    <!-- 출석체크 / 통계 탭 -->
+    <div style="background:#fff; border-bottom:2px solid #e5e7eb; display:flex;">
+      <button class="tab-button active" id="attTabCheck" onclick="switchAttTab('check')" style="flex:1; text-align:center;">✓ 출석체크</button>
+      <button class="tab-button" id="attTabStats" onclick="switchAttTab('stats')" style="flex:1; text-align:center;">📊 통계</button>
+    </div>
+
+    <!-- 출석체크 탭 -->
+    <div id="attCheckPanel">
+      <div class="container">
+        <div class="date-section">
+          <div class="date-label">날짜 선택</div>
+          <div class="date-row">
+            <input type="date" class="date-input" id="dateInput" />
+            <button type="button" class="load-button" id="forceLoadBtn">불러오기</button>
+          </div>
+        </div>
+        <div class="summary-box">
+          <div class="summary-content">
+            <span class="summary-title">출석률</span>
+            <span class="summary-count" id="attendanceCount">0 / 0</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+        </div>
+        <input id="memberSearch" class="search-input" placeholder="이름 검색..." />
+        <div class="member-list" id="memberList"></div>
+        <div class="suggestion-section" style="margin-bottom:1rem;">
+          <div class="date-label">건의사항 (선택)</div>
+          <textarea class="suggestion-textarea" id="suggestionInput" placeholder="건의사항을 입력하세요"></textarea>
+        </div>
+        <div class="sticky-actions">
+          <button type="button" class="save-button" id="saveBtn">출석 정보 저장</button>
+          <div id="messageBox" class="hidden"></div>
         </div>
       </div>
-      <div class="summary-box">
-        <div class="summary-content">
-          <span class="summary-title">출석률</span>
-          <span class="summary-count" id="attendanceCount">0 / 0</span>
+    </div>
+
+    <!-- 통계 탭 -->
+    <div id="attStatsPanel" class="hidden">
+      <div class="container">
+        <div id="teamStatsLoading" class="hidden"><div class="message info">통계를 불러오는 중...</div></div>
+        <div id="teamStatsSummary" class="hidden">
+          <!-- 요약 카드 -->
+          <div class="admin-summary" style="margin-bottom:1rem;">
+            <div class="admin-summary-card">
+              <div class="admin-summary-label">총 주차</div>
+              <div class="admin-summary-value" id="tsWeeks">0</div>
+            </div>
+            <div class="admin-summary-card">
+              <div class="admin-summary-label">평균 출석률</div>
+              <div class="admin-summary-value" id="tsAvgRate">0%</div>
+            </div>
+            <div class="admin-summary-card">
+              <div class="admin-summary-label">인원</div>
+              <div class="admin-summary-value" id="tsMemberCount">0</div>
+            </div>
+          </div>
+
+          <!-- 차트 1: 기간별 출석 인원 추이 (꺾은선) -->
+          <div class="chart-card" style="margin-bottom:1rem;">
+            <div style="font-weight:950; margin-bottom:0.75rem; color:#111827;">📅 기간별 출석 인원 추이</div>
+            <div style="position:relative; height:160px;">
+              <canvas id="teamAttendanceLineChart"></canvas>
+            </div>
+          </div>
+
+          <!-- 차트 2: 방원별 출석률 (가로 막대) -->
+          <div class="chart-card" style="margin-bottom:1rem;">
+            <div style="font-weight:950; margin-bottom:0.75rem; color:#111827;">👥 방원별 출석률</div>
+            <div style="position:relative; height:320px; overflow-y:auto;">
+              <canvas id="teamMemberBarChart"></canvas>
+            </div>
+          </div>
+
+          <!-- 방원별 상세 테이블 -->
+          <div style="font-weight:950; color:#111827; margin-bottom:0.5rem;">📋 방원별 상세</div>
+          <div class="attendance-table" id="teamStatsMemberTable" style="margin-bottom:2rem;"></div>
         </div>
-        <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
-      </div>
-      <input id="memberSearch" class="search-input" placeholder="이름 검색..." />
-      <div class="member-list" id="memberList"></div>
-      <div class="suggestion-section" style="margin-bottom:1rem;">
-        <div class="date-label">건의사항 (선택)</div>
-        <textarea class="suggestion-textarea" id="suggestionInput" placeholder="건의사항을 입력하세요"></textarea>
-      </div>
-      <div class="sticky-actions">
-        <button type="button" class="save-button" id="saveBtn">출석 정보 저장</button>
-        <div id="messageBox" class="hidden"></div>
       </div>
     </div>
   </div>
@@ -168,7 +222,9 @@
       <div class="dashboard-tabs">
         <button class="tab-button active" data-tab="stats">출석 현황</button>
         <button class="tab-button" data-tab="notes">특이사항</button>
-        <button class="tab-button" data-tab="suggestions">건의사항</button> <button class="tab-button" data-tab="members">개인별 조회</button>
+        <button class="tab-button" data-tab="suggestions">건의사항</button>
+        <button class="tab-button" data-tab="members">개인별 조회</button>
+        <button class="tab-button" data-tab="allMembers">전체 인원</button>
       </div>
 
       <div id="adminStatsTab">
@@ -213,18 +269,16 @@
         <div class="date-section">
           <div class="date-label">기간 및 대상 설정</div>
           <div style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
-            <input type="date" class="date-input" id="memberStartDate" style="flex: 1; width: auto;" />
-            <input type="date" class="date-input" id="memberEndDate" style="flex: 1; width: auto;" />
+            <input type="date" class="date-input" id="memberStartDate" style="flex:1; width:auto;" />
+            <input type="date" class="date-input" id="memberEndDate" style="flex:1; width:auto;" />
           </div>
+          <input type="text" id="memberSearchInput" class="search-input" placeholder="🔍 이름 검색..." style="margin-bottom:0.5rem;" />
           <select class="date-input" id="memberSelect" style="margin-bottom:0.5rem;">
             <option value="">사람 선택</option>
           </select>
-          <button type="button" class="save-button" id="saveToSheetBtn" style="background:#059669; margin-top:0.5rem;">
-            📊 구글 시트에 기간별 통계 저장
-          </button>
         </div>
         <div id="memberResultArea" class="hidden">
-           <div class="admin-summary">
+          <div class="admin-summary" style="grid-template-columns:repeat(3,1fr);">
             <div class="admin-summary-card">
               <div class="admin-summary-label">출석 횟수</div>
               <div class="admin-summary-value" id="memPresent">0</div>
@@ -238,10 +292,55 @@
               <div class="admin-summary-value" id="memRate">0%</div>
             </div>
           </div>
-          <div class="chart-card">
-            <canvas id="memberChart" style="width:100%; height:250px;"></canvas>
+          <div class="chart-card" style="margin-top:1rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+              <div style="font-weight:950; color:#111827;">📅 출석 추이</div>
+              <div id="cumRateBadge" style="font-size:0.85rem; font-weight:900; background:#eff6ff; color:#1d4ed8; padding:0.2rem 0.65rem; border-radius:999px;">누적 출석률: -</div>
+            </div>
+            <div style="position:relative; height:160px;">
+              <canvas id="memberTrendChart"></canvas>
+            </div>
+          </div>
+          <div class="chart-card" style="margin-top:1rem;">
+            <div style="font-weight:950; margin-bottom:0.75rem; color:#111827;">📊 월별 출석률</div>
+            <div style="position:relative; height:160px;">
+              <canvas id="memberChart"></canvas>
+            </div>
           </div>
           <div class="attendance-table" id="memberHistoryTable" style="margin-top:1rem;"></div>
+        </div>
+      </div>
+
+      <!-- 전체 인원 탭 -->
+      <div id="adminAllTab" class="hidden">
+        <div class="date-section">
+          <div class="date-label">기간 설정</div>
+          <div style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
+            <input type="date" class="date-input" id="allStartDate" style="flex:1; width:auto;" />
+            <input type="date" class="date-input" id="allEndDate" style="flex:1; width:auto;" />
+          </div>
+          <div style="display:flex; gap:0.5rem;">
+            <button type="button" class="save-button" id="viewAllStatsBtn" style="flex:1; background:#7c3aed; margin-top:0.5rem;">
+              📋 통계 불러오기
+            </button>
+            <button type="button" class="save-button" id="saveAllToSheetBtn" style="flex:1; background:#059669; margin-top:0.5rem;">
+              📥 엑셀 저장
+            </button>
+          </div>
+        </div>
+        <div id="allMembersLoading" class="hidden"><div class="message info" id="allMembersLoadingMsg">불러오는 중...</div></div>
+        <div id="allMembersStatsArea" class="hidden">
+          <div class="admin-summary" style="margin-bottom:1rem; grid-template-columns:repeat(2,1fr);">
+            <div class="admin-summary-card">
+              <div class="admin-summary-label">총 대상 인원</div>
+              <div class="admin-summary-value" id="allTotalMembers">-</div>
+            </div>
+            <div class="admin-summary-card">
+              <div class="admin-summary-label">평균 출석률</div>
+              <div class="admin-summary-value" id="allAvgRate">-</div>
+            </div>
+          </div>
+          <div id="allMembersTableContainer" class="attendance-table"></div>
         </div>
       </div>
     </div>
@@ -599,6 +698,14 @@
       ["homePage","attendancePage","adminDashboard"].forEach(p => document.getElementById(p).classList.add("hidden"));
       document.getElementById(id).classList.remove("hidden");
     }
+    function switchAttTab(tab) {
+      const isCheck = tab === 'check';
+      document.getElementById("attCheckPanel").classList.toggle("hidden", !isCheck);
+      document.getElementById("attStatsPanel").classList.toggle("hidden", isCheck);
+      document.getElementById("attTabCheck").classList.toggle("active", isCheck);
+      document.getElementById("attTabStats").classList.toggle("active", !isCheck);
+      if (!isCheck && currentStatsTeam) loadTeamStats();
+    }
     function showMsg(type, text) {
       const box = document.getElementById("messageBox");
       box.className = "message " + type;
@@ -619,14 +726,22 @@
       });
     }
 
-    // 초기화
-    const today = new Date().toISOString().split("T")[0];
+    // 초기화 - 로컬 시간 기준 날짜 (UTC 변환 오류 방지)
+    function toLocalDateStr(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+    const today = toLocalDateStr(new Date());
+    const oneYearAgoDate = new Date(); oneYearAgoDate.setFullYear(oneYearAgoDate.getFullYear() - 1);
+    const oneYearAgo = toLocalDateStr(oneYearAgoDate);
+
     document.getElementById("dateInput").value = today;
     document.getElementById("adminDateInput").value = today;
     document.getElementById("adminNotesDateInput").value = today;
     document.getElementById("adminSuggestionsDateInput").value = today;
-    const oneYearAgo = new Date(); oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-    document.getElementById("memberStartDate").value = oneYearAgo.toISOString().split("T")[0];
+    document.getElementById("memberStartDate").value = "2000-01-01";
     document.getElementById("memberEndDate").value = today;
     initTeamGrid();
 
@@ -672,9 +787,11 @@
     // 출석체크 로직
     function loadTeamPage(team) {
       selectedTeam = team;
+      currentStatsTeam = team;
       document.getElementById("selectedTeamName").textContent = team.name;
       document.getElementById("selectedTeamLeader").textContent = team.leader;
       showPage("attendancePage");
+      switchAttTab('check');
       attendance = {}; memberNotes = {};
       const list = document.getElementById("memberList");
       list.innerHTML = "";
@@ -810,17 +927,18 @@
     document.getElementById("adminBackBtn").onclick = () => { adminAuthed = false; showPage("homePage"); };
     function showAdminDashboard() { showPage("adminDashboard"); loadAdminStats(); loadMemberList(); }
     
-    document.querySelectorAll(".tab-button").forEach(btn => {
+    document.querySelectorAll("#adminDashboard .tab-button").forEach(btn => {
       btn.onclick = () => {
-        document.querySelectorAll(".tab-button").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll("#adminDashboard .tab-button").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
-        ["adminStatsTab","adminNotesTab","adminSuggestionsTab","adminMembersTab"].forEach(id => document.getElementById(id).classList.add("hidden"));
+        ["adminStatsTab","adminNotesTab","adminSuggestionsTab","adminMembersTab","adminAllTab"].forEach(id => document.getElementById(id).classList.add("hidden"));
         
         const targetMap = { 
             "stats":"adminStatsTab", 
             "notes":"adminNotesTab", 
             "suggestions":"adminSuggestionsTab", 
-            "members":"adminMembersTab" 
+            "members":"adminMembersTab",
+            "allMembers":"adminAllTab"
         };
         const targetId = targetMap[btn.dataset.tab];
         document.getElementById(targetId).classList.remove("hidden");
@@ -918,7 +1036,7 @@
          const res = await jsonp(GOOGLE_SCRIPT_URL, { action: "getNotesByDate", date });
          if (res.data.length === 0) { div.innerHTML = "<div class='message info'>특이사항 없음</div>"; return; }
          let html = `<table><thead><tr><th>사랑방</th><th>이름</th><th>또래</th><th>내용</th></tr></thead><tbody>`;
-         res.data.forEach(n => html += `<tr><td>${n.teamName}</td><td>${n.name}</td><td>${n.cohort}</td><td>${n.note}</td></tr>`);
+         res.data.forEach(n => html += `<tr><td>${n.teamName}</td><td>${n.name}</td><td>${n.cohort}</td><td style="white-space:pre-wrap; word-break:break-word; min-width:150px;">${n.note}</td></tr>`);
          div.innerHTML = html + "</tbody></table>";
        } catch(e) { div.innerHTML = "에러 발생"; }
     }
@@ -931,7 +1049,7 @@
          const res = await jsonp(GOOGLE_SCRIPT_URL, { action: "getSuggestionsByDate", date });
          if (res.data.length === 0) { div.innerHTML = "<div class='message info'>건의사항 없음</div>"; return; }
          let html = `<table><thead><tr><th>사랑방</th><th>건의사항</th></tr></thead><tbody>`;
-         res.data.forEach(s => html += `<tr><td>${s.teamName}</td><td>${s.suggestion}</td></tr>`);
+         res.data.forEach(s => html += `<tr><td>${s.teamName}</td><td style="white-space:pre-wrap; word-break:break-word; min-width:200px;">${s.suggestion}</td></tr>`);
          div.innerHTML = html + "</tbody></table>";
        } catch(e) { div.innerHTML = "에러 발생"; }
     }
@@ -956,69 +1074,484 @@
        const area = document.getElementById("memberResultArea");
        if (!val) { area.classList.add("hidden"); return; }
        area.classList.remove("hidden");
+       document.getElementById("memPresent").textContent = "...";
+       document.getElementById("memTotal").textContent = "...";
+       document.getElementById("memRate").textContent = "...";
+       document.getElementById("memberHistoryTable").innerHTML = "";
        const [name, cohort] = val.split("||");
-       const res = await jsonp(GOOGLE_SCRIPT_URL, { action: "getMemberHistory", name, cohort, startDate: document.getElementById("memberStartDate").value, endDate: document.getElementById("memberEndDate").value });
-       if (res.status === "success") {
-         const d = res.data;
-         document.getElementById("memPresent").textContent = d.present;
-         document.getElementById("memTotal").textContent = d.total;
-         document.getElementById("memRate").textContent = d.total ? ((d.present/d.total)*100).toFixed(0)+"%" : "0%";
-         let html = `<table><thead><tr><th>날짜</th><th>소속</th><th>출석여부</th><th>특이사항</th></tr></thead><tbody>`;
-         d.sessions.forEach(s => html += `<tr><td>${s.date}</td><td>${s.teamName}</td><td style="color:${s.isPresent?'green':'red'}">${s.isPresent?'출석':'결석'}</td><td>${s.note}</td></tr>`);
-         document.getElementById("memberHistoryTable").innerHTML = html + "</tbody></table>";
-         renderChart(d.monthly);
+       try {
+         const res = await jsonp(GOOGLE_SCRIPT_URL, { action: "getMemberHistory", name, cohort, startDate: document.getElementById("memberStartDate").value, endDate: document.getElementById("memberEndDate").value });
+         if (res.status === "success") {
+           const d = res.data;
+           const rate = d.total ? ((d.present/d.total)*100).toFixed(0) : 0;
+           document.getElementById("memPresent").textContent = d.present;
+           document.getElementById("memTotal").textContent = d.total;
+           document.getElementById("memRate").textContent = rate + "%";
+           renderTrendChart(d.sessions || []);
+           renderChart(d.monthly || []);
+           let html = `<table><thead><tr><th>날짜</th><th>소속</th><th>출석여부</th><th>특이사항</th></tr></thead><tbody>`;
+           (d.sessions || []).forEach(s => html += `<tr><td>${s.date}</td><td>${s.teamName}</td><td style="color:${s.isPresent?'#15803d':'#b91c1c'}; font-weight:bold;">${s.isPresent?'출석':'결석'}</td><td>${s.note||''}</td></tr>`);
+           document.getElementById("memberHistoryTable").innerHTML = html + "</tbody></table>";
+         } else {
+           document.getElementById("memPresent").textContent = "-";
+           document.getElementById("memTotal").textContent = "-";
+           document.getElementById("memRate").textContent = "-";
+         }
+       } catch(err) {
+         console.error(err);
+         document.getElementById("memPresent").textContent = "오류";
+         document.getElementById("memTotal").textContent = "오류";
+         document.getElementById("memRate").textContent = "오류";
        }
     };
+
+    let memberTrendChartInstance = null;
+    function renderTrendChart(sessions) {
+      const ctx = document.getElementById("memberTrendChart").getContext("2d");
+      if (memberTrendChartInstance) memberTrendChartInstance.destroy();
+
+      const labels = sessions.map(s => s.date);
+      const data   = sessions.map(s => s.isPresent ? 1 : 0);
+
+      // 누적 출석률 수치로만 표시
+      const presentCount = sessions.filter(s => s.isPresent).length;
+      const cumRate = sessions.length ? Math.round(presentCount / sessions.length * 100) : 0;
+      const badge = document.getElementById("cumRateBadge");
+      if (badge) {
+        const color = cumRate >= 80 ? '#15803d' : cumRate >= 50 ? '#b45309' : '#b91c1c';
+        const bg    = cumRate >= 80 ? '#f0fdf4' : cumRate >= 50 ? '#fefce8' : '#fef2f2';
+        badge.textContent = `누적 출석률: ${cumRate}%`;
+        badge.style.color = color;
+        badge.style.background = bg;
+      }
+
+      memberTrendChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: '출결',
+            data,
+            backgroundColor: data.map(v => v ? 'rgba(37,99,235,0.7)' : 'rgba(239,68,68,0.5)'),
+            borderRadius: 3,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => ctx.raw === 1 ? '출석' : '결석'
+              }
+            }
+          },
+          scales: {
+            x: { ticks: { maxTicksLimit: 12, font: { size: 10 } } },
+            y: { min: 0, max: 1, ticks: { stepSize: 1, callback: v => v === 1 ? '출석' : v === 0 ? '결석' : '' } }
+          }
+        }
+      });
+    }
+
     function renderChart(monthlyData) {
       const ctx = document.getElementById("memberChart").getContext("2d");
       if (chartInstance) chartInstance.destroy();
       chartInstance = new Chart(ctx, {
         type: 'bar',
-        data: { labels: monthlyData.map(d=>d.month), datasets: [{ label: '월별 출석률 (%)', data: monthlyData.map(d=>parseFloat(d.rate)), backgroundColor: '#3b82f6', borderRadius: 5 }] },
-        options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } } }
+        data: {
+          labels: monthlyData.map(d => d.month),
+          datasets: [{
+            label: '월별 출석률 (%)',
+            data: monthlyData.map(d => parseFloat(d.rate)),
+            backgroundColor: monthlyData.map(d => parseFloat(d.rate) >= 80 ? 'rgba(21,128,61,0.7)' : parseFloat(d.rate) >= 50 ? 'rgba(180,91,9,0.7)' : 'rgba(185,28,28,0.7)'),
+            borderRadius: 5
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } } }
+        }
       });
     }
-    
-    // ✅ 수정된 기능: 구글 시트로 저장하기
-    document.getElementById("saveToSheetBtn").onclick = async () => {
-      const btn = document.getElementById("saveToSheetBtn");
-      
-      // input 필드에서 가져온 날짜 값을 Date 객체로 변환
-      const startRaw = document.getElementById("memberStartDate").value;
-      const endRaw = document.getElementById("memberEndDate").value;
-      
-      if (!startRaw || !endRaw) {
-        alert("시작일과 종료일을 모두 선택해주세요.");
-        return;
-      }
-    
-      // 이 부분이 핵심입니다: 이전과 동일한 ISO 형식(2026-02-03T13:29:57.618Z)으로 변환
-      const isoStartDate = new Date(startRaw).toISOString();
-      const isoEndDate = new Date(endRaw).toISOString();
-    
-      if (!confirm(`${startRaw}부터 ${endRaw}까지의 통계를\n구글 스프레드시트의 새 탭으로 저장하시겠습니까?`)) return;
-    
-      btn.disabled = true;
-      btn.textContent = "저장 중... (잠시만 기다려주세요)";
-      
+    // 사랑방 통계 탭
+    let teamLineChartInstance = null;
+    let teamBarChartInstance = null;
+    let currentStatsTeam = null;
+
+    async function loadTeamStats() {
+      if (!currentStatsTeam) return;
+
+      document.getElementById("teamStatsSummary").classList.add("hidden");
+      document.getElementById("teamStatsLoading").classList.remove("hidden");
+
       try {
-        const res = await jsonp(GOOGLE_SCRIPT_URL, { 
-          action: "saveSummaryToSheet", 
-          startDate: isoStartDate, // 변환된 ISO 형식 전송
-          endDate: isoEndDate     // 변환된 ISO 형식 전송
+        const members = currentStatsTeam.members;
+
+        // 모든 방원 이력 병렬 조회
+        const results = await Promise.all(members.map(m => {
+          const cohort = normalizeCohort(m.cohort);
+          return jsonp(GOOGLE_SCRIPT_URL, { action: "getMemberHistory", name: m.name, cohort, startDate: "2000-01-01", endDate: today })
+            .then(res => res.status === "success"
+              ? { name: m.name, cohort, present: res.data.present, total: res.data.total, sessions: res.data.sessions || [], monthly: res.data.monthly || [] }
+              : { name: m.name, cohort, present: 0, total: 0, sessions: [], monthly: [] })
+            .catch(() => ({ name: m.name, cohort, present: 0, total: 0, sessions: [], monthly: [] }));
+        }));
+
+        // ── 요약 카드 ──
+        const maxTotal = Math.max(...results.map(r => r.total || 0));
+        const totalPresent = results.reduce((s, r) => s + (r.present || 0), 0);
+        const totalSlots  = results.reduce((s, r) => s + (r.total  || 0), 0);
+        const avgRate = totalSlots ? Math.round(totalPresent / totalSlots * 100) : 0;
+        document.getElementById("tsWeeks").textContent = maxTotal + "회";
+        document.getElementById("tsAvgRate").textContent = avgRate + "%";
+        document.getElementById("tsMemberCount").textContent = members.length + "명";
+
+        // ── 차트 1: 기간별 출석 인원 추이 (날짜별 출석자 수 꺾은선) ──
+        // 모든 세션 날짜 수집
+        const dateMap = {};
+        results.forEach(r => {
+          (r.sessions || []).forEach(s => {
+            if (!dateMap[s.date]) dateMap[s.date] = 0;
+            if (s.isPresent) dateMap[s.date]++;
+          });
         });
-        
-        if (res.status === "success") {
-          alert("성공!\n" + res.message);
-        } else {
-          alert("오류 발생: " + res.message);
-        }
+        const sortedDates = Object.keys(dateMap).sort();
+        const attendanceCounts = sortedDates.map(d => dateMap[d]);
+
+        if (teamLineChartInstance) teamLineChartInstance.destroy();
+        const lineCtx = document.getElementById("teamAttendanceLineChart").getContext("2d");
+        teamLineChartInstance = new Chart(lineCtx, {
+          type: 'line',
+          data: {
+            labels: sortedDates,
+            datasets: [{
+              label: '출석 인원 (명)',
+              data: attendanceCounts,
+              borderColor: '#2563eb',
+              backgroundColor: 'rgba(37,99,235,0.1)',
+              borderWidth: 2.5,
+              pointBackgroundColor: '#2563eb',
+              pointRadius: 4,
+              tension: 0.3,
+              fill: true,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { ticks: { maxTicksLimit: 8, font: { size: 11 } } },
+              y: { beginAtZero: true, max: members.length, ticks: { stepSize: 1 } }
+            }
+          }
+        });
+
+        // ── 차트 2: 방원별 출석률 (가로 막대) 출석률 낮은 순 정렬 ──
+        const sortedByRate = [...results].sort((a, b) => {
+          const rA = a.total ? a.present / a.total : 0;
+          const rB = b.total ? b.present / b.total : 0;
+          return rA - rB; // 낮은 사람이 위로 (차트 특성상 아래가 먼저 나오므로)
+        });
+        const barLabels = sortedByRate.map(r => r.name);
+        const barRates  = sortedByRate.map(r => r.total ? Math.round(r.present / r.total * 100) : 0);
+        const barColors = barRates.map(rate =>
+          rate >= 80 ? 'rgba(21,128,61,0.8)' : rate >= 50 ? 'rgba(180,91,9,0.8)' : 'rgba(185,28,28,0.8)'
+        );
+
+        if (teamBarChartInstance) teamBarChartInstance.destroy();
+        const barCtx = document.getElementById("teamMemberBarChart").getContext("2d");
+        const barH = Math.min(Math.max(members.length * 26, 160), 360);
+        barCtx.canvas.parentNode.style.height = barH + "px";
+        teamBarChartInstance = new Chart(barCtx, {
+          type: 'bar',
+          data: {
+            labels: barLabels,
+            datasets: [{
+              label: '출석률 (%)',
+              data: barRates,
+              backgroundColor: barColors,
+              borderRadius: 4,
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: { label: ctx => ` ${ctx.raw}%  (${sortedByRate[ctx.dataIndex].present}/${sortedByRate[ctx.dataIndex].total}회)` }
+              }
+            },
+            scales: {
+              x: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } },
+              y: { ticks: { font: { size: 12, weight: 'bold' } } }
+            }
+          }
+        });
+
+        // ── 방원별 상세 테이블 (출석률 높은 순) ──
+        const sortedDesc = [...results].sort((a, b) => (b.present/(b.total||1)) - (a.present/(a.total||1)));
+        let html = `<table><thead><tr><th>이름</th><th>또래</th><th>출석</th><th>총 주차</th><th>출석률</th></tr></thead><tbody>`;
+        sortedDesc.forEach(r => {
+          const rate = r.total ? Math.round(r.present / r.total * 100) : 0;
+          const color = rate >= 80 ? '#15803d' : rate >= 50 ? '#b45309' : '#b91c1c';
+          html += `<tr><td><strong>${r.name}</strong></td><td>${r.cohort} 또래</td><td>${r.present}</td><td>${r.total}</td><td style="color:${color}; font-weight:bold;">${rate}%</td></tr>`;
+        });
+        html += "</tbody></table>";
+        document.getElementById("teamStatsMemberTable").innerHTML = html;
+
+        document.getElementById("teamStatsLoading").classList.add("hidden");
+        document.getElementById("teamStatsSummary").classList.remove("hidden");
       } catch(e) {
         console.error(e);
-        alert("저장 중 네트워크 오류가 발생했습니다.");
+        document.getElementById("teamStatsLoading").innerHTML = "<div class='message error'>로딩 실패</div>";
+      }
+    };
+
+    // 날짜 초기화 (teamStats)
+    // 전체 인원 탭 날짜 초기화
+    document.getElementById("allStartDate").value = oneYearAgo;
+    document.getElementById("allEndDate").value = today;
+
+    // 전체 인원 통계 불러오기
+    let allMembersData = [];
+    document.getElementById("viewAllStatsBtn").onclick = async () => {
+      const startDate = document.getElementById("allStartDate").value;
+      const endDate   = document.getElementById("allEndDate").value;
+      if (!startDate || !endDate) { alert("기간을 모두 선택해주세요."); return; }
+
+      const btn = document.getElementById("viewAllStatsBtn");
+      btn.disabled = true;
+      btn.textContent = "불러오는 중...";
+
+      document.getElementById("allMembersStatsArea").classList.add("hidden");
+      document.getElementById("allMembersLoading").classList.remove("hidden");
+      document.getElementById("allMembersLoadingMsg").textContent = "전체 인원 통계를 불러오는 중입니다...";
+      document.getElementById("allTotalMembers").textContent = "-";
+      document.getElementById("allAvgRate").textContent = "-";
+
+      try {
+        const allMembers = TEAMS.flatMap((t, ti) => t.members.map((m, mi) => ({
+          name: m.name, cohort: normalizeCohort(m.cohort),
+          teamName: t.name, teamOrder: ti, memberOrder: mi
+        })));
+
+        const batchSize = 5;
+        const results = [];
+        for (let i = 0; i < allMembers.length; i += batchSize) {
+          const batch = allMembers.slice(i, i + batchSize);
+          const batchResults = await Promise.all(batch.map(m =>
+            jsonp(GOOGLE_SCRIPT_URL, { action: "getMemberHistory", name: m.name, cohort: m.cohort, startDate, endDate })
+              .then(res => res.status === "success"
+                ? { ...m, present: res.data.present, total: res.data.total, sessions: res.data.sessions || [] }
+                : { ...m, present: 0, total: 0, sessions: [] })
+              .catch(() => ({ ...m, present: 0, total: 0, sessions: [] }))
+          ));
+          results.push(...batchResults);
+          const pct = Math.min(Math.round((i + batchSize) / allMembers.length * 100), 99);
+          document.getElementById("allMembersLoadingMsg").textContent = `전체 인원 통계를 불러오는 중... (${pct}%)`;
+        }
+
+        results.sort((a, b) => a.teamOrder !== b.teamOrder ? a.teamOrder - b.teamOrder : a.memberOrder - b.memberOrder);
+        allMembersData = results;
+
+        const totalSlots   = results.reduce((s, r) => s + r.total, 0);
+        const totalPresent = results.reduce((s, r) => s + r.present, 0);
+        const avgRate = totalSlots ? Math.round(totalPresent / totalSlots * 100) : 0;
+        document.getElementById("allTotalMembers").textContent = allMembers.length + "명";
+        document.getElementById("allAvgRate").textContent = avgRate + "%";
+
+        renderAllMembersTable(results);
+        document.getElementById("allMembersLoading").classList.add("hidden");
+        document.getElementById("allMembersStatsArea").classList.remove("hidden");
+      } catch(e) {
+        document.getElementById("allMembersLoadingMsg").textContent = "로딩 실패. 다시 시도해주세요.";
       } finally {
         btn.disabled = false;
-        btn.textContent = "📊 구글 시트에 기간별 통계 저장";
+        btn.textContent = "📋 통계 불러오기";
+      }
+    };
+
+    // 개인별 조회 이름 검색
+    document.getElementById("memberSearchInput").addEventListener("input", function() {
+      const q = this.value.trim().toLowerCase();
+      const sel = document.getElementById("memberSelect");
+      let firstMatch = null;
+      Array.from(sel.options).forEach(opt => {
+        if (!opt.value) return;
+        const show = opt.text.toLowerCase().includes(q);
+        opt.style.display = show ? "" : "none";
+        if (show && !firstMatch) firstMatch = opt;
+      });
+      if (q && firstMatch) {
+        sel.value = firstMatch.value;
+        sel.dispatchEvent(new Event("change"));
+      } else if (!q) {
+        sel.value = "";
+        document.getElementById("memberResultArea").classList.add("hidden");
+      }
+    });
+
+    function renderAllMembersTable(results) {
+      let html = `<table><thead><tr><th>사랑방</th><th>이름</th><th>또래</th><th>출석</th><th>총 횟수</th><th>출석률</th></tr></thead><tbody>`;
+      results.forEach((r, idx) => {
+        const rate = r.total ? Math.round(r.present / r.total * 100) : 0;
+        const color = rate >= 80 ? '#15803d' : rate >= 50 ? '#b45309' : '#b91c1c';
+        html += `
+          <tr style="cursor:pointer;" onclick="toggleAllMemberDetail(${idx}, this)">
+            <td style="font-size:0.8rem;">${r.teamName}</td>
+            <td><strong>${r.name}</strong></td>
+            <td>${r.cohort}</td>
+            <td>${r.present}</td>
+            <td>${r.total}</td>
+            <td style="color:${color}; font-weight:bold;">${rate}%</td>
+          </tr>
+          <tr id="allDetail-${idx}" class="hidden" style="background:#f9fafb;">
+            <td colspan="6" style="padding:0.75rem 1rem; white-space:normal;">
+              <div id="allDetailContent-${idx}"></div>
+            </td>
+          </tr>`;
+      });
+      html += "</tbody></table>";
+      document.getElementById("allMembersTableContainer").innerHTML = html;
+    }
+
+    function toggleAllMemberDetail(idx, row) {
+      const detailRow = document.getElementById(`allDetail-${idx}`);
+      const content = document.getElementById(`allDetailContent-${idx}`);
+      const isHidden = detailRow.classList.contains("hidden");
+      // 다른 열린 것 닫기
+      document.querySelectorAll('[id^="allDetail-"]').forEach(el => {
+        if (el.id !== `allDetail-${idx}`) {
+          el.classList.add("hidden");
+          // 이전에 열린 행 배경 초기화
+          const prevRow = el.previousElementSibling;
+          if (prevRow) prevRow.style.background = "";
+        }
+      });
+      if (isHidden) {
+        detailRow.classList.remove("hidden");
+        row.style.background = "#eff6ff";
+        const r = allMembersData[idx];
+        if (!r.sessions || r.sessions.length === 0) {
+          content.innerHTML = "<span style='color:#6b7280; font-size:0.85rem;'>기록 없음</span>";
+          return;
+        }
+        // 월별로 그룹화
+        const monthGroups = {};
+        r.sessions.forEach(s => {
+          const month = s.date.slice(0, 7); // "2025-03"
+          if (!monthGroups[month]) monthGroups[month] = [];
+          monthGroups[month].push(s);
+        });
+        let html = "";
+        Object.keys(monthGroups).sort().forEach(month => {
+          const sessions = monthGroups[month];
+          const presentCount = sessions.filter(s => s.isPresent).length;
+          html += `<div style="margin-bottom:0.75rem;">
+            <div style="font-size:0.8rem; font-weight:900; color:#374151; margin-bottom:0.35rem;">
+              ${month} <span style="font-weight:500; color:#6b7280;">(${presentCount}/${sessions.length})</span>
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:0.3rem;">`;
+          sessions.forEach(s => {
+            const day = s.date.slice(8); // "03"
+            const bg  = s.isPresent ? '#2563eb' : '#fee2e2';
+            const fc  = s.isPresent ? '#fff'    : '#b91c1c';
+            const border = s.isPresent ? '#2563eb' : '#fca5a5';
+            html += `<div title="${s.date} ${s.isPresent ? '출석' : '결석'}"
+              style="width:2rem; height:2rem; border-radius:6px; background:${bg}; color:${fc};
+                     border:1px solid ${border}; display:flex; align-items:center; justify-content:center;
+                     font-size:0.75rem; font-weight:700;">
+              ${day}
+            </div>`;
+          });
+          html += `</div></div>`;
+        });
+        // 범례
+        html += `<div style="display:flex; gap:0.75rem; margin-top:0.5rem; font-size:0.75rem; color:#6b7280; align-items:center;">
+          <span><span style="display:inline-block;width:0.8rem;height:0.8rem;background:#2563eb;border-radius:3px;vertical-align:middle;margin-right:3px;"></span>출석</span>
+          <span><span style="display:inline-block;width:0.8rem;height:0.8rem;background:#fee2e2;border:1px solid #fca5a5;border-radius:3px;vertical-align:middle;margin-right:3px;"></span>결석</span>
+        </div>`;
+        content.innerHTML = html;
+      } else {
+        detailRow.classList.add("hidden");
+        row.style.background = "";
+      }
+    }
+    // 전체 인원 통계 엑셀 저장 (설정된 기간 기반)
+    document.getElementById("saveAllToSheetBtn").onclick = async () => {
+      const btn = document.getElementById("saveAllToSheetBtn");
+      const startDate = document.getElementById("allStartDate").value;
+      const endDate   = document.getElementById("allEndDate").value;
+      if (!startDate || !endDate) { alert("기간을 먼저 설정해주세요."); return; }
+
+      if (!confirm(`${startDate} ~ ${endDate}\n전체 인원(${TEAMS.reduce((s,t)=>s+t.members.length,0)}명)의 출석 통계를\n엑셀 파일로 저장하시겠습니까?\n\n※ 데이터 수집에 수 분이 걸릴 수 있습니다.`)) return;
+
+      btn.disabled = true;
+      btn.textContent = "데이터 수집 중... (0%)";
+
+      try {
+        const allMembers = TEAMS.flatMap((t, ti) => t.members.map((m, mi) => ({
+          name: m.name,
+          cohort: normalizeCohort(m.cohort),
+          teamName: t.name,
+          teamOrder: ti,
+          memberOrder: mi
+        })));
+
+        const batchSize = 5;
+        const results = [];
+        for (let i = 0; i < allMembers.length; i += batchSize) {
+          const batch = allMembers.slice(i, i + batchSize);
+          const batchResults = await Promise.all(batch.map(m =>
+            jsonp(GOOGLE_SCRIPT_URL, { action: "getMemberHistory", name: m.name, cohort: m.cohort, startDate, endDate })
+              .then(res => res.status === "success"
+                ? { ...m, present: res.data.present, total: res.data.total }
+                : { ...m, present: 0, total: 0 })
+              .catch(() => ({ ...m, present: 0, total: 0 }))
+          ));
+          results.push(...batchResults);
+          btn.textContent = `데이터 수집 중... (${Math.min(Math.round((i + batchSize) / allMembers.length * 100), 99)}%)`;
+        }
+
+        // TEAMS 순서 정렬
+        results.sort((a, b) => a.teamOrder !== b.teamOrder ? a.teamOrder - b.teamOrder : a.memberOrder - b.memberOrder);
+
+        btn.textContent = "엑셀 생성 중...";
+
+        // SheetJS로 엑셀 생성
+        const wsData = [
+          [`출석 통계 (${startDate} ~ ${endDate})`],
+          [],
+          ["사랑방", "이름", "또래", "출석 횟수", "총 횟수", "출석률(%)"],
+          ...results.map(r => {
+            const rate = r.total ? Math.round(r.present / r.total * 100) : 0;
+            return [r.teamName, r.name, r.cohort, r.present, r.total, rate];
+          })
+        ];
+
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+        // 컬럼 너비 설정
+        ws['!cols'] = [{ wch: 18 }, { wch: 12 }, { wch: 8 }, { wch: 10 }, { wch: 10 }, { wch: 12 }];
+        // 제목 병합
+        ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }];
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "출석통계");
+        XLSX.writeFile(wb, `출석통계_${startDate}_${endDate}.xlsx`);
+
+        alert(`✅ 엑셀 저장 완료!\n${results.length}명의 데이터가 저장되었습니다.`);
+      } catch(e) {
+        console.error(e);
+        alert("저장 중 오류가 발생했습니다.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "📥 전체 인원 통계 엑셀 저장";
       }
     };
   </script>
