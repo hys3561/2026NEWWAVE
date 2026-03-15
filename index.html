@@ -78,8 +78,27 @@
 
     .attendance-table { background:#fff; border-radius:.95rem; border:1px solid #e5e7eb; overflow-x: auto; }
     table { width:100%; border-collapse:collapse; }
-    th { background:#f9fafb; padding:1rem; text-align:left; font-size:.95rem; font-weight:950; border-bottom:1px solid #e5e7eb; white-space:nowrap; }
-    td { padding:1rem; border-bottom:1px solid #e5e7eb; font-size:.95rem; vertical-align:middle; white-space:nowrap; }
+    th { background:#f9fafb; padding:.75rem 1rem; text-align:left; font-size:.875rem; font-weight:950; border-bottom:1px solid #e5e7eb; white-space:nowrap; }
+    td { padding:.75rem 1rem; border-bottom:1px solid #e5e7eb; font-size:.9rem; vertical-align:top; white-space:normal; word-break:break-word; }
+
+    /* 특이사항·건의사항 카드 */
+    .note-card { padding:.85rem 1rem; border-bottom:1px solid #f3f4f6; display:flex; gap:.75rem; align-items:flex-start; }
+    .note-card:last-child { border-bottom:none; }
+    .note-team-badge {
+      flex-shrink:0;
+      background:#eff6ff; color:#1e40af;
+      font-size:.75rem; font-weight:900;
+      padding:.25rem .5rem; border-radius:.5rem;
+      text-align:center; line-height:1.3;
+      max-width:5.5rem; word-break:keep-all;
+    }
+    .note-body { flex:1; min-width:0; }
+    .note-person { font-weight:900; font-size:.9rem; color:#111827; }
+    .note-cohort { font-size:.78rem; color:#9ca3af; margin-left:.3rem; }
+    .note-text { margin-top:.3rem; font-size:.88rem; color:#374151; white-space:pre-wrap; word-break:break-word; line-height:1.55; }
+    .sugg-card { padding:.85rem 1rem; border-bottom:1px solid #f3f4f6; display:flex; gap:.75rem; align-items:flex-start; }
+    .sugg-card:last-child { border-bottom:none; }
+    .sugg-text { flex:1; font-size:.9rem; color:#374151; white-space:pre-wrap; word-break:break-word; line-height:1.55; }
     
     .team-row { cursor: pointer; transition: background 0.2s; }
     .team-row:hover { background: #f3f4f6; }
@@ -105,6 +124,28 @@
     .modal-actions { display:flex; gap:0.5rem; margin-top:1rem; }
     .modal-btn { flex:1; padding:0.8rem; border-radius:0.5rem; border:none; font-weight:bold; cursor:pointer; }
     .modal-btn.primary { background:#2563eb; color:#fff; }
+
+    /* 날짜 단축 버튼 바 */
+    .date-shortcut-bar { display:flex; flex-wrap:wrap; gap:.5rem; padding:.75rem 1rem; background:#f8fafc; border-bottom:1px solid #e5e7eb; border-radius:.95rem .95rem 0 0; }
+    .date-shortcut-btn {
+      display:inline-flex; align-items:center; gap:.35rem;
+      padding:.35rem .75rem; border-radius:999px; border:none; cursor:pointer;
+      font-size:.82rem; font-weight:800; transition:all .15s;
+      background:#fff; border:1px solid #d1d5db; color:#374151;
+    }
+    .date-shortcut-btn:hover { background:#eff6ff; border-color:#2563eb; color:#2563eb; }
+    .date-shortcut-btn.active { background:#2563eb; border-color:#2563eb; color:#fff; }
+    .date-shortcut-dot { width:.45rem; height:.45rem; border-radius:999px; background:#ef4444; flex-shrink:0; }
+    .tab-wrap { position:relative; display:inline-flex; }
+    .notif-badge {
+      position:absolute; top:-4px; right:-4px;
+      background:#ef4444; color:#fff;
+      font-size:0.65rem; font-weight:900;
+      min-width:1.1rem; height:1.1rem;
+      border-radius:999px; display:flex; align-items:center; justify-content:center;
+      padding:0 .25rem; border:2px solid #fff;
+      pointer-events:none;
+    }
   </style>
 </head>
 
@@ -221,8 +262,14 @@
     <div class="container">
       <div class="dashboard-tabs">
         <button class="tab-button active" data-tab="stats">출석 현황</button>
-        <button class="tab-button" data-tab="notes">특이사항</button>
-        <button class="tab-button" data-tab="suggestions">건의사항</button>
+        <div class="tab-wrap">
+          <button class="tab-button" data-tab="notes">특이사항</button>
+          <span class="notif-badge hidden" id="notesBadge"></span>
+        </div>
+        <div class="tab-wrap">
+          <button class="tab-button" data-tab="suggestions">건의사항</button>
+          <span class="notif-badge hidden" id="suggestionsBadge"></span>
+        </div>
         <button class="tab-button" data-tab="members">개인별 조회</button>
         <button class="tab-button" data-tab="allMembers">전체 인원</button>
       </div>
@@ -250,17 +297,25 @@
       </div>
 
       <div id="adminNotesTab" class="hidden">
+        <div id="notesDateBar" class="hidden"></div>
         <div class="date-section">
            <div class="date-label">날짜 확인</div>
-           <input type="date" class="date-input" id="adminNotesDateInput" />
+           <div class="date-row">
+             <input type="date" class="date-input" id="adminNotesDateInput" />
+             <button type="button" class="load-button" onclick="document.getElementById('adminNotesDateInput').value=today; loadAdminNotes();">오늘</button>
+           </div>
         </div>
         <div class="attendance-table" id="notesTable" style="padding:1rem;"></div>
       </div>
       
       <div id="adminSuggestionsTab" class="hidden">
+        <div id="suggestionsDateBar" class="hidden"></div>
         <div class="date-section">
            <div class="date-label">날짜 확인</div>
-           <input type="date" class="date-input" id="adminSuggestionsDateInput" />
+           <div class="date-row">
+             <input type="date" class="date-input" id="adminSuggestionsDateInput" />
+             <button type="button" class="load-button" onclick="document.getElementById('adminSuggestionsDateInput').value=today; loadAdminSuggestions();">오늘</button>
+           </div>
         </div>
         <div class="attendance-table" id="suggestionsTable" style="padding:1rem;"></div>
       </div>
@@ -925,7 +980,7 @@
     // 관리자
     document.getElementById("adminBtn").onclick = () => { adminAuthed ? showAdminDashboard() : openPasswordModal("admin"); };
     document.getElementById("adminBackBtn").onclick = () => { adminAuthed = false; showPage("homePage"); };
-    function showAdminDashboard() { showPage("adminDashboard"); loadAdminStats(); loadMemberList(); }
+    function showAdminDashboard() { showPage("adminDashboard"); loadAdminStats(); loadMemberList(); checkWeeklyBadges(); }
     
     document.querySelectorAll("#adminDashboard .tab-button").forEach(btn => {
       btn.onclick = () => {
@@ -944,8 +999,18 @@
         document.getElementById(targetId).classList.remove("hidden");
         
         if(btn.dataset.tab === "stats") loadAdminStats();
-        if(btn.dataset.tab === "notes") loadAdminNotes();
-        if(btn.dataset.tab === "suggestions") loadAdminSuggestions();
+        if(btn.dataset.tab === "notes") {
+          document.getElementById("adminNotesDateInput").value = today;
+          renderDateBar("notesDateBar", weeklyCache.notes, "adminNotesDateInput", "notes");
+          loadAdminNotes();
+          clearBadge("notesBadge");
+        }
+        if(btn.dataset.tab === "suggestions") {
+          document.getElementById("adminSuggestionsDateInput").value = today;
+          renderDateBar("suggestionsDateBar", weeklyCache.sugg, "adminSuggestionsDateInput", "sugg");
+          loadAdminSuggestions();
+          clearBadge("suggestionsBadge");
+        }
       }
     });
 
@@ -1012,18 +1077,29 @@
            if (res.status === "success" && res.data.found) {
              const att = res.data.attendance;
              const present = att.filter(x=>x.isPresent).map(x=>`<span class="chip">${x.name}</span>`).join("");
-             const absent = att.filter(x=>!x.isPresent).map(x=>`<span class="chip absent">${x.name}</span>`).join("");
-             const notes = att.filter(x => x.note && x.note.trim() !== "");
+             const absent  = att.filter(x=>!x.isPresent).map(x=>`<span class="chip absent">${x.name}</span>`).join("");
+             const notes   = att.filter(x => x.note && x.note.trim() !== "");
              let notesHtml = notes.map(n => {
-                 const cohortDisplay = n.cohort ? n.cohort : '';
-                 return `<div><strong>${n.name}${cohortDisplay}:</strong> ${n.note}</div>`;
-             }).join("<div style='height: 4px;'></div>"); 
+               const c = n.cohort ? ` (${n.cohort})` : '';
+               return `<div style="padding:.3rem 0; border-bottom:1px solid #f3f4f6;"><strong>${n.name}${c}</strong><span style="color:#374151;"> — ${n.note}</span></div>`;
+             }).join("");
+             const suggestion = (res.data.suggestion || "").trim();
+             const suggestionHtml = suggestion
+               ? `<div style="background:#fffbeb; border:1px solid #fde68a; border-radius:.75rem; padding:.75rem 1rem; font-size:.9rem; color:#92400e; white-space:pre-wrap; word-break:break-word;">${suggestion}</div>`
+               : `<div style="color:#6b7280; font-size:.875rem;">건의사항 없음</div>`;
              panel.innerHTML = `
                <div class="detail-grid">
                  <div class="detail-box"><div class="detail-header">출석 명단</div><div class="chips">${present || "없음"}</div></div>
-                 <div class="detail-box"><div class="detail-header">결석 명단</div><div class="chips">${absent || "없음"}</div></div>
+                 <div class="detail-box"><div class="detail-header">결석 명단</div><div class="chips">${absent  || "없음"}</div></div>
                </div>
-               <div class="detail-box" style="margin-top:1rem; grid-column: 1 / -1;"><div class="detail-header">방원별 특이사항</div><div style="margin-top: 0.5rem; font-size:0.9rem;">${notesHtml || "<div style='color:#6b7280;'>기록된 특이사항이 없습니다.</div>"}</div></div>`;
+               <div class="detail-box" style="margin-top:1rem;">
+                 <div class="detail-header">방원별 특이사항</div>
+                 <div style="margin-top:.5rem; font-size:.9rem;">${notesHtml || "<div style='color:#6b7280;'>기록된 특이사항이 없습니다.</div>"}</div>
+               </div>
+               <div class="detail-box" style="margin-top:1rem;">
+                 <div class="detail-header">💬 건의사항</div>
+                 <div style="margin-top:.5rem;">${suggestionHtml}</div>
+               </div>`;
            } else { panel.innerHTML = "데이터 없음"; }
          } catch(e) { panel.innerHTML = "로딩 에러"; }
        } else { detailRow.classList.add("hidden"); row.style.background = ""; }
@@ -1035,9 +1111,18 @@
        try {
          const res = await jsonp(GOOGLE_SCRIPT_URL, { action: "getNotesByDate", date });
          if (res.data.length === 0) { div.innerHTML = "<div class='message info'>특이사항 없음</div>"; return; }
-         let html = `<table><thead><tr><th>사랑방</th><th>이름</th><th>또래</th><th>내용</th></tr></thead><tbody>`;
-         res.data.forEach(n => html += `<tr><td>${n.teamName}</td><td>${n.name}</td><td>${n.cohort}</td><td style="white-space:pre-wrap; word-break:break-word; min-width:150px;">${n.note}</td></tr>`);
-         div.innerHTML = html + "</tbody></table>";
+         let html = `<div>`;
+         res.data.forEach(n => {
+           const teamLabel = n.teamName.replace(' 사랑방','').replace('팀','팀');
+           html += `<div class="note-card">
+             <div class="note-team-badge">${teamLabel}</div>
+             <div class="note-body">
+               <span class="note-person">${n.name}</span><span class="note-cohort">${n.cohort} 또래</span>
+               <div class="note-text">${n.note}</div>
+             </div>
+           </div>`;
+         });
+         div.innerHTML = html + `</div>`;
        } catch(e) { div.innerHTML = "에러 발생"; }
     }
     document.getElementById("adminNotesDateInput").onchange = loadAdminNotes;
@@ -1048,12 +1133,108 @@
        try {
          const res = await jsonp(GOOGLE_SCRIPT_URL, { action: "getSuggestionsByDate", date });
          if (res.data.length === 0) { div.innerHTML = "<div class='message info'>건의사항 없음</div>"; return; }
-         let html = `<table><thead><tr><th>사랑방</th><th>건의사항</th></tr></thead><tbody>`;
-         res.data.forEach(s => html += `<tr><td>${s.teamName}</td><td style="white-space:pre-wrap; word-break:break-word; min-width:200px;">${s.suggestion}</td></tr>`);
-         div.innerHTML = html + "</tbody></table>";
+         let html = `<div>`;
+         res.data.forEach(s => {
+           const teamLabel = s.teamName.replace(' 사랑방','').replace('팀','팀');
+           html += `<div class="sugg-card">
+             <div class="note-team-badge" style="background:#f0fdf4; color:#166534;">${teamLabel}</div>
+             <div class="sugg-text">${s.suggestion}</div>
+           </div>`;
+         });
+         div.innerHTML = html + `</div>`;
        } catch(e) { div.innerHTML = "에러 발생"; }
     }
-    document.getElementById("adminSuggestionsDateInput").onchange = loadAdminSuggestions; 
+    document.getElementById("adminSuggestionsDateInput").onchange = loadAdminSuggestions;
+
+    // ── 알림 뱃지 + 날짜 단축 바 ──────────────────────────
+    const BADGE_KEY_NOTES = "seen_notes_date";
+    const BADGE_KEY_SUGG  = "seen_sugg_date";
+    // 날짜별 건수 캐시 { "2025-03-09": 2, ... }
+    const weeklyCache = { notes: {}, sugg: {} };
+
+    function clearBadge(id) {
+      const badge = document.getElementById(id);
+      badge.classList.add("hidden");
+      badge.textContent = "";
+      const key = id === "notesBadge" ? BADGE_KEY_NOTES : BADGE_KEY_SUGG;
+      try { localStorage.setItem(key, today); } catch(e) {}
+    }
+
+    function renderDateBar(barId, cache, inputId, loadFn) {
+      const bar = document.getElementById(barId);
+      const activeDates = Object.entries(cache)
+        .filter(([, cnt]) => cnt > 0)
+        .sort(([a], [b]) => a.localeCompare(b));
+      if (activeDates.length === 0) { bar.classList.add("hidden"); return; }
+
+      const currentVal = document.getElementById(inputId).value;
+      const dayNames = ["일","월","화","수","목","금","토"];
+      let html = `<div class="date-shortcut-bar">
+        <span style="font-size:.8rem; font-weight:900; color:#6b7280; align-self:center; margin-right:.25rem;">📅 최근 업데이트</span>`;
+      activeDates.forEach(([date, cnt]) => {
+        const d = new Date(date + "T00:00:00");
+        const mm = d.getMonth()+1, dd = d.getDate(), dow = dayNames[d.getDay()];
+        const isActive = date === currentVal;
+        html += `<button class="date-shortcut-btn${isActive?' active':''}"
+          onclick="selectDateAndLoad('${date}','${inputId}', ${loadFn}, '${barId}', '${inputId}')">
+          <span class="date-shortcut-dot" style="${isActive?'background:#fff':''}"></span>
+          ${mm}/${dd}(${dow}) <span style="opacity:.75;">${cnt}건</span>
+        </button>`;
+      });
+      html += `</div>`;
+      bar.innerHTML = html;
+      bar.classList.remove("hidden");
+    }
+
+    function selectDateAndLoad(date, inputId, loadFnName, barId, barInputId) {
+      document.getElementById(inputId).value = date;
+      // 버튼 active 상태 갱신
+      document.querySelectorAll(`#${barId} .date-shortcut-btn`).forEach(btn => {
+        btn.classList.toggle("active", btn.textContent.trim().startsWith(
+          (() => { const d=new Date(date+"T00:00:00"); return `${d.getMonth()+1}/${d.getDate()}`; })()
+        ));
+        btn.querySelector('.date-shortcut-dot').style.background = btn.classList.contains('active') ? '#fff' : '';
+      });
+      if (loadFnName === 'notes') loadAdminNotes();
+      else loadAdminSuggestions();
+    }
+
+    async function checkWeeklyBadges() {
+      const dates = [];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(); d.setDate(d.getDate() - i);
+        dates.push(toLocalDateStr(d));
+      }
+      await Promise.all([
+        checkBadge("getNotesByDate",       "notesBadge",       BADGE_KEY_NOTES, dates, weeklyCache.notes,
+                   "notesDateBar", "adminNotesDateInput", "notes"),
+        checkBadge("getSuggestionsByDate", "suggestionsBadge", BADGE_KEY_SUGG,  dates, weeklyCache.sugg,
+                   "suggestionsDateBar", "adminSuggestionsDateInput", "sugg"),
+      ]);
+    }
+
+    async function checkBadge(action, badgeId, storageKey, dates, cache, barId, inputId, loadKey) {
+      try {
+        let lastSeen = "";
+        try { lastSeen = localStorage.getItem(storageKey) || ""; } catch(e) {}
+        let totalCount = 0;
+        for (const date of dates) {
+          const res = await jsonp(GOOGLE_SCRIPT_URL, { action, date });
+          const cnt = (res.data && res.data.length) ? res.data.length : 0;
+          cache[date] = cnt;
+          if (date > lastSeen) totalCount += cnt;
+        }
+        const badge = document.getElementById(badgeId);
+        if (totalCount > 0) {
+          badge.textContent = totalCount > 99 ? "99+" : totalCount;
+          badge.classList.remove("hidden");
+        } else {
+          badge.classList.add("hidden");
+        }
+        // 탭이 이미 열려 있으면 바 즉시 갱신
+        renderDateBar(barId, cache, inputId, loadKey);
+      } catch(e) {}
+    }
 
     async function loadMemberList() {
        const sel = document.getElementById("memberSelect");
