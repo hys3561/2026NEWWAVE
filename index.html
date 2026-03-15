@@ -82,12 +82,17 @@
     td { padding:.75rem 1rem; border-bottom:1px solid #e5e7eb; font-size:.9rem; vertical-align:top; white-space:normal; word-break:break-word; }
 
     /* 출석현황 테이블 */
-    .stats-table th, .stats-table td { font-size:.95rem; padding:1rem; vertical-align:middle; white-space:nowrap; word-break:normal; }
-    .stats-table td:first-child { white-space:nowrap; }
-    .team-name-cell { display:inline-flex; align-items:center; gap:.4rem; white-space:nowrap; }
+    .stats-table { table-layout:fixed; width:100%; }
+    .stats-table th, .stats-table td { font-size:.95rem; padding:.9rem .75rem; vertical-align:middle; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .stats-table th:first-child, .stats-table td:first-child { width:45%; }
+    .stats-table th:not(:first-child), .stats-table td:not(:first-child) { width:13.75%; text-align:center; }
+    .team-name-cell { display:inline-flex; align-items:center; gap:.4rem; white-space:nowrap; max-width:100%; overflow:hidden; }
     @media (max-width:640px) {
-      .stats-table th, .stats-table td { font-size:.78rem; padding:.5rem .45rem; }
+      .stats-table th, .stats-table td { font-size:.82rem; padding:.6rem .45rem; }
     }
+    /* 토글 패널 */
+    .detail-row td { padding:0 !important; background:#fafafa; border-bottom:1px solid #e5e7eb; white-space:normal; word-break:break-word; }
+    .detail-panel { padding:.75rem; box-sizing:border-box; }
 
     /* 특이사항·건의사항 카드 */
     .note-card { padding:.85rem 1rem; border-bottom:1px solid #f3f4f6; display:flex; gap:.75rem; align-items:flex-start; }
@@ -118,12 +123,11 @@
 
     .detail-row td { padding: 0 !important; background: #fafafa; border-bottom: 1px solid #e5e7eb; white-space:normal; word-break:break-word; }
     .detail-panel { padding: 1rem; max-width:100%; overflow-x:hidden; }
-    .detail-grid { display:grid; gap:1rem; grid-template-columns:1fr; }
+    .detail-grid { display:grid; gap:1rem; grid-template-columns:1fr; min-width:0; }
     @media (min-width:768px){ .detail-grid { grid-template-columns: 1fr 1fr; } }
-    .detail-box { background:#fff; border:1px solid #e5e7eb; border-radius:.75rem; padding:1rem; min-width:0; }
+    .detail-box { background:#fff; border:1px solid #e5e7eb; border-radius:.75rem; padding:1rem; min-width:0; overflow:hidden; word-break:break-word; }
     .detail-header { font-weight:950; color:#111827; margin-bottom:.75rem; border-bottom:1px solid #f3f4f6; padding-bottom:.5rem; }
     .chips { display:flex; flex-wrap:wrap; gap:.5rem; }
-    .chip { padding:.3rem .7rem; border-radius:999px; font-size:.8rem; font-weight:800; background:#eff6ff; color:#1e40af; white-space:nowrap; }
     .chip { padding:.3rem .7rem; border-radius:999px; font-size:.8rem; font-weight:800; background:#eff6ff; color:#1e40af; }
     .chip.absent { background:#fef2f2; color:#991b1b; }
     .chart-card { background:#fff; border:1px solid #e5e7eb; border-radius:.95rem; padding:1rem; margin-top:.75rem; }
@@ -302,7 +306,7 @@
             <div class="admin-summary-value" id="adminTotalRate">0%</div>
           </div>
         </div>
-        <div class="attendance-table" id="attendanceTable" style="overflow-x:hidden;"></div>
+        <div class="attendance-table" id="attendanceTable"></div>
       </div>
 
       <div id="adminNotesTab" class="hidden">
