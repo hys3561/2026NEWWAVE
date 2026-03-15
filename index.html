@@ -68,7 +68,7 @@
     .message.error { background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; }
     .message.info { background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; }
 
-    .dashboard-tabs { display:flex; gap:1rem; margin-bottom:1.25rem; border-bottom:2px solid #e5e7eb; overflow-x:auto; }
+    .dashboard-tabs { display:flex; gap:1rem; margin-bottom:1.25rem; border-bottom:2px solid #e5e7eb; overflow-x:auto; overflow-y:visible; padding-top:8px; }
     .tab-button { padding:0.75rem 1.25rem; font-size:1rem; background:none; border:none; cursor:pointer; color:#6b7280; border-bottom:2px solid transparent; margin-bottom:-2px; font-weight:950; white-space:nowrap; }
     .tab-button.active { color:#2563eb; border-bottom-color:#2563eb; }
     .admin-summary { display:grid; grid-template-columns:repeat(3, 1fr); gap:.75rem; margin:1rem 0; }
@@ -151,13 +151,13 @@
     .date-shortcut-dot { width:.45rem; height:.45rem; border-radius:999px; background:#ef4444; flex-shrink:0; }
     .tab-wrap { position:relative; display:inline-flex; }
     .notif-badge {
-      position:absolute; top:-4px; right:-4px;
+      position:absolute; top:-6px; right:-8px;
       background:#ef4444; color:#fff;
       font-size:0.65rem; font-weight:900;
       min-width:1.1rem; height:1.1rem;
       border-radius:999px; display:flex; align-items:center; justify-content:center;
       padding:0 .25rem; border:2px solid #fff;
-      pointer-events:none;
+      pointer-events:none; z-index:10;
     }
   </style>
 </head>
@@ -277,11 +277,11 @@
         <button class="tab-button active" data-tab="stats">출석 현황</button>
         <div class="tab-wrap">
           <button class="tab-button" data-tab="notes">특이사항</button>
-          <span class="notif-badge hidden" id="notesBadge"></span>
+          <span class="notif-badge" id="notesBadge" style="display:none;"></span>
         </div>
         <div class="tab-wrap">
           <button class="tab-button" data-tab="suggestions">건의사항</button>
-          <span class="notif-badge hidden" id="suggestionsBadge"></span>
+          <span class="notif-badge" id="suggestionsBadge" style="display:none;"></span>
         </div>
         <button class="tab-button" data-tab="members">개인별 조회</button>
         <button class="tab-button" data-tab="allMembers">전체 인원</button>
@@ -1167,7 +1167,7 @@
 
     function clearBadge(id) {
       const badge = document.getElementById(id);
-      badge.classList.add("hidden");
+      badge.style.display = "none";
       badge.textContent = "";
       const key = id === "notesBadge" ? BADGE_KEY_NOTES : BADGE_KEY_SUGG;
       try { localStorage.setItem(key, today); } catch(e) {}
@@ -1240,9 +1240,9 @@
         const badge = document.getElementById(badgeId);
         if (totalCount > 0) {
           badge.textContent = totalCount > 99 ? "99+" : totalCount;
-          badge.classList.remove("hidden");
+          badge.style.display = "flex";
         } else {
-          badge.classList.add("hidden");
+          badge.style.display = "none";
         }
         // 탭이 이미 열려 있으면 바 즉시 갱신
         renderDateBar(barId, cache, inputId, loadKey);
