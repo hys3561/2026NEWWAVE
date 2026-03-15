@@ -81,8 +81,13 @@
     th { background:#f9fafb; padding:.75rem 1rem; text-align:left; font-size:.875rem; font-weight:950; border-bottom:1px solid #e5e7eb; white-space:nowrap; }
     td { padding:.75rem 1rem; border-bottom:1px solid #e5e7eb; font-size:.9rem; vertical-align:top; white-space:normal; word-break:break-word; }
 
-    /* 출석현황 테이블 — 원래 스타일 복구 */
+    /* 출석현황 테이블 */
     .stats-table th, .stats-table td { font-size:.95rem; padding:1rem; vertical-align:middle; white-space:nowrap; word-break:normal; }
+    .stats-table td:first-child { white-space:nowrap; }
+    .team-name-cell { display:inline-flex; align-items:center; gap:.4rem; white-space:nowrap; }
+    @media (max-width:640px) {
+      .stats-table th, .stats-table td { font-size:.78rem; padding:.5rem .45rem; }
+    }
 
     /* 특이사항·건의사항 카드 */
     .note-card { padding:.85rem 1rem; border-bottom:1px solid #f3f4f6; display:flex; gap:.75rem; align-items:flex-start; }
@@ -1042,7 +1047,7 @@
             
             html += `
               <tr class="team-row" onclick="toggleDetail(this, '${team.id}', '${date}')">
-                <td><span class="status-badge status-ok">제출</span> ${team.name}</td>
+                <td><div class="team-name-cell"><span class="status-badge status-ok">제출</span>${team.name}</div></td>
                 <td>${totalRecorded}</td>
                 <td>${present}</td>
                 <td>${absent}</td>
@@ -1053,7 +1058,7 @@
               </tr>
             `;
           } else {
-            html += `<tr class="team-row unsubmitted"><td><span class="status-badge status-no">미제출</span> ${team.name}</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>`;
+            html += `<tr class="team-row unsubmitted"><td><div class="team-name-cell"><span class="status-badge status-no">미제출</span>${team.name}</div></td><td>-</td><td>-</td><td>-</td><td>-</td></tr>`;
           }
         });
 
